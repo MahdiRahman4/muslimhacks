@@ -19,6 +19,32 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        
+        // Sunset palette
+        amber: {
+          DEFAULT: "hsl(var(--amber))",
+          light: "hsl(var(--amber-light))",
+          glow: "hsl(var(--amber-glow))",
+        },
+        plum: {
+          DEFAULT: "hsl(var(--plum))",
+          deep: "hsl(var(--plum-deep))",
+          light: "hsl(var(--plum-light))",
+        },
+        rose: {
+          DEFAULT: "hsl(var(--rose))",
+          muted: "hsl(var(--rose-muted))",
+        },
+        twilight: {
+          DEFAULT: "hsl(var(--twilight))",
+          deep: "hsl(var(--twilight-deep))",
+          soft: "hsl(var(--twilight-soft))",
+        },
+        cream: {
+          DEFAULT: "hsl(var(--cream))",
+          muted: "hsl(var(--cream-muted))",
+        },
+        
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -58,6 +84,12 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
       },
+      fontFamily: {
+        arabic: ['Amiri', 'Scheherazade New', 'serif'],
+        display: ['Playfair Display', 'Georgia', 'serif'],
+        intimate: ['Crimson Text', 'Times New Roman', 'serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -65,25 +97,41 @@ export default {
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "float": {
+          "0%, 100%": { transform: "translateY(0) translateX(0)" },
+          "25%": { transform: "translateY(-20px) translateX(10px)" },
+          "50%": { transform: "translateY(-10px) translateX(-5px)" },
+          "75%": { transform: "translateY(-30px) translateX(5px)" },
+        },
+        "drift": {
+          "0%": { transform: "translateY(-10%) rotate(0deg)", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          "100%": { transform: "translateY(110vh) rotate(360deg)", opacity: "0" },
+        },
+        "pulse-glow": {
+          "0%, 100%": { opacity: "0.4", transform: "scale(1)" },
+          "50%": { opacity: "0.8", transform: "scale(1.05)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "float": "float 8s ease-in-out infinite",
+        "drift": "drift 20s linear infinite",
+        "pulse-glow": "pulse-glow 4s ease-in-out infinite",
+      },
+      backgroundImage: {
+        'gradient-sunset': 'linear-gradient(135deg, hsl(var(--amber)) 0%, hsl(var(--rose)) 50%, hsl(var(--plum)) 100%)',
+        'gradient-twilight': 'linear-gradient(180deg, hsl(var(--plum)) 0%, hsl(var(--twilight-deep)) 100%)',
+        'gradient-dawn': 'linear-gradient(180deg, hsl(var(--amber-light)) 0%, hsl(var(--amber)) 50%, hsl(var(--rose)) 100%)',
       },
     },
   },
