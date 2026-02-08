@@ -6,6 +6,7 @@ import '@fontsource/crimson-text/400-italic.css';
 import '@fontsource/amiri/400.css';
 import '@fontsource/amiri/700.css';
 
+import { useFontLoader } from '@/hooks/useFontLoader';
 import Navbar from '@/components/Navbar';
 import OpeningSection from '@/components/sections/OpeningSection';
 import QuestionSection from '@/components/sections/QuestionSection';
@@ -17,6 +18,9 @@ import FAQSection from '@/components/sections/FAQSection';
 import InvitationSection from '@/components/sections/InvitationSection';
 
 const Index = () => {
+  // Ensure fonts are loaded before animations run
+  useFontLoader();
+  
   return (
     <main className="relative overflow-x-hidden">
       {/* SEO: Primary heading for the page */}
