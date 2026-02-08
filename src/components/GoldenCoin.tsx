@@ -39,7 +39,7 @@ const CoinMesh = () => {
       roughness: 0.15,
       envMapIntensity: 1.2,
       bumpMap: texture,
-      bumpScale: 0.08, // Depth of the embossing
+      bumpScale: 0.15, // Depth of the embossing
     });
 
     return { goldMaterial: gold, ridgeMaterial: ridge, logoFaceMaterial: logoFace };
@@ -48,7 +48,7 @@ const CoinMesh = () => {
   useFrame((_, delta) => {
     if (meshRef.current) {
       // Slow rotation (full turn every ~10 seconds)
-      meshRef.current.rotation.x += delta * 0.6;
+      meshRef.current.rotation.x += delta * 0.3;
       
       // Floating bob effect
       timeRef.current += delta;
