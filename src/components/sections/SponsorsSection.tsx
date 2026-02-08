@@ -41,7 +41,7 @@ const SponsorsSection = () => {
             <span className="text-gradient-sunset">building with barakah</span>
           </h2>
           <p className="font-intimate text-xl md:text-2xl text-cream/70">
-            Our sponsors don't just fund a hackathon—they invest in 
+            As a sponsor, you're doing more than just funding a hackathon; you're investing in 
             <em className="text-amber-light"> sadaqah jariyah</em>, ongoing charity 
             through technology that serves communities for years to come.
           </p>

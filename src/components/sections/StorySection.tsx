@@ -57,7 +57,7 @@ const StorySection = () => {
           
           <p className="font-intimate text-xl md:text-2xl leading-relaxed">
             We noticed something. The tech world celebrated building fast, 
-            shipping faster—but rarely asked <em>why</em>. 
+            shipping faster, but rarely asked <em>why</em>. 
             And our ummah? Rich in talent, often building alone.
           </p>
           

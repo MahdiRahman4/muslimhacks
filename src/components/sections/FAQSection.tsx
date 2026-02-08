@@ -12,10 +12,6 @@ const faqs = [
     answer: "MuslimHacks welcomes everyone who wants to build technology for social good. While our event is rooted in Islamic values of charity and service, participants of all backgrounds who share our mission are welcome."
   },
   {
-    question: "What kind of projects can I build?",
-    answer: "Projects should address real needs in underserved communities. Think accessibility tools, education platforms, mental health resources, community organizing apps, or humanitarian aid solutions. We partner with Islamic Relief Canada to connect teams with real-world challenges."
-  },
-  {
     question: "Do I need a team?",
     answer: "You can register solo or with a team of up to 4 people. If you come alone, we'll help you find teammates during our team formation session on the first evening."
   },
@@ -25,11 +21,11 @@ const faqs = [
   },
   {
     question: "What's the cost?",
-    answer: "Thanks to our generous sponsors, MuslimHacks is completely free for participants. We provide meals, snacks, prayer spaces, and everything you need for the 36-hour experience."
+    answer: "There will be a cost to participate, but we keep it as low as possible. All proceeds go to charity through Islamic Relief Canada."
   },
   {
     question: "Will there be prayer spaces and halal food?",
-    answer: "Absolutely. Prayer spaces with qibla direction, wudu facilities, and a quiet room for reflection will be available. All food provided will be halal, and we accommodate dietary restrictions."
+    answer: "Absolutely! Not only will spaces be provided for prayer, but there will be a masjid nearby. All food provided will be halal, and we accommodate dietary restrictions."
   },
   {
     question: "What if I'm a beginner?",
