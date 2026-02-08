@@ -6,7 +6,6 @@ const navItems = [
   { label: 'About', href: '#about' },
   { label: 'Sponsors', href: '#sponsors' },
   { label: 'FAQ', href: '#faq' },
-  { label: 'Team', href: '#team' },
 ];
 
 const Navbar = () => {
@@ -58,9 +57,9 @@ const Navbar = () => {
         <a 
           href="#home" 
           onClick={(e) => handleClick(e, '#home')}
-          className="font-display text-xl md:text-2xl text-cream hover:text-amber transition-colors"
+          className="font-sans text-sm uppercase tracking-wider text-cream/60 hover:text-cream transition-colors"
         >
-          Muslim<span className="text-gradient-sunset">Hacks</span>
+          logo here
         </a>
         
         {/* Nav links - hidden on mobile, shown on md+ */}

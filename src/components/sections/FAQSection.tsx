@@ -65,14 +65,14 @@ const FAQSection = () => {
             headerVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
           }`}
         >
-          <p className="font-sans text-xs uppercase tracking-[0.3em] text-amber/60 mb-4">
+          <p className="font-sans text-sm uppercase tracking-[0.3em] text-amber mb-4">
             Questions answered
           </p>
           <h2 className="font-display text-4xl md:text-5xl text-cream leading-tight mb-6">
             Everything you need<br />
             <span className="text-gradient-sunset">to know</span>
           </h2>
-          <p className="font-intimate text-lg text-cream/60">
+          <p className="font-intimate text-xl text-cream/70">
             Can't find your answer? Reach out at{' '}
             <a href="mailto:info@muslimhacks.ca" className="text-amber hover:underline">
               info@muslimhacks.ca
@@ -94,10 +94,10 @@ const FAQSection = () => {
                 value={`item-${index}`}
                 className="border-none bg-cream/5 rounded-lg px-6 data-[state=open]:bg-cream/10 transition-colors"
               >
-                <AccordionTrigger className="text-left font-display text-lg text-cream hover:text-amber hover:no-underline py-6">
+                <AccordionTrigger className="text-left font-display text-lg md:text-xl text-cream hover:text-amber hover:no-underline py-6">
                   {faq.question}
                 </AccordionTrigger>
-                <AccordionContent className="font-intimate text-base text-cream/70 pb-6">
+                <AccordionContent className="font-intimate text-lg text-cream/80 pb-6 leading-relaxed">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

@@ -21,11 +21,11 @@ const OpeningSection = () => {
 
   return (
     <section id="home" className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Gradient background */}
+      {/* Gradient background - darker for better contrast */}
       <div 
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(135deg, hsl(35 85% 55% / 0.9) 0%, hsl(350 45% 55% / 0.85) 40%, hsl(280 40% 30% / 0.95) 100%)',
+          background: 'linear-gradient(135deg, hsl(35 75% 45%) 0%, hsl(350 50% 45%) 40%, hsl(280 45% 25%) 100%)',
         }}
       />
       
@@ -39,40 +39,43 @@ const OpeningSection = () => {
       
       {/* Subtle radial glow */}
       <div 
-        className="absolute inset-0 opacity-40"
+        className="absolute inset-0 opacity-30"
         style={{
-          background: 'radial-gradient(ellipse at 30% 40%, hsl(40 90% 70% / 0.4) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse at 30% 40%, hsl(40 90% 70% / 0.3) 0%, transparent 60%)',
         }}
       />
       
-      {/* Content - asymmetric layout */}
+      {/* Content */}
       <div className="relative z-10 w-full px-6 md:px-12 lg:px-24 py-32">
-        <div className="max-w-6xl">
-          {/* Main branding - large, stylistic, asymmetric */}
-          <div className="mb-8 animate-fade-in-left">
-            <p className="font-sans text-sm md:text-base uppercase tracking-[0.4em] text-cream/70 mb-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Eyebrow */}
+          <div className="mb-6 animate-fade-in-up">
+            <p className="font-sans text-sm md:text-base uppercase tracking-[0.3em] text-cream mb-4">
               Québec's Largest Muslim Charity Hackathon
             </p>
           </div>
           
-          <div className="mb-6 animate-fade-in-up">
+          {/* Main branding - large and bold */}
+          <div className="mb-8 animate-fade-in-up">
             <h1 className="font-display text-7xl md:text-8xl lg:text-[10rem] xl:text-[12rem] text-cream leading-[0.85] tracking-tight">
               Muslim
               <span className="block text-gradient-sunset">Hacks</span>
             </h1>
           </div>
           
-          {/* Tagline - offset to the right */}
-          <div className="ml-4 md:ml-16 lg:ml-32 mb-16 animate-fade-in-up animation-delay-200">
-            <p className="font-intimate text-xl md:text-2xl lg:text-3xl text-cream/80 max-w-lg">
+          {/* Tagline */}
+          <div className="mb-12 animate-fade-in-up animation-delay-200">
+            <p className="font-intimate text-2xl md:text-3xl lg:text-4xl text-cream max-w-xl">
               36 hours to build technology with purpose.
-              <span className="block mt-2 text-amber-light">September 2026.</span>
+            </p>
+            <p className="font-intimate text-xl md:text-2xl text-amber mt-3">
+              September 2026.
             </p>
           </div>
           
-          {/* Email signup - left aligned but offset */}
-          <div className="ml-0 md:ml-8 max-w-md animate-fade-in-up animation-delay-400">
-            <p className="font-sans text-sm text-cream/60 mb-4">
+          {/* Email signup */}
+          <div className="max-w-md animate-fade-in-up animation-delay-400">
+            <p className="font-sans text-base text-cream mb-4">
               Be the first to know when registration opens
             </p>
             <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
@@ -81,13 +84,13 @@ const OpeningSection = () => {
                 placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/40 focus:border-amber/50 focus:ring-amber/30"
+                className="flex-1 bg-cream/10 border-cream/30 text-cream placeholder:text-cream/50 focus:border-amber/50 focus:ring-amber/30 h-12 text-base"
                 required
               />
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="bg-gradient-to-r from-amber to-rose hover:from-amber-glow hover:to-rose text-plum-deep font-medium px-6 transition-all duration-300"
+                className="bg-gradient-to-r from-amber to-rose hover:from-amber-glow hover:to-rose text-plum-deep font-semibold px-8 h-12 text-base transition-all duration-300"
               >
                 {isSubmitting ? 'Sending...' : 'Notify me'}
               </Button>
@@ -95,15 +98,15 @@ const OpeningSection = () => {
           </div>
         </div>
         
-        {/* Decorative elements - floating to the right */}
+        {/* Decorative circles - right side */}
         <div className="hidden lg:block absolute right-24 top-1/4">
           <div className="w-64 h-64 border border-cream/10 rounded-full animate-pulse-slow" />
           <div className="absolute top-12 left-12 w-40 h-40 border border-amber/20 rounded-full animate-pulse-slow animation-delay-400" />
         </div>
         
-        {/* Arabic decorative text - subtle, positioned */}
+        {/* Arabic decorative text */}
         <div className="hidden md:block absolute right-12 lg:right-32 bottom-32 text-right">
-          <p className="font-arabic text-5xl lg:text-6xl text-cream/15" dir="rtl">
+          <p className="font-arabic text-5xl lg:text-6xl text-cream/20" dir="rtl">
             بسم الله
           </p>
         </div>
