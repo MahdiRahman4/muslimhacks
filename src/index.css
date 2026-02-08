@@ -296,3 +296,12 @@
     animation-delay: 1000ms;
   }
 }
+
+/* Font loading state - prevents animation flash */
+html.fonts-loading .animate-fade-in-up,
+html.fonts-loading .animate-fade-in-left,
+html.fonts-loading .animate-fade-in-right {
+  opacity: 1 !important;
+  transform: none !important;
+  animation: none !important;
+}
