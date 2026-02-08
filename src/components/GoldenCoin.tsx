@@ -48,7 +48,7 @@ const CoinMesh = () => {
   useFrame((_, delta) => {
     if (meshRef.current) {
       // Slow rotation (full turn every ~10 seconds)
-      meshRef.current.rotation.y += delta * 0.6;
+      meshRef.current.rotation.x += delta * 0.6;
       
       // Floating bob effect
       timeRef.current += delta;
@@ -61,7 +61,7 @@ const CoinMesh = () => {
   const ridgeCount = 120;
 
   return (
-    <group ref={meshRef} rotation={[0.15, 0, 0.1]}>
+    <group ref={meshRef} rotation={[0, 0.3, 0]}>
       {/* Main coin body */}
       <mesh material={goldMaterial}>
         <cylinderGeometry args={[coinRadius, coinRadius, coinThickness, 64]} />
