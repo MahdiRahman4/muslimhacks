@@ -75,7 +75,7 @@ const OpeningSection = () => {
                 September 2026, Concordia University, 1455 Blvd. De Maisonneuve Ouest, Montreal, Quebec H3G 1M8
               </p>
             </div>
-            
+
             {/* Email signup */}
             <div className="max-w-md animate-fade-in-up animation-delay-400">
               <p className="font-sans text-lg md:text-xl text-cream mb-4">
