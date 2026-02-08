@@ -61,7 +61,7 @@ const Navbar = () => {
               href={item.href}
               onClick={(e) => handleClick(e, item.href)}
               className={cn(
-                'font-sans text-sm uppercase tracking-wider transition-all duration-300',
+                'font-sans text-base uppercase tracking-wider transition-all duration-300',
                 activeSection === item.href.slice(1)
                   ? 'text-amber'
                   : 'text-cream/70 hover:text-cream'

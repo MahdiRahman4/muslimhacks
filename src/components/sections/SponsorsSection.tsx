@@ -33,14 +33,14 @@ const SponsorsSection = () => {
             headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
           }`}
         >
-          <p className="font-sans text-sm uppercase tracking-[0.3em] text-rose mb-4">
+          <p className="font-sans text-base uppercase tracking-[0.3em] text-rose mb-4">
             Partners in purpose
           </p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream leading-tight mb-6">
             Those who believe in<br />
             <span className="text-gradient-sunset">building with barakah</span>
           </h2>
-          <p className="font-intimate text-xl md:text-2xl text-cream/70">
+          <p className="font-intimate text-2xl md:text-3xl text-cream/70 leading-relaxed">
             As a sponsor, you're doing more than just funding a hackathon; you're investing in 
             <em className="text-amber-light"> sadaqah jariyah</em>, ongoing charity 
             through technology that serves communities for years to come.
@@ -56,14 +56,14 @@ const SponsorsSection = () => {
         >
           {/* Lead partner */}
           <div className="text-center">
-            <p className="font-sans text-sm uppercase tracking-widest text-amber mb-6">
+            <p className="font-sans text-base uppercase tracking-widest text-amber mb-6">
               Lead Partner
             </p>
             <div className="inline-block bg-cream/5 border border-cream/10 rounded-xl px-16 py-12">
               <p className="font-display text-3xl md:text-4xl text-cream">
                 Islamic Relief Canada
               </p>
-              <p className="font-intimate text-lg text-cream/60 mt-2">
+              <p className="font-intimate text-xl md:text-2xl text-cream/60 mt-2">
                 Serving humanity since 1984
               </p>
             </div>
@@ -116,7 +116,7 @@ const SponsorsSection = () => {
                 <p className="font-display text-2xl md:text-3xl text-cream mb-2">
                   Coming soon
                 </p>
-                <p className="font-intimate text-lg text-cream/60">
+                <p className="font-intimate text-xl text-cream/60">
                   We're working on it!
                 </p>
               </div>
@@ -131,16 +131,16 @@ const SponsorsSection = () => {
             ctaVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
           }`}
         >
-          <p className="font-intimate text-xl text-cream/70 mb-6">
+          <p className="font-intimate text-xl md:text-2xl text-cream/70 mb-6">
             Interested in partnering with us?
           </p>
           <a 
             href="mailto:sponsors@muslimhacks.ca" 
-            className="inline-block font-sans text-sm uppercase tracking-wider text-amber border border-amber/50 rounded-full px-8 py-3 hover:bg-amber/10 transition-all duration-300"
+            className="inline-block font-sans text-base uppercase tracking-wider text-amber border border-amber/50 rounded-full px-8 py-3 hover:bg-amber/10 transition-all duration-300"
           >
             Become a Sponsor
           </a>
-          <p className="font-sans text-xs text-cream/40 mt-4">
+          <p className="font-sans text-sm text-cream/40 mt-4">
             sponsors@muslimhacks.ca
           </p>
         </div>

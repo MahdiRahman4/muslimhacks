@@ -53,13 +53,13 @@ const InvitationSection = () => {
             titleVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
         >
-          <p className="font-sans text-sm uppercase tracking-[0.3em] text-amber mb-6">Stay in the loop</p>
+          <p className="font-sans text-base uppercase tracking-[0.3em] text-amber mb-6">Stay in the loop</p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream leading-tight mb-8">
             Will you build
             <br />
             <span className="text-gradient-sunset">with us?</span>
           </h2>
-          <p className="font-intimate text-xl md:text-2xl text-cream/80 max-w-md mx-auto">
+          <p className="font-intimate text-2xl md:text-3xl text-cream/80 max-w-md mx-auto leading-relaxed">
             Leave your email and we'll let you know once the registration period has begun!
           </p>
         </div>
@@ -88,7 +88,7 @@ const InvitationSection = () => {
               {isSubmitting ? "Sending..." : "Notify me"}
             </Button>
           </form>
-          <p className="text-sm text-cream/50 mt-4">We respect your inbox. Updates only, no spam.</p>
+          <p className="text-base md:text-lg text-cream/50 mt-4">We respect your inbox. Updates only, no spam.</p>
         </div>
 
         {/* Closing blessing */}
@@ -102,14 +102,14 @@ const InvitationSection = () => {
             <p className="font-arabic text-3xl text-cream/50 mb-4" dir="rtl">
               بارك الله فيكم
             </p>
-            <p className="font-intimate text-lg text-cream/40">May Allah bless you</p>
+            <p className="font-intimate text-xl text-cream/40">May Allah bless you</p>
           </div>
 
           {/* Footer */}
           <div className="pt-12 border-t border-cream/10">
             <p className="font-display text-2xl text-gradient-sunset mb-2">MuslimHacks</p>
-            <p className="font-sans text-sm text-cream/40">Québec's largest Muslim charity hackathon</p>
-            <p className="font-sans text-xs text-cream/30 mt-4">In partnership with Islamic Relief Canada</p>
+            <p className="font-sans text-base md:text-lg text-cream/40">Québec's largest Muslim charity hackathon</p>
+            <p className="font-sans text-sm text-cream/30 mt-4">In partnership with Islamic Relief Canada</p>
           </div>
         </div>
       </div>

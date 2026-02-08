@@ -33,7 +33,7 @@ const StorySection = () => {
             headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <p className="font-sans text-sm uppercase tracking-[0.3em] text-rose mb-6">
+          <p className="font-sans text-base uppercase tracking-[0.3em] text-rose mb-6">
             The beginning
           </p>
           <h2 className="font-display text-3xl md:text-4xl text-cream leading-snug">
@@ -49,19 +49,19 @@ const StorySection = () => {
             bodyVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <p className="font-intimate text-xl md:text-2xl leading-relaxed">
+          <p className="font-intimate text-xl md:text-2xl lg:text-3xl leading-relaxed">
             We are Muslims in Québec. We speak French at the dépanneur 
             and English on GitHub. We fast in summers that stretch past 9pm 
             and pray fajr in winters when the sun barely rises.
           </p>
           
-          <p className="font-intimate text-xl md:text-2xl leading-relaxed">
+          <p className="font-intimate text-xl md:text-2xl lg:text-3xl leading-relaxed">
             We noticed something. The tech world celebrated building fast, 
             shipping faster, but rarely asked <em>why</em>. 
             And our ummah? Rich in talent, often building alone.
           </p>
           
-          <p className="font-intimate text-xl md:text-2xl leading-relaxed">
+          <p className="font-intimate text-xl md:text-2xl lg:text-3xl leading-relaxed">
             What if we gathered? Not for prizes. Not for clout. 
             But because the Prophet ﷺ taught us that 
             <span className="text-amber-light"> the best of people are those 
@@ -77,7 +77,7 @@ const StorySection = () => {
             </p>
           </div>
           
-          <p className="font-intimate text-xl md:text-2xl leading-relaxed">
+          <p className="font-intimate text-xl md:text-2xl lg:text-3xl leading-relaxed">
             MuslimHacks was born from this. A 36-hour hackathon where 
             our skills become service. Where every line of code 
             carries the weight of intention.
@@ -91,13 +91,13 @@ const StorySection = () => {
             closingVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <p className="font-sans text-base text-cream/60 mb-4">
+          <p className="font-sans text-lg text-cream/60 mb-4">
             In partnership with
           </p>
           <p className="font-display text-2xl md:text-3xl text-cream">
             Islamic Relief Canada
           </p>
-          <p className="font-intimate text-lg text-cream/70 mt-2">
+          <p className="font-intimate text-xl md:text-2xl text-cream/70 mt-2">
             One of the world's leading humanitarian organizations, 
             serving humanity regardless of race, religion, or gender.
           </p>

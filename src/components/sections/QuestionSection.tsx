@@ -39,10 +39,10 @@ const QuestionSection = () => {
         >
           والصَّدَقَةُ تُطْفِئُ الْخَطِيئَةَ كَمَا يُطْفِئُ الْمَاءُ النَّارَ
         </p>
-        <p className="font-intimate text-lg md:text-xl text-cream/50 mb-2">
+        <p className="font-intimate text-xl md:text-2xl text-cream/50 mb-2">
           "And charity extinguishes sins just as water extinguishes fire."
         </p>
-        <p className="font-sans text-sm text-cream/40">
+        <p className="font-sans text-base text-cream/40">
           — Jami` at-Tirmidhi 614
         </p>
       </div>
@@ -68,13 +68,13 @@ const QuestionSection = () => {
             questionVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'
           }`}
         >
-          <p className="font-intimate text-xl md:text-2xl text-cream/80 leading-relaxed">
+          <p className="font-intimate text-2xl md:text-3xl text-cream/80 leading-relaxed">
             You've built apps for startups.
           </p>
-          <p className="font-intimate text-xl md:text-2xl text-cream/80 leading-relaxed">
+          <p className="font-intimate text-2xl md:text-3xl text-cream/80 leading-relaxed">
             You've shipped features for corporations.
           </p>
-          <p className="font-intimate text-xl md:text-2xl text-cream/80 leading-relaxed">
+          <p className="font-intimate text-2xl md:text-3xl text-cream/80 leading-relaxed">
             But when did you last build something<br />
             <span className="text-amber-light">that might outlast you?</span>
           </p>
@@ -91,10 +91,10 @@ const QuestionSection = () => {
             1.8B
           </p>
           <div className="relative z-10">
-            <p className="font-sans text-sm uppercase tracking-widest text-rose mb-3">
+            <p className="font-sans text-base uppercase tracking-widest text-rose mb-3">
               Muslims worldwide
             </p>
-            <p className="font-intimate text-lg md:text-xl text-cream/70">
+            <p className="font-intimate text-xl md:text-2xl text-cream/70">
               How many of us are building technology<br />
               <span className="italic">with intention?</span>
             </p>

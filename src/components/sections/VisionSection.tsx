@@ -61,11 +61,11 @@ const VisionSection = () => {
           <div className="relative">
             <div className="absolute -top-4 -left-4 w-full h-full border border-amber/20 rounded-lg" />
             <div className="relative bg-plum-deep/40 backdrop-blur-sm border border-cream/10 rounded-lg p-8">
-              <p className="font-sans text-sm uppercase tracking-widest text-amber mb-3">
+              <p className="font-sans text-base uppercase tracking-widest text-amber mb-3">
                 The Gathering
               </p>
               <p className="font-display text-4xl text-cream mb-2">150+</p>
-              <p className="font-intimate text-lg text-cream/70">
+              <p className="font-intimate text-xl md:text-2xl text-cream/70">
                 Muslim developers, designers, and dreamers
               </p>
             </div>
@@ -75,11 +75,11 @@ const VisionSection = () => {
           <div className="relative md:mt-16">
             <div className="absolute -top-4 -right-4 w-full h-full border border-rose/20 rounded-lg" />
             <div className="relative bg-plum-deep/40 backdrop-blur-sm border border-cream/10 rounded-lg p-8">
-              <p className="font-sans text-sm uppercase tracking-widest text-rose mb-3">
+              <p className="font-sans text-base uppercase tracking-widest text-rose mb-3">
                 The Challenge
               </p>
               <p className="font-display text-4xl text-cream mb-2">Real Impact</p>
-              <p className="font-intimate text-lg text-cream/70">
+              <p className="font-intimate text-xl md:text-2xl text-cream/70">
                 Projects that serve communities in need
               </p>
             </div>
@@ -89,11 +89,11 @@ const VisionSection = () => {
           <div className="relative md:-mt-8">
             <div className="absolute -bottom-4 -left-4 w-full h-full border border-plum-light/30 rounded-lg" />
             <div className="relative bg-plum-deep/40 backdrop-blur-sm border border-cream/10 rounded-lg p-8">
-              <p className="font-sans text-sm uppercase tracking-widest text-amber-light mb-3">
+              <p className="font-sans text-base uppercase tracking-widest text-amber-light mb-3">
                 The Barakah
               </p>
               <p className="font-display text-4xl text-cream mb-2">Sadaqah Jariyah</p>
-              <p className="font-intimate text-lg text-cream/70">
+              <p className="font-intimate text-xl md:text-2xl text-cream/70">
                 Ongoing charity through technology
               </p>
             </div>
@@ -109,15 +109,15 @@ const VisionSection = () => {
         >
           <div className="flex flex-wrap justify-center gap-x-12 gap-y-6 text-center">
             <span className="font-arabic text-3xl text-amber/80">نية</span>
-            <span className="font-display text-2xl text-cream/50">niyyah</span>
+            <span className="font-display text-2xl md:text-3xl text-cream/50">niyyah</span>
             <span className="font-arabic text-3xl text-rose/70">أمة</span>
-            <span className="font-display text-2xl text-cream/50">ummah</span>
+            <span className="font-display text-2xl md:text-3xl text-cream/50">ummah</span>
             <span className="font-arabic text-3xl text-amber-light/80">إخلاص</span>
-            <span className="font-display text-2xl text-cream/50">sincerity</span>
+            <span className="font-display text-2xl md:text-3xl text-cream/50">sincerity</span>
             <span className="font-arabic text-3xl text-rose-muted/80">خدمة</span>
-            <span className="font-display text-2xl text-cream/50">service</span>
+            <span className="font-display text-2xl md:text-3xl text-cream/50">service</span>
             <span className="font-arabic text-3xl text-amber/70">بركة</span>
-            <span className="font-display text-2xl text-cream/50">barakah</span>
+            <span className="font-display text-2xl md:text-3xl text-cream/50">barakah</span>
           </div>
         </div>
         

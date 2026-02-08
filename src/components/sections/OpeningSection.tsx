@@ -53,7 +53,7 @@ const OpeningSection = () => {
           <div className="flex-1 max-w-2xl">
             {/* Eyebrow */}
             <div className="mb-6 animate-fade-in-up">
-              <p className="font-sans text-sm md:text-base uppercase tracking-[0.3em] text-cream mb-4">
+              <p className="font-sans text-base md:text-lg uppercase tracking-[0.3em] text-cream mb-4">
                 Québec's Largest Muslim Charity Hackathon
               </p>
             </div>
@@ -78,7 +78,7 @@ const OpeningSection = () => {
             
             {/* Email signup */}
             <div className="max-w-md animate-fade-in-up animation-delay-400">
-              <p className="font-sans text-base text-cream mb-4">
+              <p className="font-sans text-lg md:text-xl text-cream mb-4">
                 Be the first to know when registration opens
               </p>
               <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
