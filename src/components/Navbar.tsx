@@ -52,16 +52,7 @@ const Navbar = () => {
           : 'bg-transparent py-6'
       )}
     >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-        {/* Logo */}
-        <a 
-          href="#home" 
-          onClick={(e) => handleClick(e, '#home')}
-          className="font-sans text-sm uppercase tracking-wider text-cream/60 hover:text-cream transition-colors"
-        >
-          logo here
-        </a>
-        
+      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-center">
         {/* Nav links - hidden on mobile, shown on md+ */}
         <div className="hidden md:flex items-center gap-8">
           {navItems.map((item) => (
