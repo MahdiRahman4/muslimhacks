@@ -15,6 +15,7 @@ import SponsorsSection from '@/components/sections/SponsorsSection';
 import FAQSection from '@/components/sections/FAQSection';
 
 import InvitationSection from '@/components/sections/InvitationSection';
+import Footer from '@/components/sections/Footer';
 
 const Index = () => {
   return (
@@ -39,6 +40,9 @@ const Index = () => {
       
       {/* Final Call to Action */}
       <InvitationSection />
+
+      {/* Footer */}
+      <Footer />
     </main>
   );
 };

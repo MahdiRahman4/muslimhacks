@@ -64,7 +64,7 @@ const VisionSection = () => {
               <p className="font-sans text-base uppercase tracking-widest text-amber mb-3">
                 The Gathering
               </p>
-              <p className="font-display text-4xl text-cream mb-2">150+</p>
+              <p className="font-display text-4xl text-cream mb-2">Sincere People</p>
               <p className="font-intimate text-xl md:text-2xl text-cream/70">
                 Muslim developers, designers, and dreamers
               </p>
