@@ -1,11 +1,49 @@
-import { Suspense, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Suspense, useRef, useMemo } from 'react';
+import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
+import logoTexture from '@/assets/muslimhacks-logo.png';
 
 const CoinMesh = () => {
   const meshRef = useRef<THREE.Group>(null);
   const timeRef = useRef(0);
+
+  // Load logo texture for bump mapping
+  const texture = useLoader(THREE.TextureLoader, logoTexture);
+  
+  // Create materials with the logo as bump map
+  const { goldMaterial, ridgeMaterial, logoFaceMaterial } = useMemo(() => {
+    const goldColor = new THREE.Color('#D4AF37');
+    
+    // Configure texture for bump mapping
+    texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
+    texture.center.set(0.5, 0.5);
+    
+    const gold = new THREE.MeshStandardMaterial({
+      color: goldColor,
+      metalness: 0.95,
+      roughness: 0.15,
+      envMapIntensity: 1.2,
+    });
+
+    const ridge = new THREE.MeshStandardMaterial({
+      color: new THREE.Color('#B8960C'),
+      metalness: 0.9,
+      roughness: 0.25,
+    });
+
+    // Face material with logo bump map (black = recessed, white = raised)
+    const logoFace = new THREE.MeshStandardMaterial({
+      color: goldColor,
+      metalness: 0.95,
+      roughness: 0.15,
+      envMapIntensity: 1.2,
+      bumpMap: texture,
+      bumpScale: 0.08, // Depth of the embossing
+    });
+
+    return { goldMaterial: gold, ridgeMaterial: ridge, logoFaceMaterial: logoFace };
+  }, [texture]);
 
   useFrame((_, delta) => {
     if (meshRef.current) {
@@ -16,29 +54,6 @@ const CoinMesh = () => {
       timeRef.current += delta;
       meshRef.current.position.y = Math.sin(timeRef.current * 0.8) * 0.15;
     }
-  });
-
-  // Gold material properties
-  const goldColor = new THREE.Color('#D4AF37');
-  const goldMaterial = new THREE.MeshStandardMaterial({
-    color: goldColor,
-    metalness: 0.95,
-    roughness: 0.15,
-    envMapIntensity: 1.2,
-  });
-
-  // Darker gold for ridges
-  const ridgeMaterial = new THREE.MeshStandardMaterial({
-    color: new THREE.Color('#B8960C'),
-    metalness: 0.9,
-    roughness: 0.25,
-  });
-
-  // Face indentation material (slightly different tone)
-  const faceMaterial = new THREE.MeshStandardMaterial({
-    color: new THREE.Color('#C9A227'),
-    metalness: 0.92,
-    roughness: 0.2,
   });
 
   const coinRadius = 1.5;
@@ -69,24 +84,14 @@ const CoinMesh = () => {
         );
       })}
 
-      {/* Front face - circular indentation (logo placeholder) */}
-      <mesh position={[0, coinThickness / 2 + 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]} material={faceMaterial}>
-        <ringGeometry args={[0.3, 0.9, 32]} />
+      {/* Front face with embossed logo */}
+      <mesh position={[0, coinThickness / 2 + 0.002, 0]} rotation={[-Math.PI / 2, 0, 0]} material={logoFaceMaterial}>
+        <circleGeometry args={[coinRadius * 0.85, 64]} />
       </mesh>
 
-      {/* Back face - circular indentation (logo placeholder) */}
-      <mesh position={[0, -coinThickness / 2 - 0.001, 0]} rotation={[Math.PI / 2, 0, 0]} material={faceMaterial}>
-        <ringGeometry args={[0.3, 0.9, 32]} />
-      </mesh>
-
-      {/* Center emboss placeholder - front */}
-      <mesh position={[0, coinThickness / 2 + 0.005, 0]} rotation={[-Math.PI / 2, 0, 0]} material={goldMaterial}>
-        <circleGeometry args={[0.4, 32]} />
-      </mesh>
-
-      {/* Center emboss placeholder - back */}
-      <mesh position={[0, -coinThickness / 2 - 0.005, 0]} rotation={[Math.PI / 2, 0, 0]} material={goldMaterial}>
-        <circleGeometry args={[0.4, 32]} />
+      {/* Back face with embossed logo (mirrored) */}
+      <mesh position={[0, -coinThickness / 2 - 0.002, 0]} rotation={[Math.PI / 2, 0, Math.PI]} material={logoFaceMaterial}>
+        <circleGeometry args={[coinRadius * 0.85, 64]} />
       </mesh>
     </group>
   );
