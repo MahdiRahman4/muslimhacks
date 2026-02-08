@@ -39,10 +39,10 @@ const QuestionSection = () => {
         >
           والصَّدَقَةُ تُطْفِئُ الْخَطِيئَةَ كَمَا يُطْفِئُ الْمَاءُ النَّارَ
         </p>
-        <p className="font-intimate text-base md:text-lg text-cream/40 mb-2">
+        <p className="font-intimate text-lg md:text-xl text-cream/50 mb-2">
           "And charity extinguishes sins just as water extinguishes fire."
         </p>
-        <p className="font-sans text-xs text-cream/30">
+        <p className="font-sans text-sm text-cream/40">
           — Jami` at-Tirmidhi 614
         </p>
       </div>
@@ -91,10 +91,10 @@ const QuestionSection = () => {
             1.8B
           </p>
           <div className="relative z-10">
-            <p className="font-sans text-sm uppercase tracking-widest text-rose-muted mb-2">
+            <p className="font-sans text-sm uppercase tracking-widest text-rose mb-3">
               Muslims worldwide
             </p>
-            <p className="font-intimate text-lg text-cream/60">
+            <p className="font-intimate text-lg md:text-xl text-cream/70">
               How many of us are building technology<br />
               <span className="italic">with intention?</span>
             </p>

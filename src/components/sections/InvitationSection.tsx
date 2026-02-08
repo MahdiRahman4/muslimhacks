@@ -51,14 +51,14 @@ const InvitationSection = () => {
             titleVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
-          <p className="font-sans text-xs uppercase tracking-[0.3em] text-amber/60 mb-6">
+          <p className="font-sans text-sm uppercase tracking-[0.3em] text-amber mb-6">
             Stay in the loop
           </p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream leading-tight mb-8">
             Will you build<br />
             <span className="text-gradient-sunset">with us?</span>
           </h2>
-          <p className="font-intimate text-xl text-cream/70 max-w-md mx-auto">
+          <p className="font-intimate text-xl md:text-2xl text-cream/80 max-w-md mx-auto">
             Registration opens Spring 2026. Leave your email 
             and we'll save you a place at the gathering.
           </p>
@@ -88,7 +88,7 @@ const InvitationSection = () => {
               {isSubmitting ? 'Sending...' : 'Notify me'}
             </Button>
           </form>
-          <p className="text-xs text-cream/40 mt-4">
+          <p className="text-sm text-cream/50 mt-4">
             We respect your inbox. Updates only, no spam.
           </p>
         </div>

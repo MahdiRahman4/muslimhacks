@@ -33,14 +33,14 @@ const SponsorsSection = () => {
             headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
           }`}
         >
-          <p className="font-sans text-xs uppercase tracking-[0.3em] text-rose/60 mb-4">
+          <p className="font-sans text-sm uppercase tracking-[0.3em] text-rose mb-4">
             Partners in purpose
           </p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream leading-tight mb-6">
             Those who believe in<br />
             <span className="text-gradient-sunset">building with barakah</span>
           </h2>
-          <p className="font-intimate text-lg md:text-xl text-cream/60">
+          <p className="font-intimate text-xl md:text-2xl text-cream/70">
             Our sponsors don't just fund a hackathon—they invest in 
             <em className="text-amber-light"> sadaqah jariyah</em>, ongoing charity 
             through technology that serves communities for years to come.
@@ -56,53 +56,70 @@ const SponsorsSection = () => {
         >
           {/* Lead partner */}
           <div className="text-center">
-            <p className="font-sans text-xs uppercase tracking-widest text-amber mb-6">
+            <p className="font-sans text-sm uppercase tracking-widest text-amber mb-6">
               Lead Partner
             </p>
             <div className="inline-block bg-cream/5 border border-cream/10 rounded-xl px-16 py-12">
               <p className="font-display text-3xl md:text-4xl text-cream">
                 Islamic Relief Canada
               </p>
-              <p className="font-intimate text-cream/50 mt-2">
+              <p className="font-intimate text-lg text-cream/60 mt-2">
                 Serving humanity since 1984
               </p>
             </div>
           </div>
           
-          {/* Placeholder sponsor slots */}
-          <div>
-            <p className="font-sans text-xs uppercase tracking-widest text-rose/60 mb-6 text-center">
-              Platinum Sponsors
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <div 
-                  key={i} 
-                  className="bg-cream/5 border border-dashed border-cream/20 rounded-lg p-8 text-center hover:border-amber/40 transition-colors"
-                >
-                  <p className="font-intimate text-cream/40 text-lg">
-                    Your company here
-                  </p>
+          {/* Coming soon overlay for other tiers */}
+          <div className="relative">
+            {/* Blurred placeholder content */}
+            <div className="blur-sm opacity-40 pointer-events-none">
+              <div className="mb-12">
+                <p className="font-sans text-xs uppercase tracking-widest text-rose/60 mb-6 text-center">
+                  Platinum Sponsors
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[1, 2, 3].map((i) => (
+                    <div 
+                      key={i} 
+                      className="bg-cream/5 border border-dashed border-cream/20 rounded-lg p-8 text-center"
+                    >
+                      <p className="font-intimate text-cream/40 text-lg">
+                        Sponsor
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+              
+              <div>
+                <p className="font-sans text-xs uppercase tracking-widest text-twilight-soft mb-6 text-center">
+                  Gold Sponsors
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div 
+                      key={i} 
+                      className="bg-cream/5 border border-dashed border-cream/15 rounded-lg p-6 text-center"
+                    >
+                      <p className="font-intimate text-cream/30 text-sm">
+                        Sponsor
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div>
-            <p className="font-sans text-xs uppercase tracking-widest text-twilight-soft mb-6 text-center">
-              Gold Sponsors
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div 
-                  key={i} 
-                  className="bg-cream/5 border border-dashed border-cream/15 rounded-lg p-6 text-center hover:border-amber/30 transition-colors"
-                >
-                  <p className="font-intimate text-cream/30 text-sm">
-                    Available
-                  </p>
-                </div>
-              ))}
+            
+            {/* Overlay text */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <p className="font-display text-2xl md:text-3xl text-cream mb-2">
+                  Coming soon
+                </p>
+                <p className="font-intimate text-lg text-cream/60">
+                  We're working on it!
+                </p>
+              </div>
             </div>
           </div>
         </div>

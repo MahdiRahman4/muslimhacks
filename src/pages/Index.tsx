@@ -13,7 +13,7 @@ import StorySection from '@/components/sections/StorySection';
 import VisionSection from '@/components/sections/VisionSection';
 import SponsorsSection from '@/components/sections/SponsorsSection';
 import FAQSection from '@/components/sections/FAQSection';
-import TeamSection from '@/components/sections/TeamSection';
+
 import InvitationSection from '@/components/sections/InvitationSection';
 
 const Index = () => {
@@ -36,7 +36,6 @@ const Index = () => {
       {/* Standard Hackathon Sections */}
       <SponsorsSection />
       <FAQSection />
-      <TeamSection />
       
       {/* Final Call to Action */}
       <InvitationSection />
