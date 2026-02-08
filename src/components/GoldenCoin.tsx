@@ -39,7 +39,7 @@ const CoinMesh = () => {
       roughness: 0.15,
       envMapIntensity: 1.2,
       bumpMap: texture,
-      bumpScale: 0.08, // Depth of the embossing
+      bumpScale: 0.15, // Depth of the embossing - increased for visibility
     });
 
     return { goldMaterial: gold, ridgeMaterial: ridge, logoFaceMaterial: logoFace };
@@ -90,7 +90,7 @@ const CoinMesh = () => {
       </mesh>
 
       {/* Back face with embossed logo (mirrored) */}
-      <mesh position={[0, -coinThickness / 2 - 0.002, 0]} rotation={[Math.PI / 2, 0, Math.PI]} material={logoFaceMaterial}>
+      <mesh position={[0, -coinThickness / 2 - 0.002, 0]} rotation={[Math.PI / 2, 0, 0]} material={logoFaceMaterial}>
         <circleGeometry args={[coinRadius * 0.85, 64]} />
       </mesh>
     </group>
