@@ -17,7 +17,6 @@ const InvitationSection = () => {
     if (!email) return;
     
     setIsSubmitting(true);
-    // Simulate submission - in production this would connect to a backend
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsSubmitting(false);
     setEmail('');
@@ -25,12 +24,12 @@ const InvitationSection = () => {
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center py-32 overflow-hidden">
+    <section id="register" className="relative min-h-screen flex flex-col items-center justify-center py-32 overflow-hidden">
       {/* Deep twilight background */}
       <div 
         className="absolute inset-0"
         style={{
-          background: 'linear-gradient(180deg, hsl(280 40% 22%) 0%, hsl(235 45% 12%) 60%, hsl(240 50% 8%) 100%)',
+          background: 'linear-gradient(180deg, hsl(280 40% 20%) 0%, hsl(235 45% 12%) 60%, hsl(240 50% 8%) 100%)',
         }}
       />
       
@@ -52,6 +51,9 @@ const InvitationSection = () => {
             titleVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
           }`}
         >
+          <p className="font-sans text-xs uppercase tracking-[0.3em] text-amber/60 mb-6">
+            Stay in the loop
+          </p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream leading-tight mb-8">
             Will you build<br />
             <span className="text-gradient-sunset">with us?</span>

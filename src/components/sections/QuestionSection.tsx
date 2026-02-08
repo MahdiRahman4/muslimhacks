@@ -2,12 +2,13 @@ import { useScrollReveal } from '@/hooks/useScrollReveal';
 import FloatingParticles from '@/components/FloatingParticles';
 
 const QuestionSection = () => {
+  const [hadithRef, hadithVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
   const [titleRef, titleVisible] = useScrollReveal<HTMLHeadingElement>({ threshold: 0.3 });
   const [questionRef, questionVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.2 });
   const [statRef, statVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
 
   return (
-    <section className="relative min-h-screen py-32 overflow-hidden">
+    <section id="about" className="relative min-h-screen py-32 overflow-hidden">
       {/* Background gradient shift */}
       <div 
         className="absolute inset-0"
@@ -24,8 +25,30 @@ const QuestionSection = () => {
         maxSize={4}
       />
       
+      {/* Hadith - positioned right, creates asymmetry */}
+      <div 
+        ref={hadithRef}
+        className={`absolute right-0 top-24 md:top-32 max-w-xl px-6 md:px-0 md:pr-12 lg:pr-24 text-right transition-all duration-1000 ${
+          hadithVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-12'
+        }`}
+      >
+        <p 
+          className="font-arabic text-2xl md:text-3xl lg:text-4xl text-cream/60 leading-relaxed mb-4"
+          dir="rtl"
+          lang="ar"
+        >
+          والصَّدَقَةُ تُطْفِئُ الْخَطِيئَةَ كَمَا يُطْفِئُ الْمَاءُ النَّارَ
+        </p>
+        <p className="font-intimate text-base md:text-lg text-cream/40 mb-2">
+          "And charity extinguishes sins just as water extinguishes fire."
+        </p>
+        <p className="font-sans text-xs text-cream/30">
+          — Jami` at-Tirmidhi 614
+        </p>
+      </div>
+      
       {/* Content - intentionally left-aligned, narrow column */}
-      <div className="relative z-10 max-w-xl ml-8 md:ml-16 lg:ml-32 px-6">
+      <div className="relative z-10 max-w-xl ml-8 md:ml-16 lg:ml-32 px-6 pt-64 md:pt-48">
         
         {/* Opening provocation */}
         <h2 

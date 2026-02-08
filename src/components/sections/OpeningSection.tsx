@@ -1,22 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import FloatingParticles from '@/components/FloatingParticles';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 const OpeningSection = () => {
-  const [showArabic, setShowArabic] = useState(false);
-  const [showEnglish, setShowEnglish] = useState(false);
-  const [showSource, setShowSource] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const timers = [
-      setTimeout(() => setShowArabic(true), 500),
-      setTimeout(() => setShowEnglish(true), 2000),
-      setTimeout(() => setShowSource(true), 3500),
-    ];
-    return () => timers.forEach(clearTimeout);
-  }, []);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    
+    setIsSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsSubmitting(false);
+    setEmail('');
+    toast.success('Jazakallah khair! We\'ll be in touch soon.');
+  };
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="home" className="relative min-h-screen flex items-center overflow-hidden">
       {/* Gradient background */}
       <div 
         className="absolute inset-0"
@@ -41,56 +45,67 @@ const OpeningSection = () => {
         }}
       />
       
-      {/* Content */}
-      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
-        {/* Arabic Hadith */}
-        <div 
-          className={`transition-all duration-1000 ease-out ${
-            showArabic 
-              ? 'opacity-100 translate-y-0' 
-              : 'opacity-0 translate-y-8'
-          }`}
-        >
-          <p 
-            className="font-arabic text-4xl md:text-5xl lg:text-6xl text-cream leading-relaxed mb-8"
-            dir="rtl"
-            lang="ar"
-          >
-            والصَّدَقَةُ تُطْفِئُ الْخَطِيئَةَ كَمَا يُطْفِئُ الْمَاءُ النَّارَ
-          </p>
+      {/* Content - asymmetric layout */}
+      <div className="relative z-10 w-full px-6 md:px-12 lg:px-24 py-32">
+        <div className="max-w-6xl">
+          {/* Main branding - large, stylistic, asymmetric */}
+          <div className="mb-8 animate-fade-in-left">
+            <p className="font-sans text-sm md:text-base uppercase tracking-[0.4em] text-cream/70 mb-4">
+              Québec's Largest Muslim Charity Hackathon
+            </p>
+          </div>
+          
+          <div className="mb-6 animate-fade-in-up">
+            <h1 className="font-display text-7xl md:text-8xl lg:text-[10rem] xl:text-[12rem] text-cream leading-[0.85] tracking-tight">
+              Muslim
+              <span className="block text-gradient-sunset">Hacks</span>
+            </h1>
+          </div>
+          
+          {/* Tagline - offset to the right */}
+          <div className="ml-4 md:ml-16 lg:ml-32 mb-16 animate-fade-in-up animation-delay-200">
+            <p className="font-intimate text-xl md:text-2xl lg:text-3xl text-cream/80 max-w-lg">
+              36 hours to build technology with purpose.
+              <span className="block mt-2 text-amber-light">September 2026.</span>
+            </p>
+          </div>
+          
+          {/* Email signup - left aligned but offset */}
+          <div className="ml-0 md:ml-8 max-w-md animate-fade-in-up animation-delay-400">
+            <p className="font-sans text-sm text-cream/60 mb-4">
+              Be the first to know when registration opens
+            </p>
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+              <Input
+                type="email"
+                placeholder="your@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/40 focus:border-amber/50 focus:ring-amber/30"
+                required
+              />
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="bg-gradient-to-r from-amber to-rose hover:from-amber-glow hover:to-rose text-plum-deep font-medium px-6 transition-all duration-300"
+              >
+                {isSubmitting ? 'Sending...' : 'Notify me'}
+              </Button>
+            </form>
+          </div>
         </div>
         
-        {/* English Translation */}
-        <div 
-          className={`transition-all duration-1000 ease-out delay-300 ${
-            showEnglish 
-              ? 'opacity-100 translate-y-0' 
-              : 'opacity-0 translate-y-8'
-          }`}
-        >
-          <p className="font-display text-xl md:text-2xl lg:text-3xl text-cream/90 leading-relaxed mb-12 max-w-3xl mx-auto">
-            "And charity extinguishes sins just as water extinguishes fire."
-          </p>
+        {/* Decorative elements - floating to the right */}
+        <div className="hidden lg:block absolute right-24 top-1/4">
+          <div className="w-64 h-64 border border-cream/10 rounded-full animate-pulse-slow" />
+          <div className="absolute top-12 left-12 w-40 h-40 border border-amber/20 rounded-full animate-pulse-slow animation-delay-400" />
         </div>
         
-        {/* Source Attribution */}
-        <div 
-          className={`transition-all duration-700 ease-out ${
-            showSource 
-              ? 'opacity-100' 
-              : 'opacity-0'
-          }`}
-        >
-          <p className="font-intimate text-base md:text-lg text-cream/60">
-            — Jami` at-Tirmidhi 614
+        {/* Arabic decorative text - subtle, positioned */}
+        <div className="hidden md:block absolute right-12 lg:right-32 bottom-32 text-right">
+          <p className="font-arabic text-5xl lg:text-6xl text-cream/15" dir="rtl">
+            بسم الله
           </p>
-        </div>
-      </div>
-      
-      {/* Scroll indicator */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 border-2 border-cream/30 rounded-full flex justify-center">
-          <div className="w-1.5 h-3 bg-cream/50 rounded-full mt-2 animate-pulse" />
         </div>
       </div>
     </section>

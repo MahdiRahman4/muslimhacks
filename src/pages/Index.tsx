@@ -6,10 +6,14 @@ import '@fontsource/crimson-text/400-italic.css';
 import '@fontsource/amiri/400.css';
 import '@fontsource/amiri/700.css';
 
+import Navbar from '@/components/Navbar';
 import OpeningSection from '@/components/sections/OpeningSection';
 import QuestionSection from '@/components/sections/QuestionSection';
 import StorySection from '@/components/sections/StorySection';
 import VisionSection from '@/components/sections/VisionSection';
+import SponsorsSection from '@/components/sections/SponsorsSection';
+import FAQSection from '@/components/sections/FAQSection';
+import TeamSection from '@/components/sections/TeamSection';
 import InvitationSection from '@/components/sections/InvitationSection';
 
 const Index = () => {
@@ -20,11 +24,21 @@ const Index = () => {
         MuslimHacks - Québec's Largest Muslim Charity Hackathon | September 2026
       </h1>
       
-      {/* The Five Emotional Sections */}
+      {/* Navigation */}
+      <Navbar />
+      
+      {/* The Emotional Journey Sections */}
       <OpeningSection />
       <QuestionSection />
       <StorySection />
       <VisionSection />
+      
+      {/* Standard Hackathon Sections */}
+      <SponsorsSection />
+      <FAQSection />
+      <TeamSection />
+      
+      {/* Final Call to Action */}
       <InvitationSection />
     </main>
   );
