@@ -14,10 +14,31 @@ const OpeningSection = () => {
     if (!email) return;
     
     setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setEmail('');
-    toast.success('Jazakallah khair! We\'ll be in touch soon.');
+    
+    try {
+      // Call your backend API endpoint
+      const response = await fetch('http://localhost:5000/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to subscribe');
+      }
+
+      setEmail('');
+      toast.success('Jazakallah khair! We\'ll be in touch soon.');
+    } catch (error: any) {
+      console.error('Subscription error:', error);
+      toast.error(error.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
