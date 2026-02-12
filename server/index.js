@@ -5,11 +5,20 @@ const cors = require('cors');
 
 const app = express();
 
-app.use(cors());
+// 1. CORS - This must stay here
+app.use(cors({
+  origin: 'http://localhost:8080',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 app.use(express.json());
 
 
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection:', reason);
+});
 
 class ZohoCampaigns {
   constructor() {
@@ -19,58 +28,32 @@ class ZohoCampaigns {
     this.listKey = process.env.ZOHO_LIST_KEY;
     this.accountsUrl = process.env.ZOHO_ACCOUNTS_URL || 'https://accounts.zohocloud.ca';
     this.campaignsUrl = process.env.ZOHO_CAMPAIGNS_URL || 'https://campaigns.zohocloud.ca';
-    this.accessToken = null;
-    this.tokenExpiresAt = 0;
   }
 
   async getAccessToken() {
-    if (this.accessToken && Date.now() < this.tokenExpiresAt) {
-      return this.accessToken;
-    }
-
-    const response = await axios.post(
-      `${this.accountsUrl}/oauth/v2/token`,
-      null,
-      {
-        params: {
-          refresh_token: this.refreshToken,
-          client_id: this.clientId,
-          client_secret: this.clientSecret,
-          grant_type: 'refresh_token',
-        },
-      }
-    );
-
-    this.accessToken = response.data.access_token;
-    this.tokenExpiresAt = Date.now() + (response.data.expires_in - 300) * 1000;
-
-    return this.accessToken;
+    const response = await axios.post(`${this.accountsUrl}/oauth/v2/token`, null, {
+      params: {
+        refresh_token: this.refreshToken,
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        grant_type: 'refresh_token',
+      },
+    });
+    return response.data.access_token;
   }
 
-  async addSubscriber(email, firstName = '', lastName = '') {
+  async addSubscriber(email) {
     const token = await this.getAccessToken();
-
-    const contactInfo = {
-      'Contact Email': email,
-      'First Name': firstName,
-      'Last Name': lastName,
-    };
-
-    const response = await axios.post(
-      `${this.campaignsUrl}/api/v1.1/json/listsubscribe`,
-      null,
-      {
-        params: {
-          resfmt: 'JSON',
-          listkey: this.listKey,
-          contactinfo: JSON.stringify(contactInfo),
-        },
-        headers: {
-          Authorization: `Zoho-oauthtoken ${token}`,
-        },
-      }
-    );
-
+    const contactInfo = { 'Contact Email': email };
+    
+    const response = await axios.post(`${this.campaignsUrl}/api/v1.1/json/listsubscribe`, null, {
+      params: {
+        resfmt: 'JSON',
+        listkey: this.listKey,
+        contactinfo: JSON.stringify(contactInfo),
+      },
+      headers: { Authorization: `Zoho-oauthtoken ${token}` },
+    });
     return response.data;
   }
 }
@@ -78,31 +61,24 @@ class ZohoCampaigns {
 const zoho = new ZohoCampaigns();
 
 app.post('/api/subscribe', async (req, res) => {
+  console.log('📨 Request for:', req.body.email);
   try {
-    const { email } = req.body;
-
-    if (!email || !email.includes('@')) {
-      return res.status(400).json({ error: 'Valid email is required' });
-    }
-
-    console.log('📧 Subscribing:', email);
-
-    const result = await zoho.addSubscriber(email);
-
-    return res.json({
-      success: true,
-      data: result,
-    });
-
+    const result = await zoho.addSubscriber(req.body.email);
+    console.log('✅ Zoho Response:', result);
+    res.json({ success: true, data: result });
   } catch (error) {
-    console.error('❌ Zoho error:', error.response?.data || error.message);
-
-    return res.status(500).json({
-      error: error.response?.data?.message || error.message,
-    });
+    console.error('❌ Error:', error.response?.data || error.message);
+    res.status(500).json({ error: error.message });
   }
 });
 
-app.listen(5000, () => {
-  console.log('🚀 Server running at http://localhost:5000');
+const PORT = 5001; 
+app.listen(PORT, () => {
+  console.log(` Server actually running on http://localhost:${PORT}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is BUSY.`);
+  } else {
+    console.error('❌ Server error:', err);
+  }
 });
