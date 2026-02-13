@@ -1,51 +1,25 @@
 
 
-## Fix: Email Subscription on Vercel Deployment
+## Fix: Convert `api/subscribe.js` to ES Module Syntax
 
 ### The Problem
-Both `OpeningSection.tsx` and `InvitationSection.tsx` have the API URL hardcoded to `http://localhost:5001/api/subscribe`. This works locally but fails on Vercel because there's no Express server running there.
+Vercel's runtime sees `"type": "module"` in `package.json` and expects ES module syntax (`import`/`export`), but `api/subscribe.js` uses CommonJS (`require`/`module.exports`).
 
-### The Solution (2 parts)
+### The Fix
+Update `api/subscribe.js` to use ES module syntax:
 
----
+- Change `const axios = require('axios')` to `import axios from 'axios'`
+- Change `module.exports = async function handler(...)` to `export default async function handler(...)`
 
-### Part 1: Convert `api/subscribe.js` to a Vercel Serverless Function
+That's it -- no other changes needed. After redeploying on Vercel, the serverless function should work.
 
-The existing `api/subscribe.js` is written as a full Express server. Vercel serverless functions use a simpler format: they export a single handler function that receives `(req, res)`.
+### Technical Details
 
-**Changes to `api/subscribe.js`:**
-- Remove Express app setup, CORS middleware, and `app.listen()`
-- Export a default handler function `(req, res)`
-- Add manual CORS headers
-- Keep the Zoho logic as-is (it reads env vars which you've already set in Vercel)
+| Line | Before | After |
+|------|--------|-------|
+| 1 | `const axios = require('axios');` | `import axios from 'axios';` |
+| Last | `module.exports = async function handler(req, res) {` | `export default async function handler(req, res) {` |
 
----
-
-### Part 2: Update Frontend API URLs
-
-**Files:** `src/components/sections/OpeningSection.tsx` and `src/components/sections/InvitationSection.tsx`
-
-Change:
-```
-fetch('http://localhost:5001/api/subscribe', ...)
-```
-To:
-```
-fetch('/api/subscribe', ...)
-```
-
-Using a relative URL means it automatically works both locally (with Vercel CLI) and in production.
-
----
-
-### Summary of File Changes
-
-| File | Change |
-|------|--------|
-| `api/subscribe.js` | Rewrite as Vercel serverless function (export default handler) |
-| `src/components/sections/OpeningSection.tsx` | Change API URL to `/api/subscribe` |
-| `src/components/sections/InvitationSection.tsx` | Change API URL to `/api/subscribe` |
-
-### After Deploying
-The Vercel env variables you already set (ZOHO_CLIENT_ID, etc.) will be automatically available to the serverless function via `process.env`. No additional configuration needed.
+### File Changed
+- `api/subscribe.js`
 
