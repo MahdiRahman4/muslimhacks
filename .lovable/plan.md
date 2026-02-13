@@ -1,25 +1,37 @@
 
 
-## Fix: Convert `api/subscribe.js` to ES Module Syntax
+## Fix: Add Vercel Configuration for Serverless Function Routing
 
 ### The Problem
-Vercel's runtime sees `"type": "module"` in `package.json` and expects ES module syntax (`import`/`export`), but `api/subscribe.js` uses CommonJS (`require`/`module.exports`).
+Vercel is returning a 404 for `/api/subscribe` because it doesn't know how to route API requests to your serverless function. Without a `vercel.json`, Vercel serves only the Vite build output and doesn't recognize `api/subscribe.js` as a serverless function endpoint.
 
-### The Fix
-Update `api/subscribe.js` to use ES module syntax:
+### The Solution
+Create a `vercel.json` at the project root that:
+1. Tells Vercel to route `/api/*` requests to the serverless functions in the `api/` directory
+2. Tells Vercel to serve all other routes from the Vite build output (for your SPA)
 
-- Change `const axios = require('axios')` to `import axios from 'axios'`
-- Change `module.exports = async function handler(...)` to `export default async function handler(...)`
+### File to Create
 
-That's it -- no other changes needed. After redeploying on Vercel, the serverless function should work.
+**`vercel.json`** (new file at project root):
 
-### Technical Details
+```json
+{
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
 
-| Line | Before | After |
-|------|--------|-------|
-| 1 | `const axios = require('axios');` | `import axios from 'axios';` |
-| Last | `module.exports = async function handler(req, res) {` | `export default async function handler(req, res) {` |
+This tells Vercel:
+- Requests to `/api/subscribe` go to the serverless function `api/subscribe.js`
+- All other requests serve `index.html` (so your React Router works correctly)
 
-### File Changed
-- `api/subscribe.js`
+### No Other Changes Needed
+- `api/subscribe.js` already has correct ESM syntax
+- Frontend already uses relative `/api/subscribe` URL
+- Zoho env vars are already set in Vercel
+
+### After This
+Commit, push, and redeploy on Vercel. The 404 should be resolved and email subscription should work.
 
