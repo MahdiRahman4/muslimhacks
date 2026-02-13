@@ -38,7 +38,7 @@ const Footer = () => {
               Québec's largest Muslim charity hackathon. 36 hours to build technology with purpose.
             </p>
             <p className="font-sans text-sm text-cream/40 mt-4">
-              September 2026 · Concordia University, Montreal
+              September 2026 · Concordia University, Downtown Campus, Montreal, Quebec
             </p>
           </div>
 

@@ -96,7 +96,7 @@ const OpeningSection = () => {
                 36 hours to build technology with purpose.
               </p>
               <p className="font-intimate text-xl md:text-2xl text-amber mt-3">
-                September 2026, Concordia University, 1455 Blvd. De Maisonneuve Ouest, Montreal, Quebec H3G 1M8
+                September 2026, Concordia University, Downtown Campus, Montreal, Quebec
               </p>
             </div>
 
