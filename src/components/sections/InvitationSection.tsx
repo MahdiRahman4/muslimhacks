@@ -1,51 +1,14 @@
-import { useState } from "react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useSubscribe } from "@/hooks/useSubscribe";
 
 const InvitationSection = () => {
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { email, setEmail, isSubmitting, handleSubmit } = useSubscribe();
 
   const [titleRef, titleVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
   const [formRef, formVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
   const [closingRef, closingVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-
-    setIsSubmitting(true);
-    
-    try {
-      // Call your backend API endpoint
-      const response = await fetch('http://localhost:5001/api/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Show error in toast (same place as success message)
-        toast.error(data.error || 'Failed to subscribe');
-        setIsSubmitting(false);
-        return;
-      }
-
-      setEmail('');
-      toast.success('Jazakallah khair! We\'ll be in touch soon. Check your inbox for an email if you dont see it, check your spam folder.');
-      setIsSubmitting(false);
-    } catch (error: any) {
-      console.error('Subscription error:', error);
-      toast.error('Something went wrong. Please try again.');
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <section
