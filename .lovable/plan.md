@@ -1,39 +1,51 @@
 
-## Fix Coin Rotation to Better Display Logo
 
-### Current Problem
-The coin is:
-1. **Initially tilted** at `rotation={[0.15, 0, 0.1]}` on the group - this angles it away from the camera
-2. **Rotating on Y-axis** with `meshRef.current.rotation.y += delta * 0.6` - which causes the logo to face away from the viewer periodically
+## Fix: Email Subscription on Vercel Deployment
 
-This combination makes the embossed logo difficult to see during the rotation cycle.
+### The Problem
+Both `OpeningSection.tsx` and `InvitationSection.tsx` have the API URL hardcoded to `http://localhost:5001/api/subscribe`. This works locally but fails on Vercel because there's no Express server running there.
 
-### Solution: Reorient the Coin's Rotation Axis
+### The Solution (2 parts)
 
-**Approach:** Change the coin to rotate on the **X-axis** instead of the Y-axis. This will make the coin "flip" end-over-end, which:
-- Keeps the logo facing more directly toward the camera throughout the spin
-- Creates a more dynamic, tumbling effect
-- Better showcases the embossed logo on both sides
+---
 
-**Implementation Details:**
+### Part 1: Convert `api/subscribe.js` to a Vercel Serverless Function
 
-1. **Modify the rotation animation** (line 51):
-   - Change from: `meshRef.current.rotation.y += delta * 0.6;`
-   - Change to: `meshRef.current.rotation.x += delta * 0.6;`
-   
-2. **Adjust initial tilt** (line 64):
-   - Current: `rotation={[0.15, 0, 0.1]}`
-   - New: `rotation={[0, 0.3, 0]}`
-   - This tilts the coin slightly around the Z-axis so you can see the ridged edges, without interfering with the X-axis rotation
+The existing `api/subscribe.js` is written as a full Express server. Vercel serverless functions use a simpler format: they export a single handler function that receives `(req, res)`.
 
-**Result:** The coin will tumble forward and backward, with the logo facing the camera twice per rotation, making it much more visible.
+**Changes to `api/subscribe.js`:**
+- Remove Express app setup, CORS middleware, and `app.listen()`
+- Export a default handler function `(req, res)`
+- Add manual CORS headers
+- Keep the Zoho logic as-is (it reads env vars which you've already set in Vercel)
 
-### Alternative (if preferred):
-If you want the coin to spin like a frisbee (Z-axis rotation) instead:
-- Change to: `meshRef.current.rotation.z += delta * 0.6;`
-- Keep initial tilt as: `rotation={[0.2, 0, 0]}`
-- This would show the coin spinning "like a record player"
+---
 
-### Files to Update
-- `src/components/GoldenCoin.tsx` - Change rotation axis and initial tilt
+### Part 2: Update Frontend API URLs
+
+**Files:** `src/components/sections/OpeningSection.tsx` and `src/components/sections/InvitationSection.tsx`
+
+Change:
+```
+fetch('http://localhost:5001/api/subscribe', ...)
+```
+To:
+```
+fetch('/api/subscribe', ...)
+```
+
+Using a relative URL means it automatically works both locally (with Vercel CLI) and in production.
+
+---
+
+### Summary of File Changes
+
+| File | Change |
+|------|--------|
+| `api/subscribe.js` | Rewrite as Vercel serverless function (export default handler) |
+| `src/components/sections/OpeningSection.tsx` | Change API URL to `/api/subscribe` |
+| `src/components/sections/InvitationSection.tsx` | Change API URL to `/api/subscribe` |
+
+### After Deploying
+The Vercel env variables you already set (ZOHO_CLIENT_ID, etc.) will be automatically available to the serverless function via `process.env`. No additional configuration needed.
 
