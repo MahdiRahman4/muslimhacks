@@ -38,7 +38,7 @@ const InvitationSection = () => {
       }
 
       setEmail('');
-      toast.success('Jazakallah khair! We\'ll be in touch soon If you dont see it, check your spam folder.');
+      toast.success('Jazakallah khair! We\'ll be in touch soon. Check your inbox for an email if you dont see it, check your spam folder.');
       setIsSubmitting(false);
     } catch (error: any) {
       console.error('Subscription error:', error);
