@@ -20,7 +20,7 @@ const InvitationSection = () => {
     
     try {
       // Call your backend API endpoint
-      const response = await fetch('http://localhost:5001/api/subscribe', {
+      const response = await fetch('/api/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
