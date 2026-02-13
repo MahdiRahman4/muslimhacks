@@ -17,7 +17,7 @@ const OpeningSection = () => {
     
     try {
       // Call your backend API endpoint
-      const response = await fetch('/api/subscribe', {
+      const response = await fetch('http://localhost:5001/api/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ const OpeningSection = () => {
                 36 hours to build technology with purpose.
               </p>
               <p className="font-intimate text-xl md:text-2xl text-amber mt-3">
-                September 2026, Concordia University, Downtown Campus, Montreal, Quebec
+                September 2026, Concordia University, 1455 Blvd. De Maisonneuve Ouest, Montreal, Quebec H3G 1M8
               </p>
             </div>
 
