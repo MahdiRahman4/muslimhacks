@@ -64,10 +64,41 @@ app.post('/api/subscribe', async (req, res) => {
   console.log('📨 Request for:', req.body.email);
   try {
     const result = await zoho.addSubscriber(req.body.email);
-    console.log('✅ Zoho Response:', result);
+    console.log('✅ Zoho Response:', result);    
+    
+    // Check if email is already in the list
+    // Zoho returns code '0' with message about "already exists" for duplicates
+    if (
+      result.code === 2041 || 
+      result.code === '0' && result.message?.toLowerCase().includes('already exists') ||
+      result.message?.toLowerCase().includes('already') || 
+      result.message?.toLowerCase().includes('duplicate')
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: 'You have already been pre-registered.',
+      });
+    }
+    
     res.json({ success: true, data: result });
   } catch (error) {
     console.error('❌ Error:', error.response?.data || error.message);
+    
+    const errorData = error.response?.data;
+    
+    // Check for duplicate/already subscribed errors
+    if (
+      errorData?.code === 2041 || 
+      errorData?.code === '0' && errorData?.message?.toLowerCase().includes('already exists') ||
+      errorData?.message?.toLowerCase().includes('already') || 
+      errorData?.message?.toLowerCase().includes('duplicate')
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: 'You have already been pre-registered.',
+      });
+    }
+    
     res.status(500).json({ error: error.message });
   }
 });

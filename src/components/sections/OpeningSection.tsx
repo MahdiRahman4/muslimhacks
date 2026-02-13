@@ -28,15 +28,18 @@ const OpeningSection = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to subscribe');
+        // Show error in toast (same place as success message)
+        toast.error(data.error || 'Failed to subscribe');
+        setIsSubmitting(false);
+        return;
       }
 
       setEmail('');
-      toast.success('Jazakallah khair! We\'ll be in touch soon.');
+      toast.success('Jazakallah khair! We\'ll be in touch soon. If you dont see it, check your spam folder.');
+      setIsSubmitting(false);
     } catch (error: any) {
       console.error('Subscription error:', error);
-      toast.error(error.message || 'Something went wrong. Please try again.');
-    } finally {
+      toast.error('Something went wrong. Please try again.');
       setIsSubmitting(false);
     }
   };

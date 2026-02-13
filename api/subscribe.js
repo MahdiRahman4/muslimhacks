@@ -89,6 +89,14 @@ app.post('/api/subscribe', async (req, res) => {
 
     const result = await zoho.addSubscriber(email);
 
+    // Check if email is already in the list
+    if (result.code === 2041 || result.message?.includes('already') || result.message?.includes('duplicate')) {
+      return res.status(400).json({
+        success: false,
+        error: 'This email is already subscribed.',
+      });
+    }
+
     return res.json({
       success: true,
       data: result,
@@ -96,6 +104,16 @@ app.post('/api/subscribe', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Zoho error:', error.response?.data || error.message);
+
+    const errorData = error.response?.data;
+    
+    // Check for duplicate/already subscribed errors
+    if (errorData?.code === 2041 || errorData?.message?.includes('already') || errorData?.message?.includes('duplicate')) {
+      return res.status(400).json({
+        success: false,
+        error: 'This email is already subscribed.',
+      });
+    }
 
     return res.status(500).json({
       error: error.response?.data?.message || error.message,

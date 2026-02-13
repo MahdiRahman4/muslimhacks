@@ -17,10 +17,34 @@ const InvitationSection = () => {
     if (!email) return;
 
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setEmail("");
-    toast.success("Jazakallah khair! We'll be in touch soon.");
+    
+    try {
+      // Call your backend API endpoint
+      const response = await fetch('http://localhost:5001/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Show error in toast (same place as success message)
+        toast.error(data.error || 'Failed to subscribe');
+        setIsSubmitting(false);
+        return;
+      }
+
+      setEmail('');
+      toast.success('Jazakallah khair! We\'ll be in touch soon If you dont see it, check your spam folder.');
+      setIsSubmitting(false);
+    } catch (error: any) {
+      console.error('Subscription error:', error);
+      toast.error('Something went wrong. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
