@@ -1,126 +1,147 @@
-require('dotenv').config();
-const express = require('express');
-const axios = require('axios');
-const cors = require('cors');
+import axios from "axios";
 
-const app = express();
+const accountsUrl =
+  process.env.ZOHO_ACCOUNTS_URL || "https://accounts.zohocloud.ca";
+const campaignsUrl =
+  process.env.ZOHO_CAMPAIGNS_URL || "https://campaigns.zohocloud.ca";
 
-app.use(cors());
-app.use(express.json());
+const REQUIRED_ENV_KEYS = [
+  "ZOHO_CLIENT_ID",
+  "ZOHO_CLIENT_SECRET",
+  "ZOHO_REFRESH_TOKEN",
+  "ZOHO_LIST_KEY",
+];
 
-class ZohoCampaigns {
-  constructor() {
-    this.clientId = process.env.ZOHO_CLIENT_ID;
-    this.clientSecret = process.env.ZOHO_CLIENT_SECRET;
-    this.refreshToken = process.env.ZOHO_REFRESH_TOKEN;
-    this.listKey = process.env.ZOHO_LIST_KEY;
-    this.accountsUrl =
-      process.env.ZOHO_ACCOUNTS_URL || 'https://accounts.zohocloud.ca';
-    this.campaignsUrl =
-      process.env.ZOHO_CAMPAIGNS_URL || 'https://campaigns.zohocloud.ca';
-    this.accessToken = null;
-    this.tokenExpiresAt = 0;
+let accessToken = null;
+let tokenExpiresAt = 0;
+
+const setCorsHeaders = (res) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+};
+
+const assertEnv = () => {
+  const missing = REQUIRED_ENV_KEYS.filter((key) => !process.env[key]);
+  if (missing.length > 0) {
+    throw new Error(`Missing required env vars: ${missing.join(", ")}`);
+  }
+};
+
+const normalizeEmail = (value) => {
+  if (typeof value !== "string") {
+    return null;
   }
 
-  async getAccessToken() {
-    if (this.accessToken && Date.now() < this.tokenExpiresAt) {
-      return this.accessToken;
+  const email = value.trim().toLowerCase();
+  return email.includes("@") ? email : null;
+};
+
+const isDuplicateResponse = (payload) => {
+  const code = String(payload?.code || "");
+  const message = String(payload?.message || "").toLowerCase();
+
+  return (
+    code === "2041" ||
+    (code === "0" && message.includes("already exists")) ||
+    message.includes("already") ||
+    message.includes("duplicate")
+  );
+};
+
+const getAccessToken = async () => {
+  if (accessToken && Date.now() < tokenExpiresAt) {
+    return accessToken;
+  }
+
+  const response = await axios.post(`${accountsUrl}/oauth/v2/token`, null, {
+    params: {
+      refresh_token: process.env.ZOHO_REFRESH_TOKEN,
+      client_id: process.env.ZOHO_CLIENT_ID,
+      client_secret: process.env.ZOHO_CLIENT_SECRET,
+      grant_type: "refresh_token",
+    },
+  });
+
+  accessToken = response.data.access_token;
+  tokenExpiresAt = Date.now() + ((response.data.expires_in || 3600) - 300) * 1000;
+
+  return accessToken;
+};
+
+const addSubscriber = async (email) => {
+  const token = await getAccessToken();
+
+  const response = await axios.post(
+    `${campaignsUrl}/api/v1.1/json/listsubscribe`,
+    null,
+    {
+      params: {
+        resfmt: "JSON",
+        listkey: process.env.ZOHO_LIST_KEY,
+        contactinfo: JSON.stringify({ "Contact Email": email }),
+      },
+      headers: {
+        Authorization: `Zoho-oauthtoken ${token}`,
+      },
     }
+  );
 
-    const response = await axios.post(
-      `${this.accountsUrl}/oauth/v2/token`,
-      null,
-      {
-        params: {
-          refresh_token: this.refreshToken,
-          client_id: this.clientId,
-          client_secret: this.clientSecret,
-          grant_type: 'refresh_token',
-        },
-      }
-    );
+  return response.data;
+};
 
-    this.accessToken = response.data.access_token;
-    this.tokenExpiresAt =
-      Date.now() + (response.data.expires_in - 300) * 1000;
+export default async function handler(req, res) {
+  setCorsHeaders(res);
 
-    return this.accessToken;
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
   }
 
-  async addSubscriber(email, firstName = '', lastName = '') {
-    const token = await this.getAccessToken();
-
-    const contactInfo = {
-      'Contact Email': email,
-      'First Name': firstName,
-      'Last Name': lastName,
-    };
-
-    const response = await axios.post(
-      `${this.campaignsUrl}/api/v1.1/json/listsubscribe`,
-      null,
-      {
-        params: {
-          resfmt: 'JSON',
-          listkey: this.listKey,
-          contactinfo: JSON.stringify(contactInfo),
-        },
-        headers: {
-          Authorization: `Zoho-oauthtoken ${token}`,
-        },
-      }
-    );
-
-    return response.data;
+  if (req.method !== "POST") {
+    return res.status(405).json({
+      success: false,
+      error: "Method not allowed.",
+    });
   }
-}
 
-const zoho = new ZohoCampaigns();
-
-app.post('/api/subscribe', async (req, res) => {
   try {
-    const { email } = req.body;
+    assertEnv();
 
-    if (!email || !email.includes('@')) {
-      return res.status(400).json({ error: 'Valid email is required' });
-    }
-
-    console.log('📧 Subscribing:', email);
-
-    const result = await zoho.addSubscriber(email);
-
-    // Check if email is already in the list
-    if (result.code === 2041 || result.message?.includes('already') || result.message?.includes('duplicate')) {
+    const email = normalizeEmail(req.body?.email);
+    if (!email) {
       return res.status(400).json({
         success: false,
-        error: 'This email is already subscribed.',
+        error: "Valid email is required.",
       });
     }
 
-    return res.json({
+    const result = await addSubscriber(email);
+
+    if (isDuplicateResponse(result)) {
+      return res.status(400).json({
+        success: false,
+        error: "You have already been pre-registered.",
+      });
+    }
+
+    return res.status(200).json({
       success: true,
       data: result,
     });
-
   } catch (error) {
-    console.error('❌ Zoho error:', error.response?.data || error.message);
-
     const errorData = error.response?.data;
-    
-    // Check for duplicate/already subscribed errors
-    if (errorData?.code === 2041 || errorData?.message?.includes('already') || errorData?.message?.includes('duplicate')) {
+    console.error("Zoho subscribe error:", errorData || error.message);
+
+    if (isDuplicateResponse(errorData)) {
       return res.status(400).json({
         success: false,
-        error: 'This email is already subscribed.',
+        error: "You have already been pre-registered.",
       });
     }
 
     return res.status(500).json({
-      error: error.response?.data?.message || error.message,
+      success: false,
+      error: errorData?.message || error.message || "Subscription failed.",
     });
   }
-});
-
-app.listen(5000, () => {
-  console.log('🚀 Server running at http://localhost:5000');
-});
+}

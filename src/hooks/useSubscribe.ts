@@ -21,10 +21,15 @@ export function useSubscribe() {
         body: JSON.stringify({ email }),
       });
 
-      const data = await response.json();
+      const contentType = response.headers.get('content-type') || '';
+      const data = contentType.includes('application/json')
+        ? await response.json()
+        : null;
 
       if (!response.ok) {
-        toast.error(data.error || 'Failed to subscribe');
+        const message =
+          (data as { error?: string } | null)?.error || 'Failed to subscribe';
+        toast.error(message);
         setIsSubmitting(false);
         return;
       }
