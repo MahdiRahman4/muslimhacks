@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import { SUBSCRIBE_ENDPOINT } from "@/lib/api";
 
 export function useSubscribe() {
@@ -7,8 +8,9 @@ export function useSubscribe() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogStage, setDialogStage] = useState<"confirm" | "captcha" | "result">("confirm");
+  const [dialogStage, setDialogStage] = useState<"confirm" | "verifying" | "result">("confirm");
   const [resultVariant, setResultVariant] = useState<"success" | "duplicate" | null>(null);
+  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const resetDialog = useCallback(() => {
     setDialogStage("confirm");
@@ -32,24 +34,12 @@ export function useSubscribe() {
   };
 
   const handleGoBack = useCallback(() => {
-    // If the user is in the captcha step, "Go back" should bring them
-    // back to email confirmation (so they can fix typos), not close the modal.
-    if (dialogStage === "captcha") {
-      setDialogStage("confirm");
-      return;
-    }
-
     setDialogOpen(false);
-  }, [dialogStage]);
+  }, []);
 
-  const handleConfirm = useCallback(() => {
+  const subscribe = useCallback(
+    async (recaptchaToken: string, recaptchaAction: string) => {
     if (!email) return;
-    setDialogStage("captcha");
-  }, [email]);
-
-  const subscribe = useCallback(async (recaptchaToken: string) => {
-    if (!email) return;
-    setIsSubmitting(true);
 
     try {
       const response = await fetch(SUBSCRIBE_ENDPOINT, {
@@ -57,7 +47,7 @@ export function useSubscribe() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, recaptchaToken }),
+        body: JSON.stringify({ email, recaptchaToken, recaptchaAction }),
       });
 
       const contentType = response.headers.get("content-type") || "";
@@ -92,28 +82,41 @@ export function useSubscribe() {
       console.error("Subscription error:", error);
       setDialogOpen(false);
       toast.error("Something went wrong. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
   }, [email]);
 
-  const handleCaptchaToken = useCallback(
-    async (token: string | null) => {
-      if (!token) return;
-      await subscribe(token);
-    },
-    [subscribe],
-  );
+  const handleConfirm = useCallback(async () => {
+    if (!email) return;
 
-  const handleCaptchaError = useCallback(() => {
-    setDialogOpen(false);
-    toast.error("Captcha verification failed. Please try again.");
-  }, []);
+    setDialogStage("verifying");
+    setIsSubmitting(true);
 
-  const handleCaptchaExpired = useCallback(() => {
-    setDialogOpen(false);
-    toast.error("Captcha expired. Please try again.");
-  }, []);
+    try {
+      if (!executeRecaptcha) {
+        setDialogOpen(false);
+        toast.error("Captcha verification is not ready. Please try again.");
+        return;
+      }
+
+      const action = "pre_register";
+      let token: string | undefined;
+      try {
+        token = await executeRecaptcha(action);
+      } catch (error) {
+        console.error("reCAPTCHA execute error:", error);
+      }
+
+      if (!token) {
+        setDialogOpen(false);
+        toast.error("Captcha verification failed. Please try again.");
+        return;
+      }
+
+      await subscribe(token, action);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [email, executeRecaptcha, subscribe]);
 
   return {
     email,
@@ -126,8 +129,5 @@ export function useSubscribe() {
     resultVariant,
     handleConfirm,
     handleGoBack,
-    handleCaptchaToken,
-    handleCaptchaError,
-    handleCaptchaExpired,
   };
 }

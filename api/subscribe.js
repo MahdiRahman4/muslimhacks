@@ -142,6 +142,9 @@ export default async function handler(req, res) {
     }
 
     const recaptchaToken = typeof req.body?.recaptchaToken === "string" ? req.body.recaptchaToken : "";
+    const recaptchaAction =
+      typeof req.body?.recaptchaAction === "string" ? req.body.recaptchaAction : "";
+
     if (!recaptchaToken) {
       return res.status(400).json({
         success: false,
@@ -155,6 +158,22 @@ export default async function handler(req, res) {
     });
 
     if (!captchaResult?.success) {
+      return res.status(400).json({
+        success: false,
+        error: "Captcha verification failed. Please try again.",
+      });
+    }
+
+    const expectedAction = "pre_register";
+    if (!recaptchaAction || captchaResult.action !== expectedAction) {
+      return res.status(400).json({
+        success: false,
+        error: "Captcha verification failed. Please try again.",
+      });
+    }
+
+    const score = typeof captchaResult.score === "number" ? captchaResult.score : 0;
+    if (score < 0.5) {
       return res.status(400).json({
         success: false,
         error: "Captcha verification failed. Please try again.",

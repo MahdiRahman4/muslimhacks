@@ -17,9 +17,6 @@ const OpeningSection = () => {
     resultVariant,
     handleConfirm,
     handleGoBack,
-    handleCaptchaToken,
-    handleCaptchaError,
-    handleCaptchaExpired,
   } = useSubscribe();
 
   return (
@@ -110,9 +107,6 @@ const OpeningSection = () => {
                 resultVariant={resultVariant}
                 onConfirm={handleConfirm}
                 onGoBack={handleGoBack}
-                onCaptchaToken={handleCaptchaToken}
-                onCaptchaError={handleCaptchaError}
-                onCaptchaExpired={handleCaptchaExpired}
               />
             </div>
           </div>

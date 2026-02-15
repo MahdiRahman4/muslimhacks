@@ -6,8 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import ReCAPTCHA from "react-google-recaptcha";
-
 export type SubscribeDialogVariant = "success" | "duplicate";
 
 type Props = {
@@ -15,13 +13,10 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   email: string;
   isSubmitting: boolean;
-  stage: "confirm" | "captcha" | "result";
+  stage: "confirm" | "verifying" | "result";
   resultVariant: SubscribeDialogVariant | null;
   onGoBack: () => void;
   onConfirm: () => void;
-  onCaptchaToken: (token: string | null) => void;
-  onCaptchaError: () => void;
-  onCaptchaExpired: () => void;
 };
 
 export default function SubscribeDialog({
@@ -33,12 +28,7 @@ export default function SubscribeDialog({
   resultVariant,
   onGoBack,
   onConfirm,
-  onCaptchaToken,
-  onCaptchaError,
-  onCaptchaExpired,
 }: Props) {
-  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY as string | undefined;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -80,7 +70,7 @@ export default function SubscribeDialog({
               </Button>
             </DialogFooter>
           </>
-        ) : stage === "captcha" ? (
+        ) : stage === "verifying" ? (
           <>
             <DialogHeader>
               <DialogTitle className="font-sans text-xl md:text-2xl font-semibold text-black">
@@ -88,33 +78,13 @@ export default function SubscribeDialog({
               </DialogTitle>
             </DialogHeader>
 
-            <div className="pt-2 space-y-4">
+            <div className="pt-2 space-y-3">
               <p className="font-sans text-sm md:text-base text-black/70">
-                Please complete the verification below to confirm you’re not a bot.
+                Verifying your request…
               </p>
-
-              {!siteKey ? (
-                <p className="font-sans text-sm md:text-base text-black/70">
-                  reCAPTCHA isn’t configured yet. Add{" "}
-                  <span className="font-mono">VITE_RECAPTCHA_SITE_KEY</span> to your
-                  frontend env.
-                </p>
-              ) : (
-                <div className="flex justify-center">
-                  <ReCAPTCHA
-                    sitekey={siteKey}
-                    onChange={onCaptchaToken}
-                    onErrored={onCaptchaError}
-                    onExpired={onCaptchaExpired}
-                  />
-                </div>
-              )}
-
-              {isSubmitting ? (
-                <p className="font-sans text-sm text-black/60 text-center">
-                  Verifying…
-                </p>
-              ) : null}
+              <p className="font-sans text-sm text-black/60">
+                This should only take a moment.
+              </p>
             </div>
 
             <DialogFooter className="gap-2 sm:gap-3 pt-2">
