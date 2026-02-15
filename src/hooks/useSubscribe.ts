@@ -62,17 +62,19 @@ export function useSubscribe() {
         const message =
           (data as { error?: string } | null)?.error || "Failed to subscribe";
 
-        // Backend currently returns 400 for duplicates. We treat that as a non-error
-        // for the new UX, and show an in-modal "already registered" message.
-        if (message.toLowerCase().includes("already")) {
-          setResultVariant("duplicate");
-          setDialogStage("result");
-          setEmail("");
-          return;
-        }
-
         setDialogOpen(false);
         toast.error(message);
+        return;
+      }
+
+      const alreadyRegistered = Boolean(
+        (data as { alreadyRegistered?: boolean } | null)?.alreadyRegistered,
+      );
+
+      if (alreadyRegistered) {
+        setResultVariant("duplicate");
+        setDialogStage("result");
+        setEmail("");
         return;
       }
 
