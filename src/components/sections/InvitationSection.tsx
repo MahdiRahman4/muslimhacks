@@ -1,27 +1,14 @@
-import { useState } from "react";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useSubscribe } from "@/hooks/useSubscribe";
 
 const InvitationSection = () => {
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { email, setEmail, isSubmitting, handleSubmit } = useSubscribe();
 
   const [titleRef, titleVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
   const [formRef, formVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
   const [closingRef, closingVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-
-    setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setEmail("");
-    toast.success("Jazakallah khair! We'll be in touch soon.");
-  };
 
   return (
     <section

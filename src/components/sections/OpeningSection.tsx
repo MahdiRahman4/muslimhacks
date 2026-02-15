@@ -1,24 +1,11 @@
-import { useState } from 'react';
 import FloatingParticles from '@/components/FloatingParticles';
 import GoldenCoin from '@/components/GoldenCoin';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
+import { useSubscribe } from '@/hooks/useSubscribe';
 
 const OpeningSection = () => {
-  const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
-    
-    setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSubmitting(false);
-    setEmail('');
-    toast.success('Jazakallah khair! We\'ll be in touch soon.');
-  };
+  const { email, setEmail, isSubmitting, handleSubmit } = useSubscribe();
 
   return (
     <section id="home" className="relative min-h-screen flex items-center overflow-hidden">
@@ -72,7 +59,7 @@ const OpeningSection = () => {
                 36 hours to build technology with purpose.
               </p>
               <p className="font-intimate text-xl md:text-2xl text-amber mt-3">
-                September 2026, Concordia University, 1455 Blvd. De Maisonneuve Ouest, Montreal, Quebec H3G 1M8
+                September 2026, Concordia University, Downtown Campus, Montreal, Quebec
               </p>
             </div>
 
