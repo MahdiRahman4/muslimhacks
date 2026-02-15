@@ -2,9 +2,21 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSubscribe } from "@/hooks/useSubscribe";
+import SubscribeDialog from "@/components/SubscribeDialog";
 
 const InvitationSection = () => {
-  const { email, setEmail, isSubmitting, handleSubmit } = useSubscribe();
+  const {
+    email,
+    setEmail,
+    isSubmitting,
+    handleSubmit,
+    dialogOpen,
+    onDialogOpenChange,
+    dialogStage,
+    resultVariant,
+    handleConfirm,
+    handleGoBack,
+  } = useSubscribe();
 
   const [titleRef, titleVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
   const [formRef, formVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
@@ -76,6 +88,17 @@ const InvitationSection = () => {
             </Button>
           </form>
           <p className="text-base md:text-lg text-cream/50 mt-4">We respect your inbox. Updates only, no spam.</p>
+
+          <SubscribeDialog
+            open={dialogOpen}
+            onOpenChange={onDialogOpenChange}
+            email={email}
+            isSubmitting={isSubmitting}
+            stage={dialogStage}
+            resultVariant={resultVariant}
+            onConfirm={handleConfirm}
+            onGoBack={handleGoBack}
+          />
         </div>
 
         {/* Closing blessing */}

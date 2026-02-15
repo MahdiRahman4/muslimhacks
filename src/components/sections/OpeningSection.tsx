@@ -3,9 +3,21 @@ import GoldenCoin from '@/components/GoldenCoin';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useSubscribe } from '@/hooks/useSubscribe';
+import SubscribeDialog from '@/components/SubscribeDialog';
 
 const OpeningSection = () => {
-  const { email, setEmail, isSubmitting, handleSubmit } = useSubscribe();
+  const {
+    email,
+    setEmail,
+    isSubmitting,
+    handleSubmit,
+    dialogOpen,
+    onDialogOpenChange,
+    dialogStage,
+    resultVariant,
+    handleConfirm,
+    handleGoBack,
+  } = useSubscribe();
 
   return (
     <section id="home" className="relative min-h-screen flex items-center overflow-hidden">
@@ -85,6 +97,17 @@ const OpeningSection = () => {
                   {isSubmitting ? 'Sending...' : 'Notify me'}
                 </Button>
               </form>
+
+              <SubscribeDialog
+                open={dialogOpen}
+                onOpenChange={onDialogOpenChange}
+                email={email}
+                isSubmitting={isSubmitting}
+                stage={dialogStage}
+                resultVariant={resultVariant}
+                onConfirm={handleConfirm}
+                onGoBack={handleGoBack}
+              />
             </div>
           </div>
           
