@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export type SubscribeDialogVariant = "success" | "duplicate";
 
@@ -15,10 +16,13 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   email: string;
   isSubmitting: boolean;
-  stage: "confirm" | "result";
+  stage: "confirm" | "captcha" | "result";
   resultVariant: SubscribeDialogVariant | null;
   onGoBack: () => void;
   onConfirm: () => void;
+  onCaptchaToken: (token: string | null) => void;
+  onCaptchaError: () => void;
+  onCaptchaExpired: () => void;
 };
 
 export default function SubscribeDialog({
@@ -30,8 +34,12 @@ export default function SubscribeDialog({
   resultVariant,
   onGoBack,
   onConfirm,
+  onCaptchaToken,
+  onCaptchaError,
+  onCaptchaExpired,
 }: Props) {
   const isMobile = useIsMobile();
+  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY as string | undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,6 +82,54 @@ export default function SubscribeDialog({
                 className="bg-gradient-to-r from-amber to-rose hover:from-amber-glow hover:to-rose text-plum-deep font-semibold"
               >
                 {isSubmitting ? "Confirming..." : "Confirm"}
+              </Button>
+            </DialogFooter>
+          </>
+        ) : stage === "captcha" ? (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-display text-2xl md:text-3xl text-cream">
+                One more step
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="pt-2 space-y-4">
+              <p className="font-sans text-base text-cream/70">
+                Please complete the verification below to confirm you’re not a bot.
+              </p>
+
+              {!siteKey ? (
+                <p className="font-sans text-base text-rose-200">
+                  reCAPTCHA isn’t configured yet. Add{" "}
+                  <span className="font-mono">VITE_RECAPTCHA_SITE_KEY</span> to your
+                  frontend env.
+                </p>
+              ) : (
+                <div className="flex justify-center">
+                  <ReCAPTCHA
+                    sitekey={siteKey}
+                    onChange={onCaptchaToken}
+                    onErrored={onCaptchaError}
+                    onExpired={onCaptchaExpired}
+                  />
+                </div>
+              )}
+
+              {isSubmitting ? (
+                <p className="font-sans text-sm text-cream/60 text-center">
+                  Verifying…
+                </p>
+              ) : null}
+            </div>
+
+            <DialogFooter className="gap-2 sm:gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onGoBack}
+                className="border-cream/30 text-cream hover:bg-cream/10"
+              >
+                Go back
               </Button>
             </DialogFooter>
           </>

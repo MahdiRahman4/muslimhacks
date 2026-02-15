@@ -16,6 +16,9 @@ const InvitationSection = () => {
     resultVariant,
     handleConfirm,
     handleGoBack,
+    handleCaptchaToken,
+    handleCaptchaError,
+    handleCaptchaExpired,
   } = useSubscribe();
 
   const [titleRef, titleVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
@@ -98,6 +101,9 @@ const InvitationSection = () => {
             resultVariant={resultVariant}
             onConfirm={handleConfirm}
             onGoBack={handleGoBack}
+            onCaptchaToken={handleCaptchaToken}
+            onCaptchaError={handleCaptchaError}
+            onCaptchaExpired={handleCaptchaExpired}
           />
         </div>
 

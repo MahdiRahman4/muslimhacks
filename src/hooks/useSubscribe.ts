@@ -7,7 +7,7 @@ export function useSubscribe() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogStage, setDialogStage] = useState<"confirm" | "result">("confirm");
+  const [dialogStage, setDialogStage] = useState<"confirm" | "captcha" | "result">("confirm");
   const [resultVariant, setResultVariant] = useState<"success" | "duplicate" | null>(null);
 
   const resetDialog = useCallback(() => {
@@ -35,7 +35,12 @@ export function useSubscribe() {
     setDialogOpen(false);
   }, []);
 
-  const handleConfirm = useCallback(async () => {
+  const handleConfirm = useCallback(() => {
+    if (!email) return;
+    setDialogStage("captcha");
+  }, [email]);
+
+  const subscribe = useCallback(async (recaptchaToken: string) => {
     if (!email) return;
     setIsSubmitting(true);
 
@@ -45,7 +50,7 @@ export function useSubscribe() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, recaptchaToken }),
       });
 
       const contentType = response.headers.get("content-type") || "";
@@ -83,6 +88,24 @@ export function useSubscribe() {
     }
   }, [email]);
 
+  const handleCaptchaToken = useCallback(
+    async (token: string | null) => {
+      if (!token) return;
+      await subscribe(token);
+    },
+    [subscribe],
+  );
+
+  const handleCaptchaError = useCallback(() => {
+    setDialogOpen(false);
+    toast.error("Captcha verification failed. Please try again.");
+  }, []);
+
+  const handleCaptchaExpired = useCallback(() => {
+    setDialogOpen(false);
+    toast.error("Captcha expired. Please try again.");
+  }, []);
+
   return {
     email,
     setEmail,
@@ -94,5 +117,8 @@ export function useSubscribe() {
     resultVariant,
     handleConfirm,
     handleGoBack,
+    handleCaptchaToken,
+    handleCaptchaError,
+    handleCaptchaExpired,
   };
 }
