@@ -32,8 +32,15 @@ export function useSubscribe() {
   };
 
   const handleGoBack = useCallback(() => {
+    // If the user is in the captcha step, "Go back" should bring them
+    // back to email confirmation (so they can fix typos), not close the modal.
+    if (dialogStage === "captcha") {
+      setDialogStage("confirm");
+      return;
+    }
+
     setDialogOpen(false);
-  }, []);
+  }, [dialogStage]);
 
   const handleConfirm = useCallback(() => {
     if (!email) return;

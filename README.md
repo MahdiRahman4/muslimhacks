@@ -64,6 +64,30 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
 
+## Email pre-registration + reCAPTCHA (local + production)
+
+This site uses a “Notify me” email pre-registration flow that calls `POST /api/subscribe`.
+
+- **Frontend**: shows a confirmation modal and a reCAPTCHA widget.
+- **Backend**: verifies the reCAPTCHA token server-side, then subscribes the email via Zoho Campaigns.
+
+### Environment variables
+
+- **Frontend (Vite)**:
+  - `VITE_API_URL` (local only): set to your local API server base URL (example: `http://localhost:5001`)
+  - `VITE_RECAPTCHA_SITE_KEY`: your Google reCAPTCHA **site key** (public)
+
+- **Backend** (serverless `/api/subscribe.js` and/or `server/index.js`):
+  - `RECAPTCHA_SECRET_KEY`: your Google reCAPTCHA **secret key** (private)
+  - Zoho keys: `ZOHO_CLIENT_ID`, `ZOHO_CLIENT_SECRET`, `ZOHO_REFRESH_TOKEN`, `ZOHO_LIST_KEY`
+
+### Allowed domains in Google reCAPTCHA
+
+Google’s domain allowlist is **hostnames only** (no ports). For local dev, add:
+
+- `localhost`
+- `127.0.0.1` (optional)
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!

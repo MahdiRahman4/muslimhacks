@@ -45,6 +45,9 @@ export default function SubscribeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="border-cream/10 bg-[hsl(235_40%_12%)] text-cream"
+        onPointerDownOutside={(e) => {
+          if (isMobile) e.preventDefault();
+        }}
         onInteractOutside={(e) => {
           if (isMobile) e.preventDefault();
         }}
