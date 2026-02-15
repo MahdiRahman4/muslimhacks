@@ -56,7 +56,7 @@ const OpeningSection = () => {
             {/* Tagline */}
             <div className="mb-12 animate-fade-in-up animation-delay-200">
               <p className="font-intimate text-2xl md:text-3xl lg:text-4xl text-cream max-w-xl">
-                36 hours to build technology with purpose.
+                24 hours to build technology with purpose.
               </p>
               <p className="font-intimate text-xl md:text-2xl text-amber mt-3">
                 September 2026, Concordia University, Downtown Campus, Montreal, Quebec

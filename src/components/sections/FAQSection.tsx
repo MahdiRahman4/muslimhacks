@@ -16,6 +16,10 @@ const faqs = [
     answer: "You can register solo or with a team of up to 4 people. If you come alone, we'll help you find teammates during our team formation session on the first evening."
   },
   {
+    question: "Will you offer travel reimbursements?",
+    answer: "Unfortunately we won't be able to offer travel reimbursements this year. We know that travel costs can be a barrier, and it's something we really hope to support in future editions as MuslimHacks grows. We appreciate your understanding and your interest in being part of the event."
+  },
+  {
     question: "Is the event in-person or virtual?",
     answer: "MuslimHacks 2026 will be an in-person event in Québec. We believe the best collaborations happen face-to-face, and we're creating a space for meaningful connection as much as coding."
   },
