@@ -6,31 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useIsMobile } from "@/hooks/use-mobile";
 import ReCAPTCHA from "react-google-recaptcha";
 
 export type SubscribeDialogVariant = "success" | "duplicate";
-
-function isRecaptchaElement(target: unknown): boolean {
-  // The image challenge lives in a cross-origin iframe appended to <body>.
-  // Radix considers that "outside" the dialog content, so our mobile
-  // outside-interaction prevention must NOT block clicks on that iframe.
-  if (!(target instanceof Element)) return false;
-
-  const el = target as Element;
-  const iframe = el.tagName === "IFRAME" ? (el as HTMLIFrameElement) : null;
-  const iframeSrc = iframe?.getAttribute("src") || "";
-  const iframeTitle = iframe?.getAttribute("title") || "";
-
-  if (iframe && (iframeSrc.includes("recaptcha") || iframeTitle.toLowerCase().includes("recaptcha"))) {
-    return true;
-  }
-
-  if (el.closest(".grecaptcha-badge")) return true;
-  if (el.closest('[id^="recaptcha"]')) return true;
-
-  return false;
-}
 
 type Props = {
   open: boolean;
@@ -59,19 +37,12 @@ export default function SubscribeDialog({
   onCaptchaError,
   onCaptchaExpired,
 }: Props) {
-  const isMobile = useIsMobile();
   const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY as string | undefined;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="border border-black/10 bg-white text-black w-[92vw] max-w-sm sm:max-w-md md:max-w-lg max-h-[80vh] overflow-y-auto pr-14 p-5 pt-12 sm:p-6 sm:pt-6"
-        onPointerDownOutside={(e) => {
-          if (isMobile && !isRecaptchaElement(e.target)) e.preventDefault();
-        }}
-        onInteractOutside={(e) => {
-          if (isMobile && !isRecaptchaElement(e.target)) e.preventDefault();
-        }}
       >
         {stage === "confirm" ? (
           <>
