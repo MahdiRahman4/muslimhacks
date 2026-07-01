@@ -6,6 +6,7 @@ import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ApplicationSubmittedSection from "./components/sections/ApplicationSubmittedSection";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/apply/submitted" element={<ApplicationSubmittedSection />}/>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
