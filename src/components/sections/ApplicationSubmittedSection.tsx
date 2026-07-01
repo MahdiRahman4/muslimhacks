@@ -54,20 +54,6 @@ export default function ApplicationSubmittedSection() {
         بسم الله
       </div>
 
-      {/* Minimal header */}
-      <header
-        className="relative z-50 border-b"
-        style={{
-          background: "rgba(6,15,32,0.7)",
-          backdropFilter: "blur(12px)",
-          borderColor: "rgba(221,168,83,0.1)",
-        }}
-      >
-        <div className="max-w-2xl mx-auto px-6 py-4">
-          <NotFound/>
-        </div>
-      </header>
-
       {/* Main content */}
       <main className="relative z-10 max-w-2xl mx-auto px-6 py-20 flex flex-col items-center text-center gap-12">
 
