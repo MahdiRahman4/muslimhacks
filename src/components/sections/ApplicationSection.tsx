@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle } from "lucide-react";
 import NotFound from "../../pages/NotFound";
 import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
-import muslimHacksLogo from "../../assets/muslimhacks-logo.png";
+import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface FormData {
@@ -543,7 +543,7 @@ export default function ApplicationSection() {
         }}
       >
         {/* Nav row */}
-        <div className="max-w-2xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <span
             className="font-sans text-xs tabular-nums"
             style={{ color: BRAND.sand }}

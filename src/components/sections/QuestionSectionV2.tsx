@@ -14,7 +14,7 @@ export default function QuestionSectionV2 () {
 
   return (
     <>
-      <section id="sadqah-framing" className="relative overflow-hidden">
+      <section id="about" className="relative overflow-hidden">
         <div
           className="relative py-24 px-6"
           style={{

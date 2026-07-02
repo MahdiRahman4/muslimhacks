@@ -3,11 +3,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSubscribe } from "@/hooks/useSubscribe";
 import SubscribeDialog from "@/components/SubscribeDialog";
-import { useState } from "react";
 import GoldButton from "../ui/goldButton";
 import { Link } from "react-router-dom";
 
-const InvitationSection = () => {
+const InvitationSection = ({displayInviteDialog, displayApplyDialog}) => {
   const {
     email,
     setEmail,
@@ -33,8 +32,6 @@ const InvitationSection = () => {
   const [closingRef, closingVisible] = useScrollReveal<HTMLDivElement>({
     threshold: 0.3,
   });
-  const [displayInviteDialog, setDisplayInviteDialog] = useState(false);
-  const [displayApplyDialog, setDisplayApplyDialog] = useState(true);
 
   return (
     <section

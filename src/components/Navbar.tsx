@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import GoldButton from './ui/goldButton';
+import { Link } from 'react-router-dom';
 
 const navItems = [
   { label: 'Home', href: '#home' },
@@ -8,7 +10,7 @@ const navItems = [
   { label: 'FAQ', href: '#faq' },
 ];
 
-const Navbar = () => {
+const Navbar = ({displayApplyDialog}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
 
@@ -70,6 +72,19 @@ const Navbar = () => {
               {item.label}
             </a>
           ))}
+          {/* Apply now button */}
+          {displayApplyDialog && (
+            
+              <GoldButton
+                as={Link}
+                to="/apply"
+                className="w-full sm:w-auto sm:self-start"
+                isNavButton={true} displayApplyDialog={displayApplyDialog}
+              >
+                Apply now
+              </GoldButton>
+          
+          )}
         </div>
         
         {/* Mobile menu button */}
