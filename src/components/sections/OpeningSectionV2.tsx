@@ -67,9 +67,6 @@ export default function OpeningSectionV2({
         بسم الله
       </div>
 
-      <div className="absolute inset-0 opacity-30">
-        <StarPattern opacity={0.04} />
-      </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-24 w-full">
         <div className="max-w-2xl flex flex-col gap-6">
@@ -155,7 +152,7 @@ export default function OpeningSectionV2({
             <div className="flex flex-col gap-4 mt-2 animate-fade-in-up">
               <GoldButton
                 as={Link}
-                to="/apply"
+                to="/signup"
                 className="w-full sm:w-auto sm:self-start"
               >
                 Apply now

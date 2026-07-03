@@ -142,7 +142,7 @@ const InvitationSection = ({displayInviteDialog, displayApplyDialog}) => {
                 : "opacity-0 translate-y-8"
             }`}
           >
-            <GoldButton as={Link} to="/apply" className="w-full sm:w-auto">
+            <GoldButton as={Link} to="/signup" className="w-full sm:w-auto">
               Apply now
             </GoldButton>
           </div>

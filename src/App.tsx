@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ApplicationSubmittedSection from "./components/sections/ApplicationSubmittedSection";
 import ApplicationSection from "./components/sections/ApplicationSection";
+import Login from "./pages/login";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/signin" element={<Login/>} />
               <Route path="/apply/submitted" element={<ApplicationSubmittedSection />}/>
               <Route path="/apply" element={<ApplicationSection />}/>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
