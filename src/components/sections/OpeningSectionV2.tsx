@@ -1,4 +1,4 @@
-import { BRAND, StarPattern, GoldText, Eyebrow } from "../Shared";
+import { BRAND, GoldText, Eyebrow } from "../Shared";
 import GoldButton from "../ui/goldButton";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";

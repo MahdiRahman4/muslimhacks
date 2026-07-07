@@ -4,6 +4,7 @@ import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle } from "lucide-react";
 import NotFound from "../../pages/NotFound";
 import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
 import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
+import Footer from "../ui/footer";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface FormData {
@@ -868,21 +869,7 @@ export default function ApplicationSection() {
         </form>
       </main>
 
-      {/* Subtle bottom footer */}
-      <footer
-        className="relative z-10 py-8 text-center border-t"
-        style={{ borderColor: "rgba(221,168,83,0.08)" }}
-      >
-        <p
-          className="font-intimate text-sm"
-          style={{
-            fontStyle: "italic",
-            color: "rgba(221,168,83,0.35)",
-          }}
-        >
-          Built with intention · Montréal
-        </p>
-      </footer>
+      <Footer/>
     </div>
   );
 }

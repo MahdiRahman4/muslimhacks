@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import NotFound from "../../pages/NotFound";
 import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
+import Footer from "../ui/footer";
 
 const STEPS = [
   {
@@ -204,12 +205,7 @@ export default function ApplicationSubmittedSection() {
 
       </main>
 
-      {/* Footer line */}
-      <footer className="relative z-10 py-8 text-center border-t" style={{ borderColor: "rgba(221,168,83,0.08)" }}>
-        <p className="font-intimate text-sm" style={{ fontStyle: "italic", color: "rgba(221,168,83,0.3)" }}>
-          Built with intention · Montréal
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

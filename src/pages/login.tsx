@@ -9,6 +9,7 @@ import {
   GLOBAL_CSS,
 } from "../components/Shared";
 import googleGLogo from "../assets/google-G-logo.svg";
+import Footer from "@/components/ui/footer";
 
 // ─── Field components ─────────────────────────────────────────────────────────
 const inputBase: React.CSSProperties = {
@@ -20,6 +21,7 @@ const inputBase: React.CSSProperties = {
   width: "100%",
   transition: "border-color 0.2s",
 };
+
 const inputErr: React.CSSProperties = {
   ...inputBase,
   border: `1px solid rgba(196,91,91,0.65)`,
@@ -423,18 +425,7 @@ export default function Login() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer
-        className="relative z-10 py-6 text-center border-t"
-        style={{ borderColor: "rgba(221,168,83,0.08)" }}
-      >
-        <p
-          className="font-intimate text-sm"
-          style={{ fontStyle: "italic", color: "rgba(221,168,83,0.3)" }}
-        >
-          Built with intention · Montréal
-        </p>
-      </footer>
+      <Footer/>
     </div>
   );
 }
