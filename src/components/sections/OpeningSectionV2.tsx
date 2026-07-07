@@ -152,7 +152,7 @@ export default function OpeningSectionV2({
             <div className="flex flex-col gap-4 mt-2 animate-fade-in-up">
               <GoldButton
                 as={Link}
-                to="/signup"
+                to="/login"
                 className="w-full sm:w-auto sm:self-start"
               >
                 Apply now

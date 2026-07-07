@@ -84,7 +84,7 @@ const Navbar = ({displayApplyDialog}) => {
             
               <GoldButton
                 as={Link}
-                to="/signin"
+                to="/login"
                 className="w-full sm:w-auto sm:self-start"
                 isNavButton={true} displayApplyDialog={displayApplyDialog}
               >

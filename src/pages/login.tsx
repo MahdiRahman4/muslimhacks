@@ -1,5 +1,6 @@
+// This page is no longer being used and will be deleted in the coming days
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowLeft, AlertCircle } from "lucide-react";
 import {
   BRAND,
@@ -10,6 +11,8 @@ import {
 } from "../components/Shared";
 import googleGLogo from "../assets/google-G-logo.svg";
 import Footer from "@/components/ui/footer";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
 
 // ─── Field components ─────────────────────────────────────────────────────────
 const inputBase: React.CSSProperties = {
@@ -105,7 +108,7 @@ function PasswordField({
           autoComplete={autoComplete}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="••••••••"
+          placeholder="Your password"
           className="w-full px-4 py-3 pr-11 font-sans text-sm focus-visible:ring-2 focus-visible:ring-offset-1"
           style={error ? inputErr : inputBase}
         />
@@ -161,25 +164,37 @@ function validateConfirm(pw: string, confirm: string) {
 
 // ─── Login page ───────────────────────────────────────────────────────────────
 export default function Login() {
+  const { login, register, getErrorMessage, user } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const location = useLocation();
+  const redirectTo =
+    (location.state as { from?: string } | null)?.from ||
+    (user?.role === "admin" ? "/admin/applications" : "/apply");
 
+
+  const [googleLoading, setGoogleLoading] = useState(false);
+    
+  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [loading, setLoading] = useState(false);
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  if (user) {
+    return <Navigate to={redirectTo} replace />;
+  }
+
   function toggleMode() {
-    setMode((m) => (m === "signin" ? "signup" : "signin"));
+    setMode((m) => (m === "login" ? "signup" : "login"));
     setErrors({});
     setPassword("");
     setConfirm("");
   }
 
-  // Placeholder — wire to real auth
+  // Placeholder — wire to real auth for google
   function handleGoogle() {
     setGoogleLoading(true);
     setTimeout(() => {
@@ -188,10 +203,11 @@ export default function Login() {
     }, 1200);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const next: Record<string, string> = {};
     const emailErr = validateEmail(email);
+
     if (emailErr) next.email = emailErr;
     const pwErr = validatePassword(password);
     if (pwErr) next.password = pwErr;
@@ -199,15 +215,27 @@ export default function Login() {
       const confirmErr = validateConfirm(password, confirm);
       if (confirmErr) next.confirm = confirmErr;
     }
+    
     setErrors(next);
     if (Object.keys(next).length > 0) return;
 
-    // Placeholder — wire to real auth
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const authUser =
+        mode === "login"
+          ? await login(email, password)
+          : await register(email, password);
+  
+      navigate(authUser.role === "admin" ? "/admin/applications" : "/apply", {
+        replace: true,
+      });
+    } catch (error) {
+      console.error("Authentication error:", error);
+      toast.error("Authentication failed. Please check your credentials and try again.")
+      
+    } finally {
       setLoading(false);
-      navigate("/apply");
-    }, 1200);
+    }
   }
 
   const isSignUp = mode === "signup";
@@ -291,7 +319,7 @@ export default function Login() {
             }}
           >
             {/* Google button */}
-            <button
+            {/* <button
               type="button"
               onClick={handleGoogle}
               disabled={googleLoading || loading}
@@ -314,7 +342,7 @@ export default function Login() {
               {googleLoading ? "Signing in…" : "Continue with Google"}
             </button>
 
-            <Divider />
+            <Divider /> */}
 
             {/* Email form */}
             <form
@@ -381,7 +409,7 @@ export default function Login() {
                         borderTopColor: BRAND.navyDeep,
                       }}
                     />
-                    {isSignUp ? "Creating account…" : "Signing in…"}
+                    {isSignUp ? "Creating account…" : "Loging in…"}
                   </>
                 ) : isSignUp ? (
                   "Create account"
