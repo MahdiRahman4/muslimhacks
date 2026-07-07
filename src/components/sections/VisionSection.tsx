@@ -46,7 +46,7 @@ const VisionSection = () => {
             <span className="text-gradient-sunset">September 2026.</span>
           </h2>
           <p className="font-intimate text-xl md:text-2xl lg:text-3xl text-cream/80">
-            36 hours to build something that matters.
+            24 hours to build something that matters.
           </p>
         </div>
         

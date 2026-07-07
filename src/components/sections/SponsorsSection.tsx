@@ -4,7 +4,7 @@ const SponsorsSection = () => {
   const [headerRef, headerVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
   const [contentRef, contentVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.2 });
   const [ctaRef, ctaVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
-
+  
   return (
     <section id="sponsors" className="relative min-h-screen py-32 overflow-hidden">
       {/* Background */}

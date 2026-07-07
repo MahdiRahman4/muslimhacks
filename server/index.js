@@ -60,9 +60,79 @@ class ZohoCampaigns {
 
 const zoho = new ZohoCampaigns();
 
+const verifyRecaptcha = async ({ token, remoteip }) => {
+  const response = await axios.post(
+    "https://www.google.com/recaptcha/api/siteverify",
+    null,
+    {
+      params: {
+        secret: process.env.RECAPTCHA_SECRET_KEY,
+        response: token,
+        remoteip,
+      },
+      timeout: 10_000,
+    }
+  );
+
+  return response.data;
+};
+
+const getClientIp = (req) => {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.length > 0) {
+    return forwarded.split(",")[0].trim();
+  }
+  return req.socket?.remoteAddress || undefined;
+};
+
 app.post('/api/subscribe', async (req, res) => {
   console.log('📨 Request for:', req.body.email);
   try {
+    if (!process.env.RECAPTCHA_SECRET_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: "Server is missing RECAPTCHA_SECRET_KEY.",
+      });
+    }
+
+    const recaptchaToken =
+      typeof req.body?.recaptchaToken === "string" ? req.body.recaptchaToken : "";
+    const recaptchaAction =
+      typeof req.body?.recaptchaAction === "string" ? req.body.recaptchaAction : "";
+    if (!recaptchaToken) {
+      return res.status(400).json({
+        success: false,
+        error: "Captcha verification is required.",
+      });
+    }
+
+    const captchaResult = await verifyRecaptcha({
+      token: recaptchaToken,
+      remoteip: getClientIp(req),
+    });
+    if (!captchaResult?.success) {
+      return res.status(400).json({
+        success: false,
+        error: "Captcha verification failed. Please try again.",
+      });
+    }
+
+    const expectedAction = "pre_register";
+    if (!recaptchaAction || captchaResult.action !== expectedAction) {
+      return res.status(400).json({
+        success: false,
+        error: "Captcha verification failed. Please try again.",
+      });
+    }
+
+    const score = typeof captchaResult.score === "number" ? captchaResult.score : 0;
+    if (score < 0.5) {
+      return res.status(400).json({
+        success: false,
+        error: "Captcha verification failed. Please try again.",
+      });
+    }
+
     const result = await zoho.addSubscriber(req.body.email);
     console.log('✅ Zoho Response:', result);    
     
@@ -74,13 +144,14 @@ app.post('/api/subscribe', async (req, res) => {
       result.message?.toLowerCase().includes('already') || 
       result.message?.toLowerCase().includes('duplicate')
     ) {
-      return res.status(400).json({
-        success: false,
-        error: 'You have already been pre-registered.',
+      return res.status(200).json({
+        success: true,
+        alreadyRegistered: true,
+        data: result,
       });
     }
     
-    res.json({ success: true, data: result });
+    res.json({ success: true, alreadyRegistered: false, data: result });
   } catch (error) {
     console.error('❌ Error:', error.response?.data || error.message);
     
@@ -93,13 +164,14 @@ app.post('/api/subscribe', async (req, res) => {
       errorData?.message?.toLowerCase().includes('already') || 
       errorData?.message?.toLowerCase().includes('duplicate')
     ) {
-      return res.status(400).json({
-        success: false,
-        error: 'You have already been pre-registered.',
+      return res.status(200).json({
+        success: true,
+        alreadyRegistered: true,
+        data: errorData,
       });
     }
     
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

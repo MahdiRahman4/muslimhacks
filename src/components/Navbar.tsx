@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
+import GoldButton from './ui/goldButton';
+import { Link } from 'react-router-dom';
+import muslimHacksLogo from "../assets/muslimhackS-logo.png";
 
 const navItems = [
   { label: 'Home', href: '#home' },
@@ -8,7 +11,7 @@ const navItems = [
   { label: 'FAQ', href: '#faq' },
 ];
 
-const Navbar = () => {
+const Navbar = ({displayApplyDialog}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
 
@@ -52,7 +55,13 @@ const Navbar = () => {
           : 'bg-transparent py-6'
       )}
     >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-center">
+      <div className="flex items-center justify-between">
+      <img
+          src={muslimHacksLogo}
+          alt="MuslimHacks"
+          className="h-7 w-auto object-contain ml-8 md:ml-8 transition-all duration-500"
+        />
+      <div className="px-6 md:px-12 flex items-center justify-end">
         {/* Nav links - hidden on mobile, shown on md+ */}
         <div className="hidden md:flex items-center gap-8">
           {navItems.map((item) => (
@@ -70,6 +79,19 @@ const Navbar = () => {
               {item.label}
             </a>
           ))}
+          {/* Apply now button */}
+          {displayApplyDialog && (
+            
+              <GoldButton
+                as={Link}
+                to="/signin"
+                className="w-full sm:w-auto sm:self-start"
+                isNavButton={true} displayApplyDialog={displayApplyDialog}
+              >
+                Apply now
+              </GoldButton>
+          
+          )}
         </div>
         
         {/* Mobile menu button */}
@@ -80,6 +102,7 @@ const Navbar = () => {
             <line x1="3" y1="18" x2="21" y2="18" />
           </svg>
         </button>
+      </div>
       </div>
     </nav>
   );

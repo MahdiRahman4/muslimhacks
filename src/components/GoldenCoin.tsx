@@ -1,8 +1,27 @@
-import { Suspense, useRef, useMemo } from 'react';
+import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import logoTexture from '@/assets/muslimhacks-logo.png';
+import ErrorBoundary from "@/components/ErrorBoundary";
+
+function isWebGLAvailable(): boolean {
+  try {
+    if (typeof document === "undefined") return false;
+    const canvas = document.createElement("canvas");
+    const gl =
+      canvas.getContext("webgl") ||
+      canvas.getContext("experimental-webgl") ||
+      canvas.getContext("webgl2");
+    return !!gl;
+  } catch {
+    return false;
+  }
+}
+
+function CoinFallback() {
+  return null;
+}
 
 const CoinMesh = () => {
   const meshRef = useRef<THREE.Group>(null);
@@ -102,31 +121,39 @@ interface GoldenCoinProps {
 }
 
 const GoldenCoin = ({ className = '' }: GoldenCoinProps) => {
+  const webglOk = useMemo(() => isWebGLAvailable(), []);
+
   return (
     <div className={`${className}`}>
+      {!webglOk ? (
+        <CoinFallback />
+      ) : (
       <Suspense fallback={
         <div className="w-full h-full flex items-center justify-center">
           <div className="w-32 h-32 rounded-full bg-amber/20 animate-pulse" />
         </div>
       }>
-        <Canvas
-          camera={{ position: [0, 0, 5], fov: 45 }}
-          style={{ background: 'transparent' }}
-          gl={{ alpha: true, antialias: true }}
-        >
-          {/* Lighting */}
-          <ambientLight intensity={0.4} />
-          <pointLight position={[5, 5, 5]} intensity={1.5} color="#FFE4B5" />
-          <pointLight position={[-5, -3, 3]} intensity={0.8} color="#FFA500" />
-          <pointLight position={[0, 5, -5]} intensity={0.6} color="#FFFFFF" />
-          
-          {/* Environment for reflections */}
-          <Environment preset="sunset" />
-          
-          {/* The coin */}
-          <CoinMesh />
-        </Canvas>
+        <ErrorBoundary fallback={<CoinFallback />}>
+          <Canvas
+            camera={{ position: [0, 0, 5], fov: 45 }}
+            style={{ background: "transparent" }}
+            gl={{ alpha: true, antialias: true }}
+          >
+            {/* Lighting */}
+            <ambientLight intensity={0.4} />
+            <pointLight position={[5, 5, 5]} intensity={1.5} color="#FFE4B5" />
+            <pointLight position={[-5, -3, 3]} intensity={0.8} color="#FFA500" />
+            <pointLight position={[0, 5, -5]} intensity={0.6} color="#FFFFFF" />
+            
+            {/* Environment for reflections */}
+            <Environment preset="sunset" />
+            
+            {/* The coin */}
+            <CoinMesh />
+          </Canvas>
+        </ErrorBoundary>
       </Suspense>
+      )}
     </div>
   );
 };

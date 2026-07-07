@@ -3,9 +3,21 @@ import GoldenCoin from '@/components/GoldenCoin';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useSubscribe } from '@/hooks/useSubscribe';
+import SubscribeDialog from '@/components/SubscribeDialog';
 
 const OpeningSection = () => {
-  const { email, setEmail, isSubmitting, handleSubmit } = useSubscribe();
+  const {
+    email,
+    setEmail,
+    isSubmitting,
+    handleSubmit,
+    dialogOpen,
+    onDialogOpenChange,
+    dialogStage,
+    resultVariant,
+    handleConfirm,
+    handleGoBack,
+  } = useSubscribe();
 
   return (
     <section id="home" className="relative min-h-screen flex items-center overflow-hidden">
@@ -56,7 +68,7 @@ const OpeningSection = () => {
             {/* Tagline */}
             <div className="mb-12 animate-fade-in-up animation-delay-200">
               <p className="font-intimate text-2xl md:text-3xl lg:text-4xl text-cream max-w-xl">
-                36 hours to build technology with purpose.
+                24 hours to build technology with purpose.
               </p>
               <p className="font-intimate text-xl md:text-2xl text-amber mt-3">
                 September 2026, Concordia University, Downtown Campus, Montreal, Quebec
@@ -85,6 +97,17 @@ const OpeningSection = () => {
                   {isSubmitting ? 'Sending...' : 'Notify me'}
                 </Button>
               </form>
+
+              <SubscribeDialog
+                open={dialogOpen}
+                onOpenChange={onDialogOpenChange}
+                email={email}
+                isSubmitting={isSubmitting}
+                stage={dialogStage}
+                resultVariant={resultVariant}
+                onConfirm={handleConfirm}
+                onGoBack={handleGoBack}
+              />
             </div>
           </div>
           
