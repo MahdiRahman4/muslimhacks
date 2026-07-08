@@ -31,7 +31,15 @@ const App = () => (
             path="/apply"
             element={
               <RequireAuth>
-                <ApplicationPage />
+                <ApplicationSection />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/apply/submitted"
+            element={
+              <RequireAuth>
+                <ApplicationSubmittedSection />
               </RequireAuth>
             }
           />

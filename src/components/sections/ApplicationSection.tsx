@@ -5,11 +5,14 @@ import NotFound from "../../pages/NotFound";
 import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
 import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
 import Footer from "../ui/footer";
+import { Button } from "../ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface FormData {
   fullName: string;
-  email: string;
+  phone: string;
+  gender: string;
   institution: string;
   github: string;
   linkedin: string;
@@ -30,7 +33,8 @@ interface Errors {
 
 const EMPTY_FORM: FormData = {
   fullName: "",
-  email: "",
+  phone: "",
+  gender: "",
   institution: "",
   github: "",
   linkedin: "",
@@ -48,7 +52,8 @@ const EMPTY_FORM: FormData = {
 // Required fields for progress calculation
 const REQUIRED_FIELDS: (keyof FormData)[] = [
   "fullName",
-  "email",
+  "phone",
+  "gender",
   "github",
   "linkedin",
   "resumeFile",
@@ -75,9 +80,10 @@ function calcProgress(form: FormData): number {
 function validate(form: FormData): Errors {
   const e: Errors = {};
   if (!form.fullName.trim()) e.fullName = "Please enter your full name.";
-  if (!form.email.trim()) e.email = "Email is required.";
-  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim()))
-    e.email = "Please enter a valid email address.";
+  if (!form.phone) e.phone = "Phone number is required.";
+  else if (form.phone.length < 7) e.phone = "Phone number is too short.";
+  else if (form.phone.length > 16) e.phone = "Phone number is too long.";
+  if (!form.gender.trim()) e.gender = "Please enter your gender.";
   if (!form.github.trim()) e.github = "Please enter your GitHub profile.";
   if (!form.linkedin.trim()) e.linkedin = "Please enter your LinkedIn profile.";
   if (!form.resumeFile) e.resumeFile = "Please upload your resume or CV.";
@@ -166,6 +172,7 @@ function TextInput({
   onChange,
   placeholder,
   readOnly,
+  type = "text",
   error,
 }: {
   id: string;
@@ -173,12 +180,13 @@ function TextInput({
   onChange?: (v: string) => void;
   placeholder?: string;
   readOnly?: boolean;
+  type?: string;
   error?: string;
 }) {
   return (
     <input
       id={id}
-      type="text"
+      type={type}
       value={value}
       readOnly={readOnly}
       onChange={(e) => onChange?.(e.target.value)}
@@ -236,7 +244,12 @@ function YesNoToggle({
   error?: string;
 }) {
   return (
-    <div id={id} className="flex gap-3" role="group" aria-labelledby={`${id}-label`}>
+    <div
+      id={id}
+      className="flex gap-3"
+      role="group"
+      aria-labelledby={`${id}-label`}
+    >
       {([true, false] as const).map((opt) => (
         <button
           key={String(opt)}
@@ -441,6 +454,7 @@ function Field({ children }: { children: React.ReactNode }) {
 
 // ─── Apply page ───────────────────────────────────────────────────────────────
 export default function ApplicationSection() {
+  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState<FormData>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
@@ -478,7 +492,8 @@ export default function ApplicationSection() {
     //api call to submit form data
     const formData = new FormData();
     formData.append("fullName", form.fullName);
-    formData.append("email", form.email);
+    formData.append("phone", String(form.phone).replace(/[^\d+]/g, ""));
+    formData.append("gender", form.gender);
     formData.append("institution", form.institution);
     formData.append("github", form.github);
     formData.append("linkedin", form.linkedin);
@@ -552,14 +567,25 @@ export default function ApplicationSection() {
             {progress}% complete
           </span>
           <div className="flex items-center gap-3">
-            <Link
-              to="/"
+            {isAdmin && (
+              <>
+                {" "}
+                <Link
+                  to="/admin/applications"
+                  className="font-sans text-xs uppercase tracking-[0.2em] flex items-center gap-1.5 hover:opacity-70 transition-opacity focus-visible:ring-2 rounded"
+                  style={{ color: BRAND.purpleLight }}
+                >
+                  Admin
+                </Link>
+                <span style={{ color: BRAND.purpleLight }}> | </span>
+              </>
+            )}
+            <span
+              onClick={logout}
               className="font-sans text-xs uppercase tracking-[0.2em] flex items-center gap-1.5 hover:opacity-70 transition-opacity focus-visible:ring-2 rounded"
-              style={{ color: BRAND.purpleLight }}
             >
-              <ArrowLeft size={13} />
-              Back
-            </Link>
+              Sign out
+            </span>
           </div>
         </div>
 
@@ -618,74 +644,114 @@ export default function ApplicationSection() {
         >
           {/* ── Section 1 ──────────────────────────────────────────── */}
           <FormSection number="01" title="About you">
-            <Field>
-              <FieldLabel htmlFor="fullName" required>
-                Full name
-              </FieldLabel>
-              <TextInput
-                id="fullName"
-                value={form.fullName}
-                onChange={(v) => set("fullName", v)}
-                placeholder="Your full name"
-                error={errors.fullName}
-              />
-              <FieldError message={errors.fullName} />
-            </Field>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field>
+                <FieldLabel htmlFor="fullName" required>
+                  Full Name
+                </FieldLabel>
+                <TextInput
+                  id="fullName"
+                  value={form.fullName}
+                  onChange={(v) => set("fullName", v)}
+                  placeholder="Your full name"
+                  error={errors.fullName}
+                />
+                <FieldError message={errors.fullName} />
+              </Field>
 
-            <Field>
-              <FieldLabel htmlFor="email" required>
-                Email
-              </FieldLabel>
-              <TextInput
-                id="email"
-                value={form.email}
-                onChange={(v) => set("email", v)}
-                placeholder="applicant@example.com"
-                error={errors.email}
-              />
-              <FieldError message={errors.email} />
-            </Field>
+              <Field>
+                <FieldLabel htmlFor="phone" required>
+                  Phone Number
+                </FieldLabel>
+                <TextInput
+                  id="phone"
+                  type="tel"
+                  value={form.phone || ""}
+                  onChange={(v) => {
+                    set("phone", v);
+                  }}
+                  placeholder="+1 (xxx) xxx-xxxx"
+                  error={errors.phone}
+                />
+                <FieldError message={errors.phone} />
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field>
+                <FieldLabel htmlFor="gender" required>
+                  Gender
+                </FieldLabel>
+                <select
+                  id="gender"
+                  value={form.gender}
+                  onChange={(e) => set("gender", e.target.value)}
+                  className="w-full px-4 py-3 font-sans text-sm focus-visible:ring-2 focus-visible:ring-offset-1 appearance-none"
+                  style={
+                    {
+                      ...inputBase,
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23C9BBA8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 14px center",
+                      color: form.gender ? BRAND.cream : BRAND.sand,
+                    } as React.CSSProperties
+                  }
+                >
+                  <option value="" disabled style={{ background: BRAND.navy }}>
+                    Select you gender
+                  </option>
+                  <option value="male" style={{ background: BRAND.navy }}>
+                    Male
+                  </option>
+                  <option value="female" style={{ background: BRAND.navy }}>
+                    Female
+                  </option>
+                  <option value="prefer_not" style={{ background: BRAND.navy }}>
+                    Prefer not to say
+                  </option>
+                </select>
+              </Field>
 
-            <Field>
-              <FieldLabel htmlFor="institution">
-                If you're a student, which school or institution?
-              </FieldLabel>
-              <TextInput
-                id="institution"
-                value={form.institution}
-                onChange={(v) => set("institution", v)}
-                placeholder="e.g. Concordia University (optional)"
-              />
-            </Field>
+              <Field>
+                <FieldLabel htmlFor="institution">
+                  If you're a student, which school or institution?
+                </FieldLabel>
+                <TextInput
+                  id="institution"
+                  value={form.institution}
+                  onChange={(v) => set("institution", v)}
+                  placeholder="e.g. Concordia University (optional)"
+                />
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field>
+                <FieldLabel htmlFor="linkedin" required>
+                  LinkedIn
+                </FieldLabel>
+                <TextInput
+                  id="linkedin"
+                  value={form.linkedin}
+                  onChange={(v) => set("linkedin", v)}
+                  placeholder="linkedin.com/in/username"
+                  error={errors.linkedin}
+                />
+                <FieldError message={errors.linkedin} />
+              </Field>
 
-            <Field>
-              <FieldLabel htmlFor="github" required>
-                GitHub
-              </FieldLabel>
-              <TextInput
-                id="github"
-                value={form.github}
-                onChange={(v) => set("github", v)}
-                placeholder="github.com/username"
-                error={errors.github}
-              />
-              <FieldError message={errors.github} />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="linkedin" required>
-                LinkedIn
-              </FieldLabel>
-              <TextInput
-                id="linkedin"
-                value={form.linkedin}
-                onChange={(v) => set("linkedin", v)}
-                placeholder="linkedin.com/in/username"
-                error={errors.linkedin}
-              />
-              <FieldError message={errors.linkedin} />
-            </Field>
-
+              <Field>
+                <FieldLabel htmlFor="github" required>
+                  GitHub
+                </FieldLabel>
+                <TextInput
+                  id="github"
+                  value={form.github}
+                  onChange={(v) => set("github", v)}
+                  placeholder="github.com/username"
+                  error={errors.github}
+                />
+                <FieldError message={errors.github} />
+              </Field>
+            </div>
             <Field>
               <FieldLabel htmlFor="resumeFile" required>
                 Resume / CV
@@ -739,35 +805,37 @@ export default function ApplicationSection() {
 
           {/* ── Section 3 ──────────────────────────────────────────── */}
           <FormSection number="03" title="Tell us about you">
-            <Field>
-              <div id="firstHackathon-label">
-                <FieldLabel htmlFor="firstHackathon" required>
-                  Is this your first hackathon?
-                </FieldLabel>
-              </div>
-              <YesNoToggle
-                id="firstHackathon"
-                value={form.firstHackathon}
-                onChange={(v) => set("firstHackathon", v)}
-                error={errors.firstHackathon}
-              />
-              <FieldError message={errors.firstHackathon} />
-            </Field>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field>
+                <div id="firstHackathon-label">
+                  <FieldLabel htmlFor="firstHackathon" required>
+                    Is this your first hackathon?
+                  </FieldLabel>
+                </div>
+                <YesNoToggle
+                  id="firstHackathon"
+                  value={form.firstHackathon}
+                  onChange={(v) => set("firstHackathon", v)}
+                  error={errors.firstHackathon}
+                />
+                <FieldError message={errors.firstHackathon} />
+              </Field>
 
-            <Field>
-              <div id="csCareer-label">
-                <FieldLabel htmlFor="csCareer" required>
-                  Is Computer Science the main focus of your career?
-                </FieldLabel>
-              </div>
-              <YesNoToggle
-                id="csCareer"
-                value={form.csCareer}
-                onChange={(v) => set("csCareer", v)}
-                error={errors.csCareer}
-              />
-              <FieldError message={errors.csCareer} />
-            </Field>
+              <Field>
+                <div id="csCareer-label">
+                  <FieldLabel htmlFor="csCareer" required>
+                    Is Computer Science the main focus of your career?
+                  </FieldLabel>
+                </div>
+                <YesNoToggle
+                  id="csCareer"
+                  value={form.csCareer}
+                  onChange={(v) => set("csCareer", v)}
+                  error={errors.csCareer}
+                />
+                <FieldError message={errors.csCareer} />
+              </Field>
+            </div>
 
             <Field>
               <FieldLabel htmlFor="motivation" required>
@@ -869,7 +937,7 @@ export default function ApplicationSection() {
         </form>
       </main>
 
-      <Footer/>
+      <Footer />
     </div>
   );
 }

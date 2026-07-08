@@ -45,20 +45,23 @@ export interface ApplicationReview {
 }
 
 export interface ApplicationFormValues {
-  full_name: string;
-  phone: string;
-  school: string;
-  program: string;
-  graduation_year: string;
-  github_url: string;
-  linkedin_url: string;
-  portfolio_url: string;
-  resume_url: string;
-  why_join: string;
-  project_idea: string;
-  dietary_restrictions: string;
-  needs_travel_support: boolean;
-  gender: string;
+  // your fields       my fields 
+  full_name: string; // fullName
+  phone: string; // NA i wll add this in my form
+  school: string; // institution
+  program: string; // csCareer boolean
+  graduation_year: string; // NA
+  github_url: string; // github
+  linkedin_url: string; //linkedin
+  portfolio_url: string; //NA
+  resume_url: string; // resumeFile file upload is much more reliable
+  why_join: string; // NA
+  project_idea: string; // pastProject
+  dietary_restrictions: string; // dietary
+  needs_travel_support: boolean; // NA
+  gender: string; // NA i will add this in my form
+  // email, accessibilityNeeds, firstHackathon (boolean),
+  // and a couple of question in my figma design are not in your form
 }
 
 export interface AdminApplicationSummary {
