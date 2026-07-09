@@ -5,6 +5,7 @@ import type {
   ApplicationFormValues,
   ApplicationReview,
   AuthUser,
+  ApplicationForm,
 } from "@/types/application";
 
 const rawApiBaseUrl = import.meta.env.VITE_API_URL || "";
@@ -102,6 +103,26 @@ export function toFormValues(application: Application): ApplicationFormValues {
   };
 }
 
+export function toFormValuesV2(application: Application): ApplicationForm {
+  return {
+    fullName: application.full_name,
+    phone: application.phone ?? "",
+    gender: application.gender ?? "",
+    institution: application.school ?? "",
+    github: application.github_url ?? "",
+    linkedin: application.linkedin_url ?? "",
+    resumeFile: null,
+    dietary: application.dietary_restrictions ?? "",
+    accessibility: "",
+    firstHackathon: null,
+    csCareer: null,
+    motivation: application.why_join ?? "",
+    pastProject: application.project_idea ?? "",
+    interests: "",
+    community: "",
+  };
+}
+
 export function toApplicationPayload(values: ApplicationFormValues) {
   return {
     full_name: values.full_name.trim(),
@@ -127,6 +148,13 @@ export async function saveApplication(values: ApplicationFormValues) {
   return apiFetch<{ application: Application }>("/api/applications", {
     method: "POST",
     body: JSON.stringify(toApplicationPayload(values)),
+  });
+}
+
+export async function saveApplicationV2(payload: ApplicationForm) {
+  return apiFetch<{ application: Application }>("/api/applications", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }
 

@@ -64,6 +64,24 @@ export interface ApplicationFormValues {
   // and a couple of question in my figma design are not in your form
 }
 
+export interface ApplicationForm {
+  fullName: string;
+  phone: string;
+  gender: string;
+  institution: string;
+  github: string;
+  linkedin: string;
+  resumeFile: File | null;
+  dietary: string;
+  accessibility: string;
+  firstHackathon: boolean | null;
+  csCareer: boolean | null;
+  motivation: string;
+  pastProject: string;
+  interests: string;
+  community: string;
+}
+
 export interface AdminApplicationSummary {
   id: string;
   user_id: string;

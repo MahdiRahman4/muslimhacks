@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle } from "lucide-react";
 import NotFound from "../../pages/NotFound";
@@ -7,31 +7,22 @@ import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
 import Footer from "../ui/footer";
 import { Button } from "../ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { Application, ApplicationForm } from "@/types/application";
+import {
+  saveApplicationV2,
+  fetchMyApplication,
+  ApiError,
+  toFormValuesV2,
+} from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface FormData {
-  fullName: string;
-  phone: string;
-  gender: string;
-  institution: string;
-  github: string;
-  linkedin: string;
-  resumeFile: File | null;
-  dietary: string;
-  accessibility: string;
-  firstHackathon: boolean | null;
-  csCareer: boolean | null;
-  motivation: string;
-  pastProject: string;
-  interests: string;
-  community: string;
-}
 
 interface Errors {
   [key: string]: string;
 }
 
-const EMPTY_FORM: FormData = {
+const EMPTY_FORM: ApplicationForm = {
   fullName: "",
   phone: "",
   gender: "",
@@ -50,7 +41,7 @@ const EMPTY_FORM: FormData = {
 };
 
 // Required fields for progress calculation
-const REQUIRED_FIELDS: (keyof FormData)[] = [
+const REQUIRED_FIELDS: (keyof ApplicationForm)[] = [
   "fullName",
   "phone",
   "gender",
@@ -65,7 +56,7 @@ const REQUIRED_FIELDS: (keyof FormData)[] = [
   "interests",
 ];
 
-function calcProgress(form: FormData): number {
+function calcProgress(form: ApplicationForm): number {
   const filled = REQUIRED_FIELDS.filter((k) => {
     const v = form[k];
     if (v === null || v === undefined) return false;
@@ -77,7 +68,7 @@ function calcProgress(form: FormData): number {
   return Math.round((filled.length / REQUIRED_FIELDS.length) * 100);
 }
 
-function validate(form: FormData): Errors {
+function validate(form: ApplicationForm): Errors {
   const e: Errors = {};
   if (!form.fullName.trim()) e.fullName = "Please enter your full name.";
   if (!form.phone) e.phone = "Phone number is required.";
@@ -97,6 +88,26 @@ function validate(form: FormData): Errors {
     e.pastProject = "Please describe a past project.";
   if (!form.interests.trim()) e.interests = "Please share your interests.";
   return e;
+}
+
+function toApplicationPayload(form: ApplicationForm): ApplicationForm {
+  return {
+    fullName: form.fullName,
+    phone: form.phone.replace(/[^\d+]/g, ""),
+    gender: form.gender,
+    institution: form.institution,
+    github: form.github,
+    linkedin: form.linkedin,
+    resumeFile: form.resumeFile,
+    dietary: form.dietary,
+    accessibility: form.accessibility,
+    firstHackathon: form.firstHackathon,
+    csCareer: form.csCareer,
+    motivation: form.motivation,
+    pastProject: form.pastProject,
+    interests: form.interests,
+    community: form.community,
+  };
 }
 
 // ─── Reusable field components ────────────────────────────────────────────────
@@ -194,7 +205,7 @@ function TextInput({
       className="w-full px-4 py-3 font-sans text-sm focus-visible:ring-2 focus-visible:ring-offset-1"
       style={
         readOnly
-          ? { ...inputBase, opacity: 0.6, cursor: "default" }
+          ? { ...inputBase, opacity: 0.6, cursor: "not-allowed" }
           : error
           ? inputError
           : inputBase
@@ -209,6 +220,7 @@ function Textarea({
   onChange,
   placeholder,
   rows = 4,
+  readOnly,
   error,
 }: {
   id: string;
@@ -216,17 +228,25 @@ function Textarea({
   onChange: (v: string) => void;
   placeholder?: string;
   rows?: number;
+  readOnly?: boolean;
   error?: string;
 }) {
   return (
     <textarea
       id={id}
       value={value}
+      readOnly={readOnly}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       rows={rows}
       className="w-full px-4 py-3 font-sans text-sm resize-y focus-visible:ring-2 focus-visible:ring-offset-1"
-      style={error ? inputError : inputBase}
+      style={
+        readOnly
+          ? { ...inputBase, opacity: 0.6, cursor: "not-allowed" }
+          : error
+          ? inputError
+          : inputBase
+      }
     />
   );
 }
@@ -236,11 +256,13 @@ function YesNoToggle({
   id,
   value,
   onChange,
+  readOnly,
   error,
 }: {
   id: string;
   value: boolean | null;
   onChange: (v: boolean) => void;
+  readOnly?: boolean;
   error?: string;
 }) {
   return (
@@ -254,7 +276,8 @@ function YesNoToggle({
         <button
           key={String(opt)}
           type="button"
-          onClick={() => onChange(opt)}
+          onClick={() => !readOnly && onChange(opt)}
+          disabled={readOnly}
           className="px-6 py-2.5 rounded-full font-sans text-sm font-medium transition-all duration-200 focus-visible:ring-2 focus-visible:ring-offset-2"
           aria-pressed={value === opt}
           style={
@@ -264,6 +287,8 @@ function YesNoToggle({
                   color: BRAND.navyDeep,
                   border: "none",
                   boxShadow: "0 4px 16px rgba(221,168,83,0.22)",
+                  opacity: readOnly ? 0.6 : 1,
+                  cursor: readOnly ? "default" : undefined,
                 }
               : {
                   background: "rgba(245,238,227,0.07)",
@@ -271,6 +296,8 @@ function YesNoToggle({
                     ? `1px solid rgba(196,91,91,0.5)`
                     : `1px solid rgba(221,168,83,0.2)`,
                   color: BRAND.creamMuted,
+                  opacity: readOnly ? 0.6 : 1,
+                  cursor: readOnly ? "default" : undefined,
                 }
           }
         >
@@ -286,11 +313,13 @@ function ResumeUpload({
   id,
   value,
   onChange,
+  readOnly,
   error,
 }: {
   id?: string;
   value: File | null;
   onChange: (f: File | null) => void;
+  readOnly?: boolean;
   error?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -334,15 +363,17 @@ function ResumeUpload({
             {formatSize(value.size)}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={() => onChange(null)}
-          className="p-1 rounded hover:opacity-70 transition-opacity focus-visible:ring-2"
-          aria-label="Remove file"
-          style={{ color: BRAND.gold }}
-        >
-          <X size={16} />
-        </button>
+        {!readOnly && (
+          <button
+            type="button"
+            onClick={() => onChange(null)}
+            className="p-1 rounded hover:opacity-70 transition-opacity focus-visible:ring-2"
+            aria-label="Remove file"
+            style={{ color: BRAND.gold }}
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
     );
   }
@@ -351,7 +382,7 @@ function ResumeUpload({
     <>
       <div
         id={id}
-        className="relative flex flex-col items-center justify-center gap-3 px-6 py-10 rounded-lg cursor-pointer transition-all duration-200"
+        className="relative flex flex-col items-center justify-center gap-3 px-6 py-10 rounded-lg transition-all duration-200"
         style={{
           background: dragging
             ? "rgba(221,168,83,0.08)"
@@ -361,18 +392,21 @@ function ResumeUpload({
             : dragging
             ? `1px dashed ${BRAND.gold}`
             : `1px dashed rgba(221,168,83,0.28)`,
+          cursor: readOnly ? "default" : "pointer",
+          opacity: readOnly ? 0.6 : 1,
         }}
         onDragOver={(e) => {
+          if (readOnly) return;
           e.preventDefault();
           setDragging(true);
         }}
         onDragLeave={() => setDragging(false)}
-        onDrop={onDrop}
-        onClick={() => inputRef.current?.click()}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
-        aria-label="Upload resume — click or drag and drop"
+        onDrop={readOnly ? undefined : onDrop}
+        onClick={() => !readOnly && inputRef.current?.click()}
+        role={readOnly ? undefined : "button"}
+        tabIndex={readOnly ? undefined : 0}
+        onKeyDown={(e) => !readOnly && e.key === "Enter" && inputRef.current?.click()}
+        aria-label={readOnly ? undefined : "Upload resume — click or drag and drop"}
       >
         <Upload size={24} style={{ color: BRAND.gold }} />
         <div className="text-center flex flex-col gap-1">
@@ -456,13 +490,18 @@ function Field({ children }: { children: React.ReactNode }) {
 export default function ApplicationSection() {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState<FormData>(EMPTY_FORM);
+  const [form, setForm] = useState<ApplicationForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [application, setApplication] = useState<Application | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const progress = calcProgress(form);
 
-  function set<K extends keyof FormData>(key: K, value: FormData[K]) {
+  function set<K extends keyof ApplicationForm>(
+    key: K,
+    value: ApplicationForm[K]
+  ) {
     setForm((f) => ({ ...f, [key]: value }));
     if (submitAttempted && errors[key as string]) {
       setErrors((e) => {
@@ -473,59 +512,71 @@ export default function ApplicationSection() {
     }
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  const readOnly =
+    application?.status === "approved" || application?.status === "rejected";
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchMyApplication();
+        setApplication(data.application);
+        setForm(toFormValuesV2(data.application) ?? EMPTY_FORM);
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404) {
+          setApplication(null);
+          setForm(EMPTY_FORM);
+        } else {
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "Failed to load application"
+          );
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, []);
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitAttempted(true);
     const errs = validate(form);
     setErrors(errs);
-    // scrolling works sometimes
-    if (Object.keys(errs).length > 0) {
-      const firstKey = Object.keys(errs)[0];
-      requestAnimationFrame(() => {
-        document.getElementById(firstKey)?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        });
-      });
-      return;
-    }
-    //api call to submit form data
-    const formData = new FormData();
-    formData.append("fullName", form.fullName);
-    formData.append("phone", String(form.phone).replace(/[^\d+]/g, ""));
-    formData.append("gender", form.gender);
-    formData.append("institution", form.institution);
-    formData.append("github", form.github);
-    formData.append("linkedin", form.linkedin);
-    if (form.resumeFile) formData.append("resumeFile", form.resumeFile);
-    formData.append("dietary", form.dietary);
-    formData.append("accessibility", form.accessibility);
-    formData.append("firstHackathon", String(form.firstHackathon));
-    formData.append("csCareer", String(form.csCareer));
-    formData.append("motivation", form.motivation);
-    formData.append("pastProject", form.pastProject);
-    formData.append("interests", form.interests);
-    formData.append("community", form.community);
-    // // Example API call
-    // fetch("https://api.example.com/submit-application", {
-    //     method: "POST",
-    //     body: formData,
-    // })
-    //     .then((response) => {
-    //         if (!response.ok) {
-    //             throw new Error("Failed to submit application");
-    //         }
-    //         return response.json();
-    //     })
-    //     .then((data) => {
-    //         navigate("/apply/submitted");
-    //         console.log("Application submitted successfully:", data);
-    //     })
-    //     .catch((error) => {
-    //         console.error("Error submitting application:", error);
+    // scrolling works sometimes need more time to fix this
+    // if (Object.keys(errs).length > 0) {
+    //   const firstKey = Object.keys(errs)[0];
+    //   requestAnimationFrame(() => {
+    //     document.getElementById(firstKey)?.scrollIntoView({
+    //       behavior: "smooth",
+    //       block: "center",
     //     });
-    console.log("Form submitted:", Object.fromEntries(formData.entries()));
-    navigate("/apply/submitted"); // remove this line when API call is implemented
+    //   });
+    //   return;
+    // }
+    if (Object.keys(errs).length > 0) return;
+
+    const applicationFormPayload = toApplicationPayload(form);
+    try {
+      const data = await saveApplicationV2(applicationFormPayload);
+      setApplication(data.application);
+      toast.success("Application submitted! We'll be in touch soon.");
+      setForm(toFormValuesV2(data.application) || EMPTY_FORM); //reset form
+      setErrors({});
+      setSubmitAttempted(false);
+      navigate("/apply/submitted");
+    } catch (error) {
+      if (error instanceof ApiError) {
+        toast.error(error.message);
+      } else {
+        toast.error(
+          "There was an error submitting your application. Please try again."
+        );
+      }
+    }
   }
 
   const divider = (
@@ -534,6 +585,14 @@ export default function ApplicationSection() {
       style={{ borderColor: "rgba(221,168,83,0.12)" }}
     />
   );
+
+  if (loading) {
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        Loading application...
+      </div>
+    );
+  }
 
   return (
     <div
@@ -654,6 +713,7 @@ export default function ApplicationSection() {
                   value={form.fullName}
                   onChange={(v) => set("fullName", v)}
                   placeholder="Your full name"
+                  readOnly={readOnly}
                   error={errors.fullName}
                 />
                 <FieldError message={errors.fullName} />
@@ -671,6 +731,7 @@ export default function ApplicationSection() {
                     set("phone", v);
                   }}
                   placeholder="+1 (xxx) xxx-xxxx"
+                  readOnly={readOnly}
                   error={errors.phone}
                 />
                 <FieldError message={errors.phone} />
@@ -684,6 +745,7 @@ export default function ApplicationSection() {
                 <select
                   id="gender"
                   value={form.gender}
+                  disabled={readOnly}
                   onChange={(e) => set("gender", e.target.value)}
                   className="w-full px-4 py-3 font-sans text-sm focus-visible:ring-2 focus-visible:ring-offset-1 appearance-none"
                   style={
@@ -693,6 +755,8 @@ export default function ApplicationSection() {
                       backgroundRepeat: "no-repeat",
                       backgroundPosition: "right 14px center",
                       color: form.gender ? BRAND.cream : BRAND.sand,
+                      opacity: readOnly ? 0.6 : 1,
+                      cursor: readOnly ? "default" : undefined,
                     } as React.CSSProperties
                   }
                 >
@@ -720,6 +784,7 @@ export default function ApplicationSection() {
                   value={form.institution}
                   onChange={(v) => set("institution", v)}
                   placeholder="e.g. Concordia University (optional)"
+                  readOnly={readOnly}
                 />
               </Field>
             </div>
@@ -733,6 +798,7 @@ export default function ApplicationSection() {
                   value={form.linkedin}
                   onChange={(v) => set("linkedin", v)}
                   placeholder="linkedin.com/in/username"
+                  readOnly={readOnly}
                   error={errors.linkedin}
                 />
                 <FieldError message={errors.linkedin} />
@@ -747,6 +813,7 @@ export default function ApplicationSection() {
                   value={form.github}
                   onChange={(v) => set("github", v)}
                   placeholder="github.com/username"
+                  readOnly={readOnly}
                   error={errors.github}
                 />
                 <FieldError message={errors.github} />
@@ -760,6 +827,7 @@ export default function ApplicationSection() {
                 id="resumeFile"
                 value={form.resumeFile}
                 onChange={(f) => set("resumeFile", f)}
+                readOnly={readOnly}
                 error={errors.resumeFile}
               />
               <FieldError message={errors.resumeFile} />
@@ -779,6 +847,7 @@ export default function ApplicationSection() {
                 value={form.dietary}
                 onChange={(v) => set("dietary", v)}
                 placeholder="e.g. nut allergy, vegan, none"
+                readOnly={readOnly}
                 error={errors.dietary}
               />
               <HelperText>
@@ -797,6 +866,7 @@ export default function ApplicationSection() {
                 onChange={(v) => set("accessibility", v)}
                 placeholder="Let us know how we can best support you (optional)"
                 rows={3}
+                readOnly={readOnly}
               />
             </Field>
           </FormSection>
@@ -816,6 +886,7 @@ export default function ApplicationSection() {
                   id="firstHackathon"
                   value={form.firstHackathon}
                   onChange={(v) => set("firstHackathon", v)}
+                  readOnly={readOnly}
                   error={errors.firstHackathon}
                 />
                 <FieldError message={errors.firstHackathon} />
@@ -831,6 +902,7 @@ export default function ApplicationSection() {
                   id="csCareer"
                   value={form.csCareer}
                   onChange={(v) => set("csCareer", v)}
+                  readOnly={readOnly}
                   error={errors.csCareer}
                 />
                 <FieldError message={errors.csCareer} />
@@ -848,6 +920,7 @@ export default function ApplicationSection() {
                 onChange={(v) => set("motivation", v)}
                 placeholder="Share your niyyah — what brought you here and what you hope to carry away..."
                 rows={5}
+                readOnly={readOnly}
                 error={errors.motivation}
               />
               <FieldError message={errors.motivation} />
@@ -863,6 +936,7 @@ export default function ApplicationSection() {
                 onChange={(v) => set("pastProject", v)}
                 placeholder="It doesn't have to be technical — a community project counts too..."
                 rows={4}
+                readOnly={readOnly}
                 error={errors.pastProject}
               />
               <HelperText>Skill level doesn't matter.</HelperText>
@@ -879,6 +953,7 @@ export default function ApplicationSection() {
                 onChange={(v) => set("interests", v)}
                 placeholder="e.g. front-end, data, hardware, design, community outreach..."
                 rows={3}
+                readOnly={readOnly}
                 error={errors.interests}
               />
               <FieldError message={errors.interests} />
@@ -895,30 +970,35 @@ export default function ApplicationSection() {
                 onChange={(v) => set("community", v)}
                 placeholder="Mosque volunteering, community events, online spaces — anything counts (optional)"
                 rows={3}
+                readOnly={readOnly}
               />
             </Field>
           </FormSection>
 
           {/* ── Submit ────────────────────────────────────────────── */}
           <div className="flex flex-col gap-4">
-            <button
-              type="submit"
-              className="w-full py-4 rounded-full font-sans text-sm font-semibold uppercase tracking-[0.18em] transition-all duration-200 hover:brightness-110 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-offset-2"
-              style={{
-                background: `linear-gradient(135deg, ${BRAND.goldSoft} 0%, ${BRAND.gold} 100%)`,
-                color: BRAND.navyDeep,
-                boxShadow: "0 8px 30px rgba(221,168,83,0.28)",
-              }}
-            >
-              Submit application
-            </button>
+            {!readOnly && (
+              <>
+                <button
+                  type="submit"
+                  className="w-full py-4 rounded-full font-sans text-sm font-semibold uppercase tracking-[0.18em] transition-all duration-200 hover:brightness-110 active:scale-[0.99] focus-visible:ring-2 focus-visible:ring-offset-2"
+                  style={{
+                    background: `linear-gradient(135deg, ${BRAND.goldSoft} 0%, ${BRAND.gold} 100%)`,
+                    color: BRAND.navyDeep,
+                    boxShadow: "0 8px 30px rgba(221,168,83,0.28)",
+                  }}
+                >
+                  Submit application
+                </button>
 
-            <p
-              className="text-center font-intimate text-sm"
-              style={{ fontStyle: "italic", color: BRAND.sand }}
-            >
-              We'll email you a confirmation once you submit.
-            </p>
+                <p
+                  className="text-center font-intimate text-sm"
+                  style={{ fontStyle: "italic", color: BRAND.sand }}
+                >
+                  We'll email you a confirmation once you submit.
+                </p>
+              </>
+            )}
 
             {submitAttempted && Object.keys(errors).length > 0 && (
               <div
