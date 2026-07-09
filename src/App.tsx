@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import ApplicationSubmittedSection from "./components/sections/ApplicationSubmittedSection";
 import ApplicationSection from "./components/sections/ApplicationSection";
 import Login from "./pages/login";
+import Dashboard from "./pages/dashboard";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,16 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
+          {/* User Routes */}
+          <Route path="/user-dashboard" element={<Dashboard/>} />
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <Dashboard />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/apply"
             element={
@@ -42,6 +53,7 @@ const App = () => (
               </RequireAuth>
             }
           />
+          {/* Admin Routes */}
           <Route
             path="/admin/applications"
             element={

@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle, LogOut } from "lucide-react";
 import NotFound from "../../pages/NotFound";
 import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
 import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
@@ -628,7 +628,6 @@ export default function ApplicationSection() {
           <div className="flex items-center gap-3">
             {isAdmin && (
               <>
-                {" "}
                 <Link
                   to="/admin/applications"
                   className="font-sans text-xs uppercase tracking-[0.2em] flex items-center gap-1.5 hover:opacity-70 transition-opacity focus-visible:ring-2 rounded"
@@ -639,12 +638,26 @@ export default function ApplicationSection() {
                 <span style={{ color: BRAND.purpleLight }}> | </span>
               </>
             )}
-            <span
+            {!isAdmin && application && (
+              <>
+                <Link
+                  to="/dashboard"
+                  className="font-sans text-xs uppercase tracking-[0.2em] flex items-center gap-1.5 hover:opacity-70 transition-opacity focus-visible:ring-2 rounded"
+                  style={{ color: BRAND.purpleLight }}
+                >
+                  Back
+                </Link>
+                <span style={{ color: BRAND.purpleLight }}> | </span>
+              </>
+            )}
+            <button
               onClick={logout}
-              className="font-sans text-xs uppercase tracking-[0.2em] flex items-center gap-1.5 hover:opacity-70 transition-opacity focus-visible:ring-2 rounded"
+              className="flex items-center gap-1.5 font-sans text-xs hover:opacity-70 transition-opacity focus-visible:ring-2 rounded"
+              style={{ color: BRAND.sand }}
             >
+              <LogOut size={13} />
               Sign out
-            </span>
+            </button>
           </div>
         </div>
 

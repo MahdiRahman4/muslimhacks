@@ -108,19 +108,19 @@ const NotFound = () => {
               dir="rtl"
               style={{ color: BRAND.gold }}
             >
-              وَعَسَىٰ أَن تَكْرَهُوا شَيْئًا وَهُوَ خَيْرٌ لَّكُمْ
+              وَوَجَدَكَ ضَآلًّۭا فَهَدَىٰ
             </p>
             <p
               className="font-intimate text-lg"
               style={{ fontStyle: "italic", color: BRAND.creamMuted }}
             >
-              "Perhaps you dislike something and it is good for you."
+              "Did He not find you unguided then guided you?"
             </p>
             <p
               className="font-sans text-xs uppercase tracking-[0.22em]"
               style={{ color: BRAND.sand }}
             >
-              — Al-Baqarah 2:216
+              — Ad-Duhaa 93:7
             </p>
           </div>
 
