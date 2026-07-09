@@ -494,6 +494,7 @@ export default function ApplicationSection() {
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isApplicationFilled, setIsApplicationFilled] = useState(false);
 
   const progress = calcProgress(form);
 
@@ -986,8 +987,9 @@ export default function ApplicationSection() {
                     color: BRAND.navyDeep,
                     boxShadow: "0 8px 30px rgba(221,168,83,0.28)",
                   }}
+                  disabled={submitAttempted}
                 >
-                  Submit application
+                  {setSubmitAttempted ? "Submitting..." : application ? "Update application" : "Submit application"}
                 </button>
 
                 <p
