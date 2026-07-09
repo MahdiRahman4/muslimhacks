@@ -5,7 +5,6 @@ import NotFound from "../../pages/NotFound";
 import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
 import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
 import Footer from "../ui/footer";
-import { Button } from "../ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Application, ApplicationForm } from "@/types/application";
