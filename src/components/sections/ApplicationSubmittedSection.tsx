@@ -13,7 +13,7 @@ const STEPS = [
   {
     n: "2",
     title: "We'll email you a decision",
-    body: "Watch your inbox over the coming weeks. You can edit your answers until applications close.",
+    body: "Watch your inbox over the coming weeks.",
   },
   {
     n: "3",
