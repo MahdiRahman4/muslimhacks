@@ -1,10 +1,10 @@
-import { clearAuthToken, getAuthToken } from "./auth";
+import { getAuthTokenAsync } from "./auth-token";
 import type {
   AdminApplicationSummary,
   Application,
-  ApplicationFormValues,
   ApplicationReview,
   AuthUser,
+  UserSummaryResponse,
 } from "@/types/application";
 
 const rawApiBaseUrl = import.meta.env.VITE_API_URL || "";
@@ -37,11 +37,13 @@ export async function apiFetch<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const headers = new Headers(options.headers);
-  if (!headers.has("Content-Type") && options.body) {
+  const isFormData = options.body instanceof FormData;
+
+  if (!isFormData && !headers.has("Content-Type") && options.body) {
     headers.set("Content-Type", "application/json");
   }
 
-  const token = getAuthToken();
+  const token = await getAuthTokenAsync();
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
@@ -60,73 +62,22 @@ export async function apiFetch<T>(
   return data as T;
 }
 
-export async function registerUser(email: string, password: string) {
-  return apiFetch<{ token: string; user: AuthUser }>("/api/auth/register", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
-}
-
-export async function loginUser(email: string, password: string) {
-  return apiFetch<{ token: string; user: AuthUser }>("/api/auth/login", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
-}
-
 export async function fetchCurrentUser() {
   return apiFetch<{ user: AuthUser }>("/api/auth/me");
+}
+
+export async function fetchUserSummary() {
+  return apiFetch<UserSummaryResponse>("/api/users/me/summary");
 }
 
 export async function fetchMyApplication() {
   return apiFetch<{ application: Application }>("/api/applications/me");
 }
 
-export function toFormValues(application: Application): ApplicationFormValues {
-  return {
-    full_name: application.full_name,
-    phone: application.phone ?? "",
-    school: application.school ?? "",
-    program: application.program ?? "",
-    graduation_year:
-      application.graduation_year != null ? String(application.graduation_year) : "",
-    github_url: application.github_url ?? "",
-    linkedin_url: application.linkedin_url ?? "",
-    portfolio_url: application.portfolio_url ?? "",
-    resume_url: application.resume_url ?? "",
-    why_join: application.why_join ?? "",
-    project_idea: application.project_idea ?? "",
-    dietary_restrictions: application.dietary_restrictions ?? "",
-    needs_travel_support: application.needs_travel_support,
-    gender: application.gender ?? "",
-  };
-}
-
-export function toApplicationPayload(values: ApplicationFormValues) {
-  return {
-    full_name: values.full_name.trim(),
-    phone: values.phone.trim() || undefined,
-    school: values.school.trim() || undefined,
-    program: values.program.trim() || undefined,
-    graduation_year: values.graduation_year.trim()
-      ? Number(values.graduation_year)
-      : undefined,
-    github_url: values.github_url.trim() || undefined,
-    linkedin_url: values.linkedin_url.trim() || undefined,
-    portfolio_url: values.portfolio_url.trim() || undefined,
-    resume_url: values.resume_url.trim() || undefined,
-    why_join: values.why_join.trim() || undefined,
-    project_idea: values.project_idea.trim() || undefined,
-    dietary_restrictions: values.dietary_restrictions.trim() || undefined,
-    needs_travel_support: values.needs_travel_support,
-    gender: values.gender.trim() || undefined,
-  };
-}
-
-export async function saveApplication(values: ApplicationFormValues) {
+export async function submitApplicationForm(formData: FormData) {
   return apiFetch<{ application: Application }>("/api/applications", {
     method: "POST",
-    body: JSON.stringify(toApplicationPayload(values)),
+    body: formData,
   });
 }
 
@@ -171,37 +122,5 @@ export async function submitApplicationReview(
 }
 
 export function logoutUser() {
-  clearAuthToken();
-}
-
-export const APPLICATION_FIELD_NAMES = [
-  "full_name",
-  "phone",
-  "school",
-  "program",
-  "graduation_year",
-  "github_url",
-  "linkedin_url",
-  "portfolio_url",
-  "resume_url",
-  "why_join",
-  "project_idea",
-  "dietary_restrictions",
-  "needs_travel_support",
-  "gender",
-] as const;
-
-export function mapApiErrorToFieldErrors(
-  message: string,
-): Partial<Record<(typeof APPLICATION_FIELD_NAMES)[number], string>> {
-  for (const field of APPLICATION_FIELD_NAMES) {
-    if (
-      message.startsWith(`${field} `) ||
-      message.startsWith(`${field} must`) ||
-      message.startsWith(`${field} is`)
-    ) {
-      return { [field]: message };
-    }
-  }
-  return {};
+  // Clerk handles sign-out via useAuth().logout()
 }

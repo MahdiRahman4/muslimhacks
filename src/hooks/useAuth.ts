@@ -1,22 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-  ApiError,
-  fetchCurrentUser,
-  loginUser,
-  logoutUser,
-  registerUser,
-} from "@/lib/api";
-import { getAuthToken, setAuthToken } from "@/lib/auth";
-import type { AuthUser } from "@/types/application";
+import { useAuth as useClerkAuth, useUser } from "@clerk/clerk-react";
+import { ApiError, fetchCurrentUser, fetchUserSummary } from "@/lib/api";
+import type { AuthUser, UserSummary } from "@/types/application";
 
 export function useAuth() {
+  const { isLoaded, isSignedIn, signOut } = useClerkAuth();
+  const { user: clerkUser } = useUser();
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [summary, setSummary] = useState<UserSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
-    const token = getAuthToken();
-    if (!token) {
+    if (!isLoaded) {
+      return null;
+    }
+
+    if (!isSignedIn) {
       setUser(null);
+      setSummary(null);
       setLoading(false);
       return null;
     }
@@ -24,46 +25,41 @@ export function useAuth() {
     try {
       const data = await fetchCurrentUser();
       setUser(data.user);
+
+      try {
+        const summaryData = await fetchUserSummary();
+        setSummary(summaryData.summary);
+      } catch {
+        setSummary(null);
+      }
+
       return data.user;
     } catch {
-      logoutUser();
       setUser(null);
+      setSummary(null);
       return null;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isLoaded, isSignedIn]);
 
   useEffect(() => {
     void refreshUser();
-  }, [refreshUser]);
+  }, [refreshUser, clerkUser?.id]);
 
-  const login = async (email: string, password: string) => {
-    const data = await loginUser(email, password);
-    setAuthToken(data.token);
-    setUser(data.user);
-    return data.user;
-  };
-
-  const register = async (email: string, password: string) => {
-    const data = await registerUser(email, password);
-    setAuthToken(data.token);
-    setUser(data.user);
-    return data.user;
-  };
-
-  const logout = () => {
-    logoutUser();
+  const logout = async () => {
+    await signOut();
     setUser(null);
+    setSummary(null);
   };
 
   return {
     user,
-    loading,
-    isAuthenticated: Boolean(user),
+    summary,
+    clerkUser,
+    loading: !isLoaded || loading,
+    isAuthenticated: Boolean(isSignedIn && user),
     isAdmin: user?.role === "admin",
-    login,
-    register,
     logout,
     refreshUser,
     getErrorMessage: (error: unknown) =>

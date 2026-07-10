@@ -13,6 +13,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.61.8",
     "@fontsource/amiri": "^5.2.8",
     "@fontsource/crimson-text": "^5.2.7",
     "@fontsource/playfair-display": "^5.2.8",

@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@clerk/clerk-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -52,9 +54,9 @@ const Navbar = () => {
           : 'bg-transparent py-6'
       )}
     >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-center">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
         {/* Nav links - hidden on mobile, shown on md+ */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-8 flex-1 justify-center">
           {navItems.map((item) => (
             <a
               key={item.href}
@@ -70,6 +72,30 @@ const Navbar = () => {
               {item.label}
             </a>
           ))}
+        </div>
+
+        <div className="hidden md:flex items-center gap-3 ml-4">
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream">
+                Sign in
+              </button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="font-sans text-sm uppercase tracking-wider px-4 py-2 rounded-full bg-amber text-plum-deep hover:brightness-110">
+                Apply
+              </button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <Link
+              to="/apply"
+              className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream"
+            >
+              Application
+            </Link>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
         </div>
         
         {/* Mobile menu button */}

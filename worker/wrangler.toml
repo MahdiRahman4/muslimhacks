@@ -11,3 +11,8 @@ binding = "DB"
 database_name = "muslimhacks-registration"
 database_id = "3b79a39c-2e2f-42eb-a75b-d7f2d11b4c55"
 migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "RESUMES"
+bucket_name = "muslimhacks-resumes"
+preview_bucket_name = "muslimhacks-resumes-preview"

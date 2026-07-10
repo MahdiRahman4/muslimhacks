@@ -1,8 +1,12 @@
 import type { Env } from "../env";
+import { authenticateClerk } from "./clerk";
 import { bearerToken, verifyToken } from "./jwt";
 import type { AuthUser, Role } from "./types";
 
-export async function authenticate(request: Request, env: Env): Promise<AuthUser | null> {
+async function authenticateLegacyJwt(
+  request: Request,
+  env: Env,
+): Promise<AuthUser | null> {
   const token = bearerToken(request);
   if (!token || !env.JWT_SECRET) {
     return null;
@@ -28,6 +32,15 @@ export async function authenticate(request: Request, env: Env): Promise<AuthUser
     email: row.email,
     role: row.role,
   };
+}
+
+export async function authenticate(request: Request, env: Env): Promise<AuthUser | null> {
+  const clerkUser = await authenticateClerk(request, env);
+  if (clerkUser) {
+    return clerkUser;
+  }
+
+  return authenticateLegacyJwt(request, env);
 }
 
 export function hasRole(user: AuthUser, role: Role): boolean {

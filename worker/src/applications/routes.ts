@@ -1,9 +1,27 @@
 import type { Env } from "../env";
-import { authenticate } from "../auth/middleware";
 import type { ApplicationInput, ApplicationResponse, ApplicationRow } from "./types";
-import { validateApplicationBody } from "./validation";
+import {
+  formDataToFieldRecord,
+  validateApplicationBody,
+  validateApplicationFormFields,
+  validateResumeFile,
+} from "./validation";
 
 type JsonResponder = (body: unknown, status?: number) => Response;
+
+function boolToDb(value: boolean | null): number | null {
+  if (value === null) {
+    return null;
+  }
+  return value ? 1 : 0;
+}
+
+function dbToBool(value: number | null): boolean | null {
+  if (value === null) {
+    return null;
+  }
+  return value === 1;
+}
 
 function toResponse(row: ApplicationRow): ApplicationResponse {
   return {
@@ -18,11 +36,19 @@ function toResponse(row: ApplicationRow): ApplicationResponse {
     linkedin_url: row.linkedin_url,
     portfolio_url: row.portfolio_url,
     resume_url: row.resume_url,
+    resume_key: row.resume_key,
     why_join: row.why_join,
     project_idea: row.project_idea,
     dietary_restrictions: row.dietary_restrictions,
     needs_travel_support: row.needs_travel_support === 1,
     gender: row.gender,
+    accessibility: row.accessibility,
+    first_hackathon: dbToBool(row.first_hackathon),
+    cs_career: dbToBool(row.cs_career),
+    motivation: row.motivation,
+    past_project: row.past_project,
+    interests: row.interests,
+    community: row.community,
     status: row.status,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -46,62 +72,36 @@ async function getApplicationByUserId(
     .first<ApplicationRow>();
 }
 
-async function handleUpsert(
-  request: Request,
+async function uploadResume(
   env: Env,
-  respond: JsonResponder,
-): Promise<Response> {
-  const user = await authenticate(request, env);
-  if (!user) {
-    return respond({ error: "Unauthorized" }, 401);
+  userId: string,
+  file: File,
+): Promise<{ key: string; url: string } | { error: string }> {
+  if (!env.RESUMES) {
+    return { error: "Resume storage is not configured" };
   }
 
-  const body = await readJson(request);
-  if (body === null) {
-    return respond({ error: "Invalid JSON body" }, 400);
-  }
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 120);
+  const key = `resumes/${userId}/${Date.now()}-${safeName}`;
 
-  const validated = validateApplicationBody(body);
-  if (!validated.ok) {
-    return respond({ error: validated.error }, 400);
-  }
+  await env.RESUMES.put(key, file.stream(), {
+    httpMetadata: {
+      contentType: file.type || "application/pdf",
+    },
+  });
 
-  const existing = await getApplicationByUserId(env, user.id);
+  return { key, url: key };
+}
+
+async function persistApplication(
+  env: Env,
+  userId: string,
+  data: ApplicationInput,
+  existing: ApplicationRow | null,
+): Promise<ApplicationRow | null> {
   const now = Date.now();
-  const input = body as Record<string, unknown>;
-  const parsed = validated.data;
-
-  const data: ApplicationInput = existing
-    ? {
-        full_name: parsed.full_name,
-        phone: "phone" in input ? parsed.phone : existing.phone,
-        school: "school" in input ? parsed.school : existing.school,
-        program: "program" in input ? parsed.program : existing.program,
-        graduation_year:
-          "graduation_year" in input ? parsed.graduation_year : existing.graduation_year,
-        github_url: "github_url" in input ? parsed.github_url : existing.github_url,
-        linkedin_url: "linkedin_url" in input ? parsed.linkedin_url : existing.linkedin_url,
-        portfolio_url: "portfolio_url" in input ? parsed.portfolio_url : existing.portfolio_url,
-        resume_url: "resume_url" in input ? parsed.resume_url : existing.resume_url,
-        why_join: "why_join" in input ? parsed.why_join : existing.why_join,
-        project_idea: "project_idea" in input ? parsed.project_idea : existing.project_idea,
-        dietary_restrictions:
-          "dietary_restrictions" in input
-            ? parsed.dietary_restrictions
-            : existing.dietary_restrictions,
-        needs_travel_support:
-          "needs_travel_support" in input
-            ? parsed.needs_travel_support
-            : existing.needs_travel_support === 1,
-        gender: "gender" in input ? parsed.gender : existing.gender,
-      }
-    : parsed;
 
   if (existing) {
-    if (existing.status === "approved" || existing.status === "rejected") {
-      return respond({ error: "Application can no longer be edited" }, 403);
-    }
-
     await env.DB.prepare(
       `UPDATE applications SET
         full_name = ?,
@@ -113,11 +113,19 @@ async function handleUpsert(
         linkedin_url = ?,
         portfolio_url = ?,
         resume_url = ?,
+        resume_key = ?,
         why_join = ?,
         project_idea = ?,
         dietary_restrictions = ?,
         needs_travel_support = ?,
         gender = ?,
+        accessibility = ?,
+        first_hackathon = ?,
+        cs_career = ?,
+        motivation = ?,
+        past_project = ?,
+        interests = ?,
+        community = ?,
         status = ?,
         updated_at = ?
       WHERE user_id = ?`,
@@ -131,24 +139,27 @@ async function handleUpsert(
         data.github_url,
         data.linkedin_url,
         data.portfolio_url,
-        data.resume_url,
+        data.resume_url ?? existing.resume_url,
+        data.resume_key ?? existing.resume_key,
         data.why_join,
         data.project_idea,
         data.dietary_restrictions,
         data.needs_travel_support ? 1 : 0,
         data.gender,
+        data.accessibility,
+        boolToDb(data.first_hackathon),
+        boolToDb(data.cs_career),
+        data.motivation,
+        data.past_project,
+        data.interests,
+        data.community,
         "pending",
         now,
-        user.id,
+        userId,
       )
       .run();
 
-    const updated = await getApplicationByUserId(env, user.id);
-    if (!updated) {
-      return respond({ error: "Failed to load updated application" }, 500);
-    }
-
-    return respond({ application: toResponse(updated) });
+    return getApplicationByUserId(env, userId);
   }
 
   const id = crypto.randomUUID();
@@ -156,14 +167,15 @@ async function handleUpsert(
   await env.DB.prepare(
     `INSERT INTO applications (
       id, user_id, full_name, phone, school, program, graduation_year,
-      github_url, linkedin_url, portfolio_url, resume_url,
+      github_url, linkedin_url, portfolio_url, resume_url, resume_key,
       why_join, project_idea, dietary_restrictions, needs_travel_support,
-      gender, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      gender, accessibility, first_hackathon, cs_career, motivation,
+      past_project, interests, community, status, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
-      user.id,
+      userId,
       data.full_name,
       data.phone,
       data.school,
@@ -173,35 +185,179 @@ async function handleUpsert(
       data.linkedin_url,
       data.portfolio_url,
       data.resume_url,
+      data.resume_key,
       data.why_join,
       data.project_idea,
       data.dietary_restrictions,
       data.needs_travel_support ? 1 : 0,
       data.gender,
+      data.accessibility,
+      boolToDb(data.first_hackathon),
+      boolToDb(data.cs_career),
+      data.motivation,
+      data.past_project,
+      data.interests,
+      data.community,
       "pending",
       now,
       now,
     )
     .run();
 
-  const created = await getApplicationByUserId(env, user.id);
-  if (!created) {
-    return respond({ error: "Failed to load created application" }, 500);
-  }
-
-  return respond({ application: toResponse(created) }, 201);
+  return getApplicationByUserId(env, userId);
 }
 
-async function handleGetMine(
+async function handleMultipartUpsert(
+  request: Request,
+  env: Env,
+  user: { id: string },
+  respond: JsonResponder,
+): Promise<Response> {
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return respond({ error: "Invalid multipart form data" }, 400);
+  }
+
+  const fields = await formDataToFieldRecord(formData);
+  const validated = validateApplicationFormFields(fields);
+  if (!validated.ok) {
+    return respond({ error: validated.error }, 400);
+  }
+
+  const resumeEntry = formData.get("resumeFile");
+  const resumeValidated = validateResumeFile(
+    resumeEntry instanceof File ? resumeEntry : null,
+  );
+  if (!resumeValidated.ok) {
+    return respond({ error: resumeValidated.error }, 400);
+  }
+
+  const existing = await getApplicationByUserId(env, user.id);
+  if (existing && (existing.status === "approved" || existing.status === "rejected")) {
+    return respond({ error: "Application can no longer be edited" }, 403);
+  }
+
+  const upload = await uploadResume(env, user.id, resumeValidated.file);
+  if ("error" in upload) {
+    return respond({ error: upload.error }, 500);
+  }
+
+  const data: ApplicationInput = {
+    ...validated.data,
+    resume_key: upload.key,
+    resume_url: upload.url,
+  };
+
+  const saved = await persistApplication(env, user.id, data, existing);
+  if (!saved) {
+    return respond({ error: "Failed to save application" }, 500);
+  }
+
+  return respond({ application: toResponse(saved) }, existing ? 200 : 201);
+}
+
+async function handleJsonUpsert(
+  request: Request,
+  env: Env,
+  user: { id: string },
+  respond: JsonResponder,
+): Promise<Response> {
+  const body = await readJson(request);
+  if (body === null) {
+    return respond({ error: "Invalid JSON body" }, 400);
+  }
+
+  const validated = validateApplicationBody(body);
+  if (!validated.ok) {
+    return respond({ error: validated.error }, 400);
+  }
+
+  const existing = await getApplicationByUserId(env, user.id);
+  if (existing && (existing.status === "approved" || existing.status === "rejected")) {
+    return respond({ error: "Application can no longer be edited" }, 403);
+  }
+
+  const input = body as Record<string, unknown>;
+  const parsed = validated.data;
+
+  const data: ApplicationInput = existing
+    ? {
+        ...parsed,
+        phone: "phone" in input ? parsed.phone : existing.phone,
+        school: "school" in input || "institution" in input ? parsed.school : existing.school,
+        program: "program" in input ? parsed.program : existing.program,
+        graduation_year:
+          "graduation_year" in input || "graduationYear" in input
+            ? parsed.graduation_year
+            : existing.graduation_year,
+        github_url:
+          "github_url" in input || "github" in input ? parsed.github_url : existing.github_url,
+        linkedin_url:
+          "linkedin_url" in input || "linkedin" in input ? parsed.linkedin_url : existing.linkedin_url,
+        portfolio_url:
+          "portfolio_url" in input || "portfolioUrl" in input
+            ? parsed.portfolio_url
+            : existing.portfolio_url,
+        resume_url: "resume_url" in input ? parsed.resume_url : existing.resume_url,
+        resume_key: existing.resume_key,
+        why_join: "why_join" in input || "motivation" in input ? parsed.why_join : existing.why_join,
+        project_idea:
+          "project_idea" in input || "pastProject" in input
+            ? parsed.project_idea
+            : existing.project_idea,
+        dietary_restrictions:
+          "dietary_restrictions" in input || "dietary" in input
+            ? parsed.dietary_restrictions
+            : existing.dietary_restrictions,
+        needs_travel_support:
+          "needs_travel_support" in input
+            ? parsed.needs_travel_support
+            : existing.needs_travel_support === 1,
+        gender: "gender" in input ? parsed.gender : existing.gender,
+        accessibility:
+          "accessibility" in input ? parsed.accessibility : existing.accessibility,
+        first_hackathon:
+          "first_hackathon" in input || "firstHackathon" in input
+            ? parsed.first_hackathon
+            : dbToBool(existing.first_hackathon),
+        cs_career:
+          "cs_career" in input || "csCareer" in input ? parsed.cs_career : dbToBool(existing.cs_career),
+        motivation: "motivation" in input ? parsed.motivation : existing.motivation,
+        past_project: "pastProject" in input ? parsed.past_project : existing.past_project,
+        interests: "interests" in input ? parsed.interests : existing.interests,
+        community: "community" in input ? parsed.community : existing.community,
+      }
+    : parsed;
+
+  const saved = await persistApplication(env, user.id, data, existing);
+  if (!saved) {
+    return respond({ error: "Failed to save application" }, 500);
+  }
+
+  return respond({ application: toResponse(saved) }, existing ? 200 : 201);
+}
+
+async function handleUpsert(
   request: Request,
   env: Env,
   respond: JsonResponder,
+  user: { id: string },
 ): Promise<Response> {
-  const user = await authenticate(request, env);
-  if (!user) {
-    return respond({ error: "Unauthorized" }, 401);
+  const contentType = request.headers.get("content-type") || "";
+  if (contentType.includes("multipart/form-data")) {
+    return handleMultipartUpsert(request, env, user, respond);
   }
 
+  return handleJsonUpsert(request, env, user, respond);
+}
+
+async function handleGetMine(
+  env: Env,
+  respond: JsonResponder,
+  user: { id: string },
+): Promise<Response> {
   const application = await getApplicationByUserId(env, user.id);
   if (!application) {
     return respond({ error: "Application not found" }, 404);
@@ -214,18 +370,25 @@ export async function handleApplicationRoutes(
   request: Request,
   env: Env,
   respond: JsonResponder,
+  user: { id: string } | null,
 ): Promise<Response> {
   const url = new URL(request.url);
   const { pathname } = url;
   const { method } = request;
 
+  if (!user) {
+    return respond({ error: "Unauthorized" }, 401);
+  }
+
   if (pathname === "/api/applications" && method === "POST") {
-    return handleUpsert(request, env, respond);
+    return handleUpsert(request, env, respond, user);
   }
 
   if (pathname === "/api/applications/me" && method === "GET") {
-    return handleGetMine(request, env, respond);
+    return handleGetMine(env, respond, user);
   }
 
   return respond({ error: "Not found" }, 404);
 }
+
+export { toResponse, getApplicationByUserId };

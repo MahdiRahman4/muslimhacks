@@ -2,6 +2,7 @@ import type { Env } from "./env";
 import { handleAdminRoutes } from "./admin/routes";
 import { handleApplicationRoutes } from "./applications/routes";
 import { handleAuthRoutes } from "./auth/routes";
+import { authenticate } from "./auth/middleware";
 
 export type { Env } from "./env";
 
@@ -73,12 +74,13 @@ async function dispatch(
   const respond = (body: unknown, status = 200) =>
     jsonResponse(body, status, origin, requestOrigin);
 
-  if (pathname.startsWith("/api/auth/")) {
+  if (pathname.startsWith("/api/auth/") || pathname.startsWith("/api/users/")) {
     return handleAuthRoutes(request, env, respond);
   }
 
   if (pathname.startsWith("/api/applications/") || pathname === "/api/applications") {
-    return handleApplicationRoutes(request, env, respond);
+    const user = await authenticate(request, env);
+    return handleApplicationRoutes(request, env, respond, user);
   }
 
   if (pathname.startsWith("/api/admin/")) {
