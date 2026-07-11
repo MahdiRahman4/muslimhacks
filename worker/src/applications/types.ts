@@ -1,3 +1,5 @@
+import type { ApplicationStatus } from "./status";
+
 export type { ApplicationStatus, DashboardApplicationStatus } from "./status";
 export { DASHBOARD_STATUSES, toDashboardStatus } from "./status";
 

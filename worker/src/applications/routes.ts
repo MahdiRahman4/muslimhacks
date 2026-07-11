@@ -227,9 +227,9 @@ async function handleMultipartUpsert(
   }
 
   const resumeEntry = formData.get("resumeFile");
-  const resumeValidated = validateResumeFile(
-    resumeEntry instanceof File ? resumeEntry : null,
-  );
+  const resumeFile =
+    resumeEntry && typeof resumeEntry !== "string" ? (resumeEntry as File) : null;
+  const resumeValidated = validateResumeFile(resumeFile);
   if (!resumeValidated.ok) {
     return respond({ error: resumeValidated.error }, 400);
   }

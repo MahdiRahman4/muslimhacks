@@ -81,21 +81,13 @@ export async function authenticateClerk(
   }
 
   try {
-    // @clerk/backend v3 returns { data, errors } — not the payload directly
-    const result = await verifyToken(token, {
+    // @clerk/backend v3 verifyToken returns the JwtPayload directly and
+    // throws when the token is invalid/expired.
+    const payload = await verifyToken(token, {
       secretKey: env.CLERK_SECRET_KEY,
     });
 
-    if ("errors" in result && result.errors?.length) {
-      console.error(
-        "[clerk auth] verifyToken failed",
-        result.errors.map((error) => error.message ?? String(error)),
-      );
-      return null;
-    }
-
-    const payload = "data" in result ? result.data : null;
-    const clerkUserId = payload?.sub;
+    const clerkUserId = payload.sub;
     if (!clerkUserId) {
       console.error("[clerk auth] verified token missing sub");
       return null;

@@ -1,3 +1,5 @@
+import type { Env } from "../env";
+
 export type CheckinStatus = "not_checked_in" | "checked_in";
 
 export type MealKey =
