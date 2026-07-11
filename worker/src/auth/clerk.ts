@@ -78,7 +78,9 @@ export async function authenticateClerk(
   }
 
   try {
-    const payload = await verifyToken(token, { secretKey: env.CLERK_SECRET_KEY });
+    const payload = await verifyToken(token, {
+      secretKey: env.CLERK_SECRET_KEY,
+    });
     const clerkUserId = payload.sub;
     if (!clerkUserId) {
       return null;
@@ -90,7 +92,8 @@ export async function authenticateClerk(
     }
 
     return ensureUserForClerk(env, identity);
-  } catch {
+  } catch (error) {
+    console.error("[clerk auth] token verification failed", error);
     return null;
   }
 }

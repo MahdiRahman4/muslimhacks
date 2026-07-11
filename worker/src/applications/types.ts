@@ -1,4 +1,4 @@
-idkexport type ApplicationStatus = "draft" | "pending" | "approved" | "rejected";
+export type ApplicationStatus = "draft" | "pending" | "approved" | "rejected";
 
 export interface ApplicationRow {
   id: string;
