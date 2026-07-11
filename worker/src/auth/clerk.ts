@@ -16,7 +16,9 @@ async function resolveClerkIdentity(
   const clerkUser = await clerk.users.getUser(clerkUserId);
   const primaryId = clerkUser.primaryEmailAddressId;
   const primary = clerkUser.emailAddresses.find((entry) => entry.id === primaryId);
-  const email = (primary?.emailAddress ?? clerkUser.emailAddresses[0]?.emailAddress)?.toLowerCase();
+  const email = (
+    primary?.emailAddress ?? clerkUser.emailAddresses[0]?.emailAddress
+  )?.toLowerCase();
 
   if (!email) {
     return null;
@@ -69,6 +71,7 @@ export async function authenticateClerk(
   env: Env,
 ): Promise<AuthUser | null> {
   if (!env.CLERK_SECRET_KEY) {
+    console.error("[clerk auth] CLERK_SECRET_KEY is missing");
     return null;
   }
 
@@ -78,22 +81,35 @@ export async function authenticateClerk(
   }
 
   try {
-    const payload = await verifyToken(token, {
+    // @clerk/backend v3 returns { data, errors } — not the payload directly
+    const result = await verifyToken(token, {
       secretKey: env.CLERK_SECRET_KEY,
     });
-    const clerkUserId = payload.sub;
+
+    if ("errors" in result && result.errors?.length) {
+      console.error(
+        "[clerk auth] verifyToken failed",
+        result.errors.map((error) => error.message ?? String(error)),
+      );
+      return null;
+    }
+
+    const payload = "data" in result ? result.data : null;
+    const clerkUserId = payload?.sub;
     if (!clerkUserId) {
+      console.error("[clerk auth] verified token missing sub");
       return null;
     }
 
     const identity = await resolveClerkIdentity(env, clerkUserId);
     if (!identity) {
+      console.error("[clerk auth] could not resolve Clerk user email", clerkUserId);
       return null;
     }
 
     return ensureUserForClerk(env, identity);
   } catch (error) {
-    console.error("[clerk auth] token verification failed", error);
+    console.error("[clerk auth] token verification threw", error);
     return null;
   }
 }
