@@ -1,4 +1,4 @@
-import { getAuthToken } from "./auth";
+import { getAuthTokenAsync } from "./auth-token";
 import type {
   CheckinResponse,
   EventOpsSummary,
@@ -39,7 +39,7 @@ async function eventOpsFetch<T>(path: string, options: RequestInit = {}): Promis
     headers.set("Content-Type", "application/json");
   }
 
-  const token = getAuthToken();
+  const token = await getAuthTokenAsync();
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
@@ -100,7 +100,7 @@ export async function claimParticipantMeal(participantId: string, mealKey: MealK
 }
 
 export async function downloadCsvExport(path: string) {
-  const token = getAuthToken();
+  const token = await getAuthTokenAsync();
   const response = await fetch(`${apiBaseUrl}${path}`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });

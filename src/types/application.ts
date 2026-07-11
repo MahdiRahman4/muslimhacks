@@ -8,6 +8,18 @@ export interface AuthUser {
   role: UserRole;
 }
 
+export interface UserSummary {
+  full_name: string | null;
+  has_application: boolean;
+  application_status: ApplicationStatus | null;
+  submitted_at: number | null;
+}
+
+export interface UserSummaryResponse {
+  user: AuthUser;
+  summary: UserSummary;
+}
+
 export interface Application {
   id: string;
   user_id: string;
@@ -21,11 +33,19 @@ export interface Application {
   linkedin_url: string | null;
   portfolio_url: string | null;
   resume_url: string | null;
+  resume_key: string | null;
   why_join: string | null;
   project_idea: string | null;
   dietary_restrictions: string | null;
   needs_travel_support: boolean;
   gender: string | null;
+  accessibility: string | null;
+  first_hackathon: boolean | null;
+  cs_career: boolean | null;
+  motivation: string | null;
+  past_project: string | null;
+  interests: string | null;
+  community: string | null;
   status: ApplicationStatus;
   reviewed_by?: string | null;
   reviewed_at?: number | null;
@@ -45,23 +65,20 @@ export interface ApplicationReview {
 }
 
 export interface ApplicationFormValues {
-  // your fields       my fields 
-  full_name: string; // fullName
-  phone: string; // NA i wll add this in my form
-  school: string; // institution
-  program: string; // csCareer boolean
-  graduation_year: string; // NA
-  github_url: string; // github
-  linkedin_url: string; //linkedin
-  portfolio_url: string; //NA
-  resume_url: string; // resumeFile file upload is much more reliable
-  why_join: string; // NA
-  project_idea: string; // pastProject
-  dietary_restrictions: string; // dietary
-  needs_travel_support: boolean; // NA
-  gender: string; // NA i will add this in my form
-  // email, accessibilityNeeds, firstHackathon (boolean),
-  // and a couple of question in my figma design are not in your form
+  full_name: string;
+  phone: string;
+  school: string;
+  program: string;
+  graduation_year: string;
+  github_url: string;
+  linkedin_url: string;
+  portfolio_url: string;
+  resume_url: string;
+  why_join: string;
+  project_idea: string;
+  dietary_restrictions: string;
+  needs_travel_support: boolean;
+  gender: string;
 }
 
 export interface ApplicationForm {
@@ -94,6 +111,8 @@ export interface AdminApplicationSummary {
   gender: string | null;
   status: ApplicationStatus;
   needs_travel_support: boolean;
+  first_hackathon: boolean | null;
+  cs_career: boolean | null;
   reviewed_by: string | null;
   reviewed_at: number | null;
   created_at: number;

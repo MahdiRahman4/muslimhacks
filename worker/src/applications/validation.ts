@@ -4,6 +4,12 @@ const MAX_TEXT = 5000;
 const MAX_SHORT = 500;
 const MIN_GRAD_YEAR = 1950;
 const MAX_GRAD_YEAR = 2040;
+const MAX_RESUME_BYTES = 5 * 1024 * 1024;
+const ALLOWED_RESUME_TYPES = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
 
 function trimString(value: unknown, maxLen: number): string | null {
   if (value === null || value === undefined || value === "") {
@@ -24,13 +30,16 @@ function requireString(value: unknown, maxLen: number): string | null {
   return trimmed || null;
 }
 
-function parseUrl(value: unknown): string | null {
+function normalizeProfileUrl(value: unknown): string | null {
   const trimmed = trimString(value, 2048);
   if (!trimmed) {
     return null;
   }
+
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+
   try {
-    const url = new URL(trimmed);
+    const url = new URL(withProtocol);
     if (url.protocol !== "http:" && url.protocol !== "https:") {
       return null;
     }
@@ -38,6 +47,10 @@ function parseUrl(value: unknown): string | null {
   } catch {
     return null;
   }
+}
+
+function parseUrl(value: unknown): string | null {
+  return normalizeProfileUrl(value);
 }
 
 function parseGraduationYear(value: unknown): number | null {
@@ -58,6 +71,28 @@ function parseBoolean(value: unknown): boolean {
   return false;
 }
 
+function parseNullableBoolean(value: unknown): boolean | null {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+  if (value === false || value === 0 || value === "0" || value === "false") {
+    return false;
+  }
+  if (value === true || value === 1 || value === "1" || value === "true") {
+    return true;
+  }
+  return null;
+}
+
+function getField(input: Record<string, unknown>, ...keys: string[]): unknown {
+  for (const key of keys) {
+    if (key in input) {
+      return input[key];
+    }
+  }
+  return undefined;
+}
+
 export function validateApplicationBody(
   body: unknown,
 ): { ok: true; data: ApplicationInput } | { ok: false; error: string } {
@@ -67,80 +102,41 @@ export function validateApplicationBody(
 
   const input = body as Record<string, unknown>;
 
-  const full_name = requireString(input.full_name, 200);
+  const full_name = requireString(getField(input, "full_name", "fullName"), 200);
   if (!full_name) {
-    return { ok: false, error: "full_name is required (max 200 characters)" };
+    return { ok: false, error: "fullName is required (max 200 characters)" };
   }
 
-  const phone = trimString(input.phone, 50);
-  if (input.phone !== undefined && input.phone !== null && input.phone !== "" && !phone) {
-    return { ok: false, error: "phone must be a string (max 50 characters)" };
-  }
+  const phone = trimString(getField(input, "phone"), 50);
+  const school = trimString(getField(input, "school", "institution"), 200);
+  const program = trimString(getField(input, "program"), 200);
+  const graduation_year = parseGraduationYear(getField(input, "graduation_year", "graduationYear"));
 
-  const school = trimString(input.school, 200);
-  if (input.school !== undefined && input.school !== null && input.school !== "" && !school) {
-    return { ok: false, error: "school must be a string (max 200 characters)" };
-  }
+  const github_url = normalizeProfileUrl(getField(input, "github_url", "github"));
+  const linkedin_url = normalizeProfileUrl(getField(input, "linkedin_url", "linkedin"));
+  const portfolio_url = parseUrl(getField(input, "portfolio_url", "portfolioUrl"));
+  const resume_url = parseUrl(getField(input, "resume_url", "resumeUrl"));
 
-  const program = trimString(input.program, 200);
-  if (input.program !== undefined && input.program !== null && input.program !== "" && !program) {
-    return { ok: false, error: "program must be a string (max 200 characters)" };
-  }
+  const dietary_restrictions = trimString(
+    getField(input, "dietary_restrictions", "dietary"),
+    MAX_SHORT,
+  );
+  const gender = trimString(getField(input, "gender"), 50);
+  const accessibility = trimString(getField(input, "accessibility"), MAX_TEXT);
+  const motivation = trimString(getField(input, "motivation", "why_join", "whyJoin"), MAX_TEXT);
+  const past_project = trimString(
+    getField(input, "past_project", "pastProject", "project_idea", "projectIdea"),
+    MAX_TEXT,
+  );
+  const interests = trimString(getField(input, "interests"), MAX_TEXT);
+  const community = trimString(getField(input, "community"), MAX_TEXT);
 
-  const graduation_year = parseGraduationYear(input.graduation_year);
-  if (
-    input.graduation_year !== undefined &&
-    input.graduation_year !== null &&
-    input.graduation_year !== "" &&
-    graduation_year === null
-  ) {
-    return { ok: false, error: `graduation_year must be an integer between ${MIN_GRAD_YEAR} and ${MAX_GRAD_YEAR}` };
-  }
+  const why_join = trimString(getField(input, "why_join", "whyJoin"), MAX_TEXT) ?? motivation;
+  const project_idea =
+    trimString(getField(input, "project_idea", "projectIdea"), MAX_TEXT) ?? past_project;
 
-  const github_url = parseUrl(input.github_url);
-  if (input.github_url !== undefined && input.github_url !== null && input.github_url !== "" && !github_url) {
-    return { ok: false, error: "github_url must be a valid http or https URL" };
-  }
-
-  const linkedin_url = parseUrl(input.linkedin_url);
-  if (input.linkedin_url !== undefined && input.linkedin_url !== null && input.linkedin_url !== "" && !linkedin_url) {
-    return { ok: false, error: "linkedin_url must be a valid http or https URL" };
-  }
-
-  const portfolio_url = parseUrl(input.portfolio_url);
-  if (input.portfolio_url !== undefined && input.portfolio_url !== null && input.portfolio_url !== "" && !portfolio_url) {
-    return { ok: false, error: "portfolio_url must be a valid http or https URL" };
-  }
-
-  const resume_url = parseUrl(input.resume_url);
-  if (input.resume_url !== undefined && input.resume_url !== null && input.resume_url !== "" && !resume_url) {
-    return { ok: false, error: "resume_url must be a valid http or https URL" };
-  }
-
-  const why_join = trimString(input.why_join, MAX_TEXT);
-  if (input.why_join !== undefined && input.why_join !== null && input.why_join !== "" && !why_join) {
-    return { ok: false, error: `why_join must be a string (max ${MAX_TEXT} characters)` };
-  }
-
-  const project_idea = trimString(input.project_idea, MAX_TEXT);
-  if (input.project_idea !== undefined && input.project_idea !== null && input.project_idea !== "" && !project_idea) {
-    return { ok: false, error: `project_idea must be a string (max ${MAX_TEXT} characters)` };
-  }
-
-  const dietary_restrictions = trimString(input.dietary_restrictions, MAX_SHORT);
-  if (
-    input.dietary_restrictions !== undefined &&
-    input.dietary_restrictions !== null &&
-    input.dietary_restrictions !== "" &&
-    !dietary_restrictions
-  ) {
-    return { ok: false, error: `dietary_restrictions must be a string (max ${MAX_SHORT} characters)` };
-  }
-
-  const gender = trimString(input.gender, 50);
-  if (input.gender !== undefined && input.gender !== null && input.gender !== "" && !gender) {
-    return { ok: false, error: "gender must be a string (max 50 characters)" };
-  }
+  const first_hackathon = parseNullableBoolean(getField(input, "first_hackathon", "firstHackathon"));
+  const cs_career = parseNullableBoolean(getField(input, "cs_career", "csCareer"));
 
   return {
     ok: true,
@@ -154,11 +150,84 @@ export function validateApplicationBody(
       linkedin_url,
       portfolio_url,
       resume_url,
+      resume_key: null,
       why_join,
       project_idea,
       dietary_restrictions,
-      needs_travel_support: parseBoolean(input.needs_travel_support),
+      needs_travel_support: parseBoolean(getField(input, "needs_travel_support", "needsTravelSupport")),
       gender,
+      accessibility,
+      first_hackathon,
+      cs_career,
+      motivation,
+      past_project,
+      interests,
+      community,
     },
   };
+}
+
+export function validateApplicationFormFields(
+  fields: Record<string, string>,
+): { ok: true; data: ApplicationInput } | { ok: false; error: string } {
+  const validated = validateApplicationBody(fields);
+  if (!validated.ok) {
+    return validated;
+  }
+
+  const data = validated.data;
+
+  if (!data.github_url) {
+    return { ok: false, error: "github must be a valid profile URL" };
+  }
+  if (!data.linkedin_url) {
+    return { ok: false, error: "linkedin must be a valid profile URL" };
+  }
+  if (!data.dietary_restrictions) {
+    return { ok: false, error: "dietary is required" };
+  }
+  if (data.first_hackathon === null) {
+    return { ok: false, error: "firstHackathon is required" };
+  }
+  if (data.cs_career === null) {
+    return { ok: false, error: "csCareer is required" };
+  }
+  if (!data.motivation) {
+    return { ok: false, error: "motivation is required" };
+  }
+  if (!data.past_project) {
+    return { ok: false, error: "pastProject is required" };
+  }
+  if (!data.interests) {
+    return { ok: false, error: "interests is required" };
+  }
+
+  return { ok: true, data };
+}
+
+export function validateResumeFile(file: File | null): { ok: true; file: File } | { ok: false; error: string } {
+  if (!file || !(file instanceof File)) {
+    return { ok: false, error: "resumeFile is required" };
+  }
+
+  if (file.size <= 0 || file.size > MAX_RESUME_BYTES) {
+    return { ok: false, error: "resumeFile must be 5MB or smaller" };
+  }
+
+  const type = file.type || "application/octet-stream";
+  if (!ALLOWED_RESUME_TYPES.has(type) && !file.name.toLowerCase().endsWith(".pdf")) {
+    return { ok: false, error: "resumeFile must be a PDF or Word document" };
+  }
+
+  return { ok: true, file };
+}
+
+export async function formDataToFieldRecord(formData: FormData): Promise<Record<string, string>> {
+  const fields: Record<string, string> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === "string") {
+      fields[key] = value;
+    }
+  }
+  return fields;
 }

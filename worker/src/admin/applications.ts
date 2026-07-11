@@ -39,6 +39,8 @@ function toApplicationSummary(row: ApplicationWithEmail) {
     gender: row.gender,
     status: row.status,
     needs_travel_support: row.needs_travel_support === 1,
+    first_hackathon: row.first_hackathon === null ? null : row.first_hackathon === 1,
+    cs_career: row.cs_career === null ? null : row.cs_career === 1,
     reviewed_by: row.reviewed_by,
     reviewed_at: row.reviewed_at,
     created_at: row.created_at,
@@ -53,9 +55,15 @@ function toApplicationDetail(row: ApplicationWithEmail) {
     linkedin_url: row.linkedin_url,
     portfolio_url: row.portfolio_url,
     resume_url: row.resume_url,
+    resume_key: row.resume_key,
     why_join: row.why_join,
     project_idea: row.project_idea,
     dietary_restrictions: row.dietary_restrictions,
+    accessibility: row.accessibility,
+    motivation: row.motivation,
+    past_project: row.past_project,
+    interests: row.interests,
+    community: row.community,
   };
 }
 

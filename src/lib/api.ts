@@ -1,11 +1,12 @@
-import { clearAuthToken, getAuthToken } from "./auth";
+import { getAuthTokenAsync } from "./auth-token";
 import type {
   AdminApplicationSummary,
   Application,
+  ApplicationForm,
   ApplicationFormValues,
   ApplicationReview,
   AuthUser,
-  ApplicationForm,
+  UserSummaryResponse,
 } from "@/types/application";
 
 const rawApiBaseUrl = import.meta.env.VITE_API_URL || "";
@@ -38,11 +39,13 @@ export async function apiFetch<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const headers = new Headers(options.headers);
-  if (!headers.has("Content-Type") && options.body) {
+  const isFormData = options.body instanceof FormData;
+
+  if (!isFormData && !headers.has("Content-Type") && options.body) {
     headers.set("Content-Type", "application/json");
   }
 
-  const token = getAuthToken();
+  const token = await getAuthTokenAsync();
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
@@ -61,22 +64,12 @@ export async function apiFetch<T>(
   return data as T;
 }
 
-export async function registerUser(email: string, password: string) {
-  return apiFetch<{ token: string; user: AuthUser }>("/api/auth/register", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
-}
-
-export async function loginUser(email: string, password: string) {
-  return apiFetch<{ token: string; user: AuthUser }>("/api/auth/login", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
-}
-
 export async function fetchCurrentUser() {
   return apiFetch<{ user: AuthUser }>("/api/auth/me");
+}
+
+export async function fetchUserSummary() {
+  return apiFetch<UserSummaryResponse>("/api/users/me/summary");
 }
 
 export async function fetchMyApplication() {
@@ -90,7 +83,9 @@ export function toFormValues(application: Application): ApplicationFormValues {
     school: application.school ?? "",
     program: application.program ?? "",
     graduation_year:
-      application.graduation_year != null ? String(application.graduation_year) : "",
+      application.graduation_year != null
+        ? String(application.graduation_year)
+        : "",
     github_url: application.github_url ?? "",
     linkedin_url: application.linkedin_url ?? "",
     portfolio_url: application.portfolio_url ?? "",
@@ -113,13 +108,13 @@ export function toFormValuesV2(application: Application): ApplicationForm {
     linkedin: application.linkedin_url ?? "",
     resumeFile: null,
     dietary: application.dietary_restrictions ?? "",
-    accessibility: "",
-    firstHackathon: null,
-    csCareer: null,
-    motivation: application.why_join ?? "",
-    pastProject: application.project_idea ?? "",
-    interests: "",
-    community: "",
+    accessibility: application.accessibility ?? "",
+    firstHackathon: application.first_hackathon,
+    csCareer: application.cs_career,
+    motivation: application.motivation ?? application.why_join ?? "",
+    pastProject: application.past_project ?? application.project_idea ?? "",
+    interests: application.interests ?? "",
+    community: application.community ?? "",
   };
 }
 
@@ -144,6 +139,33 @@ export function toApplicationPayload(values: ApplicationFormValues) {
   };
 }
 
+export function toApplicationFormData(form: ApplicationForm): FormData {
+  const formData = new FormData();
+  formData.append("fullName", form.fullName);
+  formData.append("phone", form.phone);
+  formData.append("gender", form.gender);
+  formData.append("institution", form.institution);
+  formData.append("github", form.github);
+  formData.append("linkedin", form.linkedin);
+  if (form.resumeFile) formData.append("resumeFile", form.resumeFile);
+  formData.append("dietary", form.dietary);
+  formData.append("accessibility", form.accessibility);
+  formData.append("firstHackathon", String(form.firstHackathon));
+  formData.append("csCareer", String(form.csCareer));
+  formData.append("motivation", form.motivation);
+  formData.append("pastProject", form.pastProject);
+  formData.append("interests", form.interests);
+  formData.append("community", form.community);
+  return formData;
+}
+
+export async function submitApplicationForm(formData: FormData) {
+  return apiFetch<{ application: Application }>("/api/applications", {
+    method: "POST",
+    body: formData,
+  });
+}
+
 export async function saveApplication(values: ApplicationFormValues) {
   return apiFetch<{ application: Application }>("/api/applications", {
     method: "POST",
@@ -152,10 +174,7 @@ export async function saveApplication(values: ApplicationFormValues) {
 }
 
 export async function saveApplicationV2(payload: ApplicationForm) {
-  return apiFetch<{ application: Application }>("/api/applications", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  return submitApplicationForm(toApplicationFormData(payload));
 }
 
 export async function fetchAdminApplications(params: {
@@ -187,7 +206,11 @@ export async function fetchAdminApplication(id: string) {
 
 export async function submitApplicationReview(
   id: string,
-  body: { score?: number; notes?: string; status: "pending" | "approved" | "rejected" },
+  body: {
+    score?: number;
+    notes?: string;
+    status: "pending" | "approved" | "rejected";
+  },
 ) {
   return apiFetch<{ application: Application; review: ApplicationReview }>(
     `/api/admin/applications/${id}/review`,
@@ -199,37 +222,5 @@ export async function submitApplicationReview(
 }
 
 export function logoutUser() {
-  clearAuthToken();
-}
-
-export const APPLICATION_FIELD_NAMES = [
-  "full_name",
-  "phone",
-  "school",
-  "program",
-  "graduation_year",
-  "github_url",
-  "linkedin_url",
-  "portfolio_url",
-  "resume_url",
-  "why_join",
-  "project_idea",
-  "dietary_restrictions",
-  "needs_travel_support",
-  "gender",
-] as const;
-
-export function mapApiErrorToFieldErrors(
-  message: string,
-): Partial<Record<(typeof APPLICATION_FIELD_NAMES)[number], string>> {
-  for (const field of APPLICATION_FIELD_NAMES) {
-    if (
-      message.startsWith(`${field} `) ||
-      message.startsWith(`${field} must`) ||
-      message.startsWith(`${field} is`)
-    ) {
-      return { [field]: message };
-    }
-  }
-  return {};
+  // Clerk handles sign-out via useAuth().logout()
 }

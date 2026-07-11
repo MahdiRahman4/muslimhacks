@@ -151,8 +151,27 @@ const AdminApplicationDetailPage = () => {
             <DetailRow label="LinkedIn" value={application.linkedin_url} link />
             <DetailRow label="Portfolio" value={application.portfolio_url} link />
             <DetailRow label="Resume" value={application.resume_url} link />
-            <DetailRow label="Why join" value={application.why_join} multiline />
-            <DetailRow label="Project idea" value={application.project_idea} multiline />
+            <DetailRow label="Motivation" value={application.motivation ?? application.why_join} multiline />
+            <DetailRow label="Past project" value={application.past_project ?? application.project_idea} multiline />
+            <DetailRow label="Interests" value={application.interests} multiline />
+            <DetailRow label="Community" value={application.community} multiline />
+            <DetailRow label="Accessibility" value={application.accessibility} multiline />
+            <DetailRow
+              label="First hackathon"
+              value={
+                application.first_hackathon == null
+                  ? null
+                  : application.first_hackathon
+                    ? "Yes"
+                    : "No"
+              }
+            />
+            <DetailRow
+              label="CS career"
+              value={
+                application.cs_career == null ? null : application.cs_career ? "Yes" : "No"
+              }
+            />
             <DetailRow label="Dietary restrictions" value={application.dietary_restrictions} />
             <DetailRow
               label="Needs travel support"
