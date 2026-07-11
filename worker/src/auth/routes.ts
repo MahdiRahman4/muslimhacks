@@ -1,6 +1,7 @@
 import type { Env } from "../env";
 import { authenticate } from "./middleware";
 import { getApplicationByUserId } from "../applications/routes";
+import { toDashboardStatus } from "../applications/status";
 import type { AuthUser } from "./types";
 
 type JsonResponder = (body: unknown, status?: number) => Response;
@@ -37,13 +38,14 @@ async function handleUserSummary(
   }
 
   const application = await getApplicationByUserId(env, user.id);
+  const dashboardStatus = toDashboardStatus(application?.status);
 
   return respond({
     user: publicUser(user),
     summary: {
       full_name: application?.full_name ?? null,
       has_application: Boolean(application),
-      application_status: application?.status ?? null,
+      application_status: dashboardStatus,
       submitted_at: application?.updated_at ?? null,
     },
   });

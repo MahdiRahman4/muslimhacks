@@ -1,4 +1,5 @@
-export type ApplicationStatus = "draft" | "pending" | "approved" | "rejected";
+export type { ApplicationStatus, DashboardApplicationStatus } from "./status";
+export { DASHBOARD_STATUSES, toDashboardStatus } from "./status";
 
 export interface ApplicationRow {
   id: string;

@@ -1,6 +1,16 @@
 export type UserRole = "applicant" | "volunteer" | "admin";
 
+/** Internal DB / admin statuses */
 export type ApplicationStatus = "draft" | "pending" | "approved" | "rejected";
+
+/** Student dashboard statuses from GET /api/users/me/summary */
+export type DashboardApplicationStatus =
+  | "not_started"
+  | "in_progress"
+  | "submitted"
+  | "under_review"
+  | "accepted"
+  | "declined";
 
 export interface AuthUser {
   id: string;
@@ -11,7 +21,8 @@ export interface AuthUser {
 export interface UserSummary {
   full_name: string | null;
   has_application: boolean;
-  application_status: ApplicationStatus | null;
+  /** Always set — defaults to not_started when user has no application */
+  application_status: DashboardApplicationStatus;
   submitted_at: number | null;
 }
 
