@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSubscribe } from "@/hooks/useSubscribe";
 import SubscribeDialog from "@/components/SubscribeDialog";
+import { SignUpButton } from "@clerk/clerk-react";
 
 export default function OpeningSectionV2({
   displayInviteDialog,
@@ -150,13 +151,13 @@ export default function OpeningSectionV2({
           {/* Apply now button */}
           {displayApplyDialog && (
             <div className="flex flex-col gap-4 mt-2 animate-fade-in-up">
+              <SignUpButton mode="modal">
               <GoldButton
-                as={Link}
-                to="/login"
                 className="w-full sm:w-auto sm:self-start"
               >
                 Apply now
               </GoldButton>
+              </SignUpButton>
             </div>
           )}
         </div>

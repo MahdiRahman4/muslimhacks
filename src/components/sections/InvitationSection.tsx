@@ -6,8 +6,9 @@ import SubscribeDialog from "@/components/SubscribeDialog";
 import GoldButton from "../ui/goldButton";
 import { Link } from "react-router-dom";
 import { StarPattern } from "../Shared";
+import { SignUpButton } from "@clerk/clerk-react";
 
-const InvitationSection = ({displayInviteDialog, displayApplyDialog}) => {
+const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
   const {
     email,
     setEmail,
@@ -142,9 +143,9 @@ const InvitationSection = ({displayInviteDialog, displayApplyDialog}) => {
                 : "opacity-0 translate-y-8"
             }`}
           >
-            <GoldButton as={Link} to="/login" className="w-full sm:w-auto">
-              Apply now
-            </GoldButton>
+            <SignUpButton mode="modal">
+              <GoldButton className="w-full sm:w-auto">Apply now</GoldButton>
+            </SignUpButton>
           </div>
         )}
 
