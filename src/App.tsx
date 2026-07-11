@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
+import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { RequireAdmin, RequireAuth } from "@/components/auth/RequireAuth";
 import { AuthTokenBridge } from "@/components/auth/AuthTokenBridge";
 import Index from "./pages/Index";
@@ -19,6 +20,7 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
 
 const App = () => {
   if (!clerkPublishableKey) {
@@ -39,67 +41,69 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner position="top-right" />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/signin" element={<SignInPage />} />
-              <Route path="/signup" element={<SignUpPage />} />
-              <Route path="/login" element={<Navigate to="/signin" replace />} />
-              <Route
-                path="/user-dashboard"
-                element={<Navigate to="/dashboard" replace />}
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <RequireAuth>
-                    <Dashboard />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/apply"
-                element={
-                  <RequireAuth>
-                    <ApplicationSection />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/apply/submitted"
-                element={
-                  <RequireAuth>
-                    <ApplicationSubmittedSection />
-                  </RequireAuth>
-                }
-              />
-              <Route
-                path="/admin/applications"
-                element={
-                  <RequireAdmin>
-                    <AdminApplicationsPage />
-                  </RequireAdmin>
-                }
-              />
-              <Route
-                path="/admin/event-ops"
-                element={
-                  <RequireAdmin>
-                    <EventOpsDashboardPage />
-                  </RequireAdmin>
-                }
-              />
-              <Route
-                path="/admin/applications/:id"
-                element={
-                  <RequireAdmin>
-                    <AdminApplicationDetailPage />
-                  </RequireAdmin>
-                }
-              />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <GoogleReCaptchaProvider reCaptchaKey={recaptchaSiteKey}>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/signin" element={<SignInPage />} />
+                <Route path="/signup" element={<SignUpPage />} />
+                <Route path="/login" element={<Navigate to="/signin" replace />} />
+                <Route
+                  path="/user-dashboard"
+                  element={<Navigate to="/dashboard" replace />}
+                />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <RequireAuth>
+                      <Dashboard />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/apply"
+                  element={
+                    <RequireAuth>
+                      <ApplicationSection />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/apply/submitted"
+                  element={
+                    <RequireAuth>
+                      <ApplicationSubmittedSection />
+                    </RequireAuth>
+                  }
+                />
+                <Route
+                  path="/admin/applications"
+                  element={
+                    <RequireAdmin>
+                      <AdminApplicationsPage />
+                    </RequireAdmin>
+                  }
+                />
+                <Route
+                  path="/admin/event-ops"
+                  element={
+                    <RequireAdmin>
+                      <EventOpsDashboardPage />
+                    </RequireAdmin>
+                  }
+                />
+                <Route
+                  path="/admin/applications/:id"
+                  element={
+                    <RequireAdmin>
+                      <AdminApplicationDetailPage />
+                    </RequireAdmin>
+                  }
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </GoogleReCaptchaProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </ClerkProvider>
