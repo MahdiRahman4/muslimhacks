@@ -20,10 +20,16 @@ import { ApiError, fetchUserSummary } from "@/lib/api";
 import { toast } from "sonner";
 import { UserSummaryResponse } from "@/types/application";
 import { useEffect, useState } from "react";
-import { SignedIn, UserButton } from "@clerk/clerk-react";
 import Profile from "@/components/ui/profile";
 
-type AppStatus = "not_started" | "draft" | "pending" | "approved" | "rejected";
+/** Matches DashboardApplicationStatus returned by GET /api/users/me/summary */
+type AppStatus =
+  | "not_started"
+  | "in_progress"
+  | "submitted"
+  | "under_review"
+  | "accepted"
+  | "declined";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<
@@ -46,8 +52,8 @@ const STATUS_CONFIG: Record<
     bg: "rgba(201,187,168,0.08)",
     border: "rgba(201,187,168,0.2)",
   },
-  draft: {
-    label: "Draft",
+  in_progress: {
+    label: "In progress",
     description:
       "Your application is saved as a draft. Complete and submit it before the deadline.",
     icon: <PenLine size={20} />,
@@ -55,8 +61,8 @@ const STATUS_CONFIG: Record<
     bg: "rgba(231,192,120,0.08)",
     border: "rgba(221,168,83,0.3)",
   },
-  pending: {
-    label: "Pending",
+  submitted: {
+    label: "Submitted",
     description:
       "Your application has been submitted and is awaiting review. Jazakum Allahu khayran for your patience.",
     icon: <Clock size={20} />,
@@ -64,8 +70,17 @@ const STATUS_CONFIG: Record<
     bg: "rgba(155,124,176,0.1)",
     border: "rgba(155,124,176,0.3)",
   },
-  approved: {
-    label: "Approved",
+  under_review: {
+    label: "Under review",
+    description:
+      "Our team is reading your application carefully. This takes a little time — jazakum Allahu khayran for your patience.",
+    icon: <Clock size={20} />,
+    color: BRAND.purpleLight,
+    bg: "rgba(155,124,176,0.1)",
+    border: "rgba(155,124,176,0.3)",
+  },
+  accepted: {
+    label: "Accepted",
     description:
       "Alhamdulillah — you've been accepted to MuslimHacks 2026! Check your email for next steps.",
     icon: <CheckCircle2 size={20} />,
@@ -73,7 +88,7 @@ const STATUS_CONFIG: Record<
     bg: "rgba(95,168,119,0.1)",
     border: "rgba(95,168,119,0.35)",
   },
-  rejected: {
+  declined: {
     label: "Not selected",
     description:
       "Unfortunately we weren't able to offer you a spot this year. We hope to see you again next time, in shaa Allah.",
@@ -86,16 +101,17 @@ const STATUS_CONFIG: Record<
 
 // ─── Timeline steps ───────────────────────────────────────────────────────────
 const TIMELINE: { key: AppStatus; label: string }[] = [
-  { key: "draft", label: "Draft saved" },
-  { key: "pending", label: "Submitted" },
-  { key: "approved", label: "Decision" },
+  { key: "in_progress", label: "Draft saved" },
+  { key: "submitted", label: "Submitted" },
+  { key: "accepted", label: "Decision" },
 ];
 
 const TIMELINE_ORDER: AppStatus[] = [
   "not_started",
-  "draft",
-  "pending",
-  "approved",
+  "in_progress",
+  "submitted",
+  "under_review",
+  "accepted",
 ];
 
 function timelineIndex(status: AppStatus) {
@@ -211,19 +227,17 @@ export default function Dashboard() {
     null
   );
   const [status, setStatus] = useState<AppStatus>("not_started");
+
   useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);
-        setUserSummary(await fetchUserSummary());
-        console.log("User summary:", userSummary);
+        const response = await fetchUserSummary();
+        setUserSummary(response);
+        const apiStatus = response.summary.application_status;
         setStatus(
-          (userSummary?.summary?.application_status as AppStatus) ||
-            "not_started"
+          apiStatus in STATUS_CONFIG ? (apiStatus as AppStatus) : "not_started"
         );
-        if (!userSummary) {
-          navigate("/");
-        }
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
           toast.error("User summary not found.");
@@ -234,7 +248,6 @@ export default function Dashboard() {
               ? error.message
               : "Failed to load Dashboard"
           );
-          // navigate("/");
         }
       } finally {
         setLoading(false);
@@ -242,13 +255,29 @@ export default function Dashboard() {
     };
 
     void load();
-  }, [userSummary]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const cfg = STATUS_CONFIG[status];
-  const canEdit = status === "draft";
+  const canEdit = status === "in_progress";
   const hasStarted = status !== "not_started";
-  const firstName = userSummary?.summary?.full_name.split(" ")[0] || "";
-  const lastName = userSummary?.summary?.full_name.split(" ")[1] || "";
+  const fullName = userSummary?.summary?.full_name ?? "";
+  const [firstName = "", ...restName] = fullName.split(" ").filter(Boolean);
+  const lastName = restName.join(" ");
+
+  if (loading) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center font-sans"
+        style={{
+          background: `linear-gradient(160deg, ${BRAND.purpleDeep} 0%, ${BRAND.navy} 60%, ${BRAND.navyDeep} 100%)`,
+          color: BRAND.creamMuted,
+        }}
+      >
+        Loading your dashboard...
+      </div>
+    );
+  }
 
   return (
     <div
@@ -300,7 +329,16 @@ export default function Dashboard() {
               letterSpacing: "-0.02em",
             }}
           >
-            {`${firstName}, `} <GoldText>{lastName}</GoldText>
+            {firstName ? (
+              <>
+                {`${firstName} `}
+                <GoldText>{lastName}</GoldText>
+              </>
+            ) : (
+              <>
+                Ahlan, <GoldText>friend</GoldText>
+              </>
+            )}
           </h1>
           <p
             className="font-intimate text-lg"
