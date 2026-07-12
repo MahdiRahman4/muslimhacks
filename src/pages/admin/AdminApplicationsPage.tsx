@@ -212,7 +212,9 @@ const AdminApplicationsPage = () => {
       >
         <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <img src={muslimHacksLogo} alt="MuslimHacks" className="h-6 w-auto object-contain" />
+            <Link to="/">
+              <img src={muslimHacksLogo} alt="MuslimHacks" className="h-6 w-auto object-contain" />
+            </Link>
             <div className="h-4 w-px" style={{ background: "rgba(221,168,83,0.2)" }} />
             <span className="font-sans text-xs uppercase tracking-[0.22em] font-medium" style={{ color: BRAND.sand }}>
               Admin
