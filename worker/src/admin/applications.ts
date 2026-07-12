@@ -2,6 +2,13 @@ import type { Env } from "../env";
 import { requireAdmin, readJson, escapeLike, type JsonResponder } from "./auth";
 import type { ApplicationRow, ApplicationStatus } from "../applications/types";
 import { ensureParticipantForApprovedApplication } from "../participants/service";
+import {
+  buildCsv,
+  csvDownloadResponse,
+  exportFilename,
+  formatCsvBoolean,
+  formatCsvTimestamp,
+} from "./csv";
 
 type ReviewStatus = "pending" | "approved" | "rejected";
 
@@ -376,6 +383,117 @@ async function handleReviewApplication(
   }, 201);
 }
 
+const APPLICATION_EXPORT_HEADERS = [
+  "id",
+  "user_id",
+  "email",
+  "full_name",
+  "phone",
+  "school",
+  "program",
+  "graduation_year",
+  "gender",
+  "github_url",
+  "linkedin_url",
+  "portfolio_url",
+  "resume_url",
+  "resume_key",
+  "dietary_restrictions",
+  "accessibility",
+  "needs_travel_support",
+  "first_hackathon",
+  "cs_career",
+  "why_join",
+  "project_idea",
+  "motivation",
+  "past_project",
+  "interests",
+  "community",
+  "status",
+  "created_at",
+  "updated_at",
+];
+
+function formatNullableBool(value: number | null): string {
+  if (value === null) {
+    return "";
+  }
+  return formatCsvBoolean(value);
+}
+
+function applicationToCsvRow(row: ApplicationWithEmail): unknown[] {
+  return [
+    row.id,
+    row.user_id,
+    row.email,
+    row.full_name,
+    row.phone,
+    row.school,
+    row.program,
+    row.graduation_year,
+    row.gender,
+    row.github_url,
+    row.linkedin_url,
+    row.portfolio_url,
+    row.resume_url,
+    row.resume_key,
+    row.dietary_restrictions,
+    row.accessibility,
+    formatCsvBoolean(row.needs_travel_support),
+    formatNullableBool(row.first_hackathon),
+    formatNullableBool(row.cs_career),
+    row.why_join,
+    row.project_idea,
+    row.motivation,
+    row.past_project,
+    row.interests,
+    row.community,
+    row.status,
+    formatCsvTimestamp(row.created_at),
+    formatCsvTimestamp(row.updated_at),
+  ];
+}
+
+async function handleExportApplications(
+  request: Request,
+  env: Env,
+  respond: JsonResponder,
+): Promise<Response> {
+  const auth = await requireAdmin(request, env, respond);
+  if (auth instanceof Response) {
+    return auth;
+  }
+
+  const url = new URL(request.url);
+  const filters = parseListFilters(url);
+  if ("error" in filters) {
+    return respond({ error: filters.error }, 400);
+  }
+
+  const { where, binds } = buildListQuery(filters);
+  const rows = await env.DB.prepare(
+    `SELECT a.*, u.email
+     FROM applications a
+     JOIN users u ON u.id = a.user_id
+     ${where}
+     ORDER BY a.updated_at DESC`,
+  )
+    .bind(...binds)
+    .all<ApplicationWithEmail>();
+
+  const csv = buildCsv(
+    APPLICATION_EXPORT_HEADERS,
+    (rows.results ?? []).map(applicationToCsvRow),
+  );
+
+  return csvDownloadResponse(
+    exportFilename("applications-export"),
+    csv,
+    env.CORS_ORIGIN || "*",
+    request.headers.get("Origin"),
+  );
+}
+
 export async function handleAdminApplicationRoutes(
   request: Request,
   env: Env,
@@ -387,6 +505,11 @@ export async function handleAdminApplicationRoutes(
 
   if (pathname === "/api/admin/applications" && method === "GET") {
     return handleListApplications(request, env, respond);
+  }
+
+  // Must be before the /:id detail route so "export" is not treated as an id
+  if (pathname === "/api/admin/applications/export" && method === "GET") {
+    return handleExportApplications(request, env, respond);
   }
 
   const detailMatch = pathname.match(/^\/api\/admin\/applications\/([^/]+)$/);

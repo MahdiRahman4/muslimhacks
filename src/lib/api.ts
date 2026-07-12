@@ -198,6 +198,43 @@ export async function fetchAdminApplications(params: {
   }>(`/api/admin/applications${suffix}`);
 }
 
+/** Download registration answers as CSV (respects current admin filters). */
+export async function downloadApplicationsCsv(params: {
+  status?: string;
+  gender?: string;
+  search?: string;
+} = {}) {
+  const query = new URLSearchParams();
+  if (params.status) query.set("status", params.status);
+  if (params.gender) query.set("gender", params.gender);
+  if (params.search) query.set("search", params.search);
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+
+  const token = await getAuthTokenAsync();
+  const response = await fetch(`${apiBaseUrl}/api/admin/applications/export${suffix}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (!response.ok) {
+    const data = (await parseJson(response)) as { error?: string } | null;
+    throw new ApiError(response.status, data?.error || "Export failed");
+  }
+
+  const blob = await response.blob();
+  const disposition = response.headers.get("Content-Disposition");
+  const filename =
+    disposition?.match(/filename="([^"]+)"/)?.[1] || "applications-export.csv";
+
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
 export async function fetchAdminApplication(id: string) {
   return apiFetch<{ application: Application; reviews: ApplicationReview[] }>(
     `/api/admin/applications/${id}`,

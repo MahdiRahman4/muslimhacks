@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchAdminApplications } from "@/lib/api";
+import { downloadApplicationsCsv, fetchAdminApplications } from "@/lib/api";
 import { useAuth } from "@/hooks/useAuth";
 import type { AdminApplicationSummary } from "@/types/application";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ const AdminApplicationsPage = () => {
   const [gender, setGender] = useState("");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadApplications = async (nextOffset = offset) => {
@@ -68,6 +69,22 @@ const AdminApplicationsPage = () => {
     void loadApplications(0);
   };
 
+  const handleExportCsv = async () => {
+    setExporting(true);
+    setError(null);
+    try {
+      await downloadApplicationsCsv({
+        status: status || undefined,
+        gender: gender || undefined,
+        search: search || undefined,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to export CSV");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -77,6 +94,14 @@ const AdminApplicationsPage = () => {
             <p className="text-sm text-muted-foreground">Review hackathon registrations</p>
           </div>
           <div className="flex items-center gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => void handleExportCsv()}
+              disabled={exporting}
+            >
+              {exporting ? "Exporting..." : "Export CSV"}
+            </Button>
             <Link to="/admin/event-ops" className="text-sm underline">
               Event Ops
             </Link>
