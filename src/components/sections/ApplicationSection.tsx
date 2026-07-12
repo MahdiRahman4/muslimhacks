@@ -559,7 +559,9 @@ export default function ApplicationSection() {
     //   });
     //   return;
     // }
-    if (Object.keys(errs).length > 0) return;
+    if (Object.keys(errs).length > 0) {
+      setSubmitAttempted(false);
+      return;}
 
     const applicationFormPayload = toApplicationPayload(form);
     try {

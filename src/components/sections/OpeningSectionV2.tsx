@@ -6,11 +6,17 @@ import { Button } from "@/components/ui/button";
 import { useSubscribe } from "@/hooks/useSubscribe";
 import SubscribeDialog from "@/components/SubscribeDialog";
 import { SignedIn, SignedOut, SignUpButton } from "@clerk/clerk-react";
+import {
+  getApplicationButtonLabel,
+  useApplicationButtonState,
+} from "@/contexts/ApplicationButtonContext";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function OpeningSectionV2({
   displayInviteDialog,
   displayApplyDialog,
 }) {
+  const { isAdmin } = useAuth();
   const heroPhotoUrl =
     "https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1600&q=80";
 
@@ -26,6 +32,8 @@ export default function OpeningSectionV2({
     handleConfirm,
     handleGoBack,
   } = useSubscribe();
+  const { hasApplication } = useApplicationButtonState();
+  const applicationButtonLabel = getApplicationButtonLabel(hasApplication);
 
   return (
     <section
@@ -153,18 +161,30 @@ export default function OpeningSectionV2({
               <SignedOut>
                 <SignUpButton mode="modal">
                   <GoldButton className="w-full sm:w-auto sm:self-start">
-                    Apply now
+                    {applicationButtonLabel}
                   </GoldButton>
                 </SignUpButton>
               </SignedOut>
               <SignedIn>
-                <GoldButton
-                  as={Link}
-                  to="/apply"
-                  className="w-full sm:w-auto sm:self-start"
-                >
-                  Apply now
-                </GoldButton>
+                {(!isAdmin) && (
+
+                  <GoldButton
+                    as={Link}
+                    to="/apply"
+                    className="w-full sm:w-auto sm:self-start"
+                  >
+                    {applicationButtonLabel}
+                  </GoldButton>
+                )}
+                {(isAdmin) && (
+                  <GoldButton
+                    as={Link}
+                    to="/admin/applications"
+                    className="w-full sm:w-auto sm:self-start"
+                  >
+                    Go to Applications
+                  </GoldButton>
+                )}
               </SignedIn>
             </div>
           )}

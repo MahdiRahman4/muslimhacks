@@ -26,6 +26,10 @@ export class ApiError extends Error {
   }
 }
 
+export function mapApiErrorToFieldErrors(message: string): Record<string, string> {
+  return {};
+}
+
 async function parseJson(response: Response): Promise<unknown> {
   const contentType = response.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {

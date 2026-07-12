@@ -12,6 +12,11 @@ import GoldButton from "./ui/goldButton";
 import muslimHacksLogo from "../assets/muslimhacks-logo-white.svg";
 import Profile from "./ui/profile";
 import { LogIn } from "lucide-react";
+import {
+  getApplicationButtonLabel,
+  useApplicationButtonState,
+} from "@/contexts/ApplicationButtonContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
   { label: "Home", href: "#home" },
@@ -21,9 +26,12 @@ const navItems = [
 ];
 
 const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
+  const { isAdmin } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { hasApplication } = useApplicationButtonState();
+  const applicationButtonLabel = getApplicationButtonLabel(hasApplication);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -98,12 +106,12 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
                   isNavButton={false}
                   displayApplyDialog={displayApplyDialog}
                 >
-                  Apply now
+                  Apply Now
                 </GoldButton>
               </SignUpButton>
             </SignedOut>
           )}
-          <SignedIn>
+          {(isAdmin && applicationButtonLabel === "Apply now") && (<SignedIn>
             <GoldButton
               as={Link}
               to="/apply"
@@ -111,16 +119,17 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               isNavButton={true}
               displayApplyDialog={displayApplyDialog}
             >
-              Apply now
+              {applicationButtonLabel}
             </GoldButton>
-          </SignedIn>
+          </SignedIn>)}
         </div>
 
         <div className="hidden md:flex items-center gap-3 ml-4">
           <SignedOut>
             <SignInButton mode="modal">
-              <button className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream">
-                <LogIn size={15} /><span>Sign in</span>
+              <button className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream flex items-center gap-2">
+                <LogIn size={15} />
+                <span>Sign in</span>
               </button>
             </SignInButton>
           </SignedOut>
@@ -139,13 +148,13 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               </GoldButton>
             </SignInButton>
           </SignedOut>
-          
+
           <SignedIn>
             <Profile/>
           </SignedIn>
         </div>
       </div>
-      
+
     </nav>
   );
 };

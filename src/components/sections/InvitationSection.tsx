@@ -7,8 +7,15 @@ import GoldButton from "../ui/goldButton";
 import { Link } from "react-router-dom";
 import { StarPattern } from "../Shared";
 import { SignedIn, SignedOut, SignUpButton } from "@clerk/clerk-react";
+import {
+  getApplicationButtonLabel,
+  useApplicationButtonState,
+} from "@/contexts/ApplicationButtonContext";
+import { useAuth } from "@/hooks/useAuth";
 
 const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
+  const { isAdmin } = useAuth();
+
   const {
     email,
     setEmail,
@@ -34,6 +41,8 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
   const [closingRef, closingVisible] = useScrollReveal<HTMLDivElement>({
     threshold: 0.3,
   });
+  const { hasApplication } = useApplicationButtonState();
+  const applicationButtonLabel = getApplicationButtonLabel(hasApplication);
 
   return (
     <section
@@ -66,11 +75,10 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
         {/* The invitation */}
         <div
           ref={titleRef}
-          className={`mb-16 transition-all duration-1000 ${
-            titleVisible
+          className={`mb-16 transition-all duration-1000 ${titleVisible
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-8"
-          }`}
+            }`}
         >
           <p className="font-sans text-base uppercase tracking-[0.3em] text-amber mb-6">
             Registrations are open!
@@ -90,11 +98,10 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
         {displayInviteDialog && (
           <div
             ref={formRef}
-            className={`mb-20 transition-all duration-1000 delay-200 ${
-              formVisible
+            className={`mb-20 transition-all duration-1000 delay-200 ${formVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-8"
-            }`}
+              }`}
           >
             <form
               onSubmit={handleSubmit}
@@ -137,25 +144,38 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
         {displayApplyDialog && (
           <div
             ref={applyRef}
-            className={`mb-16 transition-all duration-1000 delay-200 ${
-              applyVisible
+            className={`mb-16 transition-all duration-1000 delay-200 ${applyVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-8"
-            }`}
+              }`}
           >
             <SignedOut>
               <SignUpButton mode="modal">
-                <GoldButton className="w-full sm:w-auto">Apply now</GoldButton>
+                <GoldButton className="w-full sm:w-auto">
+                  {applicationButtonLabel}
+                </GoldButton>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
-              <GoldButton
-                as={Link}
-                to="/apply"
-                className="w-full sm:w-auto"
-              >
-                Apply now
-              </GoldButton>
+              {(!isAdmin) && (
+
+                <GoldButton
+                  as={Link}
+                  to="/apply"
+                  className="w-full sm:w-auto"
+                >
+                  {applicationButtonLabel}
+                </GoldButton>
+              )}
+              {(isAdmin) && (
+                <GoldButton
+                  as={Link}
+                  to="/admin/applications"
+                  className="w-full sm:w-auto"
+                >
+                  Go to Applications
+                </GoldButton>
+              )}
             </SignedIn>
           </div>
         )}
@@ -163,11 +183,10 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
         {/* Closing blessing */}
         <div
           ref={closingRef}
-          className={`transition-all duration-1000 delay-400 ${
-            closingVisible
+          className={`transition-all duration-1000 delay-400 ${closingVisible
               ? "opacity-100 translate-y-0"
               : "opacity-0 translate-y-8"
-          }`}
+            }`}
         >
           <div className="mb-8">
             <p className="font-arabic text-3xl text-cream/50 mb-4" dir="rtl">
