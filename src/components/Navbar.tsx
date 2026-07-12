@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import GoldButton from "./ui/goldButton";
 import muslimHacksLogo from "../assets/muslimhacks-logo-white.svg";
+import Profile from "./ui/profile";
 
 const navItems = [
   { label: "Home", href: "#home" },
@@ -21,6 +22,7 @@ const navItems = [
 const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -88,16 +90,29 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
             </a>
           ))}
           {displayApplyDialog && (
-            <SignUpButton mode="modal">
-              <GoldButton
-                className="w-full sm:w-auto sm:self-start"
-                isNavButton={false}
-                displayApplyDialog={displayApplyDialog}
-              >
-                Apply now
-              </GoldButton>
-            </SignUpButton>
+            <SignedOut>
+              <SignUpButton mode="modal">
+                <GoldButton
+                  className="w-full sm:w-auto sm:self-start"
+                  isNavButton={false}
+                  displayApplyDialog={displayApplyDialog}
+                >
+                  Apply now
+                </GoldButton>
+              </SignUpButton>
+            </SignedOut>
           )}
+          <SignedIn>
+            <GoldButton
+              as={Link}
+              to="/apply"
+              className="w-full sm:w-auto sm:self-start"
+              isNavButton={true}
+              displayApplyDialog={displayApplyDialog}
+            >
+              Apply now
+            </GoldButton>
+          </SignedIn>
         </div>
 
         <div className="hidden md:flex items-center gap-3 ml-4">
@@ -107,44 +122,28 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
                 Sign in
               </button>
             </SignInButton>
-            {/* <SignUpButton mode="modal">
-              <button className="font-sans text-sm uppercase tracking-wider px-4 py-2 rounded-full bg-amber text-plum-deep hover:brightness-110">
-                Apply
-              </button>
-            </SignUpButton> */}
           </SignedOut>
-          <SignedIn>
-            <Link
-              to="/dashboard"
-              className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream"
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/apply"
-              className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream"
-            >
-              Application
-            </Link>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
+          <Profile />
         </div>
 
-        <button className="md:hidden text-cream p-2" aria-label="Menu">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
+        <div className="md:hidden flex items-center gap-2">
+          <SignedOut>
+            <SignInButton mode="modal">
+              <GoldButton
+                className="w-full sm:w-auto sm:self-start"
+                isNavButton={false}
+                displayApplyDialog={displayApplyDialog}
+              >
+                Sign in
+              </GoldButton>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <Profile/>
+          </SignedIn>
+        </div>
       </div>
+      
     </nav>
   );
 };

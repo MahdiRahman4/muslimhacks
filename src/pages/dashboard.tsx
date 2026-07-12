@@ -5,8 +5,7 @@ import {
   Clock,
   XCircle,
   ChevronRight,
-  LogOut,
-  User,
+  PenLine,
 } from "lucide-react";
 import {
   BRAND,
@@ -15,26 +14,16 @@ import {
   Eyebrow,
   GLOBAL_CSS,
 } from "../components/Shared";
-import muslimHacksLogo from "../assets/muslimhacks-logo.png";
+import muslimHacksLogo from "../assets/muslimhacks-logo-white.svg";
 import Footer from "@/components/ui/footer";
-import { useAuth } from "@/hooks/useAuth";
+import { ApiError, fetchUserSummary } from "@/lib/api";
+import { toast } from "sonner";
+import { UserSummaryResponse } from "@/types/application";
+import { useEffect, useState } from "react";
+import { SignedIn, UserButton } from "@clerk/clerk-react";
+import Profile from "@/components/ui/profile";
 
-// ─── Mock application state — swap with real data from your backend ───────────
-const MOCK_USER = {
-  name: "Yusuf Al-Farsi",
-  email: "yusuf@example.com",
-};
-
-type AppStatus =
-  | "not_started"
-  | "in_progress"
-  | "submitted"
-  | "under_review"
-  | "accepted"
-  | "waitlisted"
-  | "declined";
-
-const MOCK_STATUS: AppStatus = "under_review";
+type AppStatus = "not_started" | "draft" | "pending" | "approved" | "rejected";
 
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<
@@ -51,41 +40,32 @@ const STATUS_CONFIG: Record<
   not_started: {
     label: "Not started",
     description:
-      "You haven't started your application yet. Applications close soon — start today.",
+      "You haven't started your application yet. Applications close soon — begin when you're ready.",
     icon: <FileText size={20} />,
     color: BRAND.sand,
     bg: "rgba(201,187,168,0.08)",
     border: "rgba(201,187,168,0.2)",
   },
-  in_progress: {
-    label: "In progress",
+  draft: {
+    label: "Draft",
     description:
-      "Your application is saved but not yet submitted. Complete and submit before the deadline.",
-    icon: <Clock size={20} />,
+      "Your application is saved as a draft. Complete and submit it before the deadline.",
+    icon: <PenLine size={20} />,
     color: BRAND.goldSoft,
     bg: "rgba(231,192,120,0.08)",
     border: "rgba(221,168,83,0.3)",
   },
-  submitted: {
-    label: "Submitted",
+  pending: {
+    label: "Pending",
     description:
-      "Your application has been received. Our team will begin reviewing it shortly, in shaa Allah.",
-    icon: <CheckCircle2 size={20} />,
-    color: BRAND.gold,
-    bg: "rgba(221,168,83,0.08)",
-    border: "rgba(221,168,83,0.3)",
-  },
-  under_review: {
-    label: "Under review",
-    description:
-      "Our team is reading your application carefully. This takes a little time — jazakum Allahu khayran for your patience.",
+      "Your application has been submitted and is awaiting review. Jazakum Allahu khayran for your patience.",
     icon: <Clock size={20} />,
     color: BRAND.purpleLight,
     bg: "rgba(155,124,176,0.1)",
     border: "rgba(155,124,176,0.3)",
   },
-  accepted: {
-    label: "Accepted",
+  approved: {
+    label: "Approved",
     description:
       "Alhamdulillah — you've been accepted to MuslimHacks 2026! Check your email for next steps.",
     icon: <CheckCircle2 size={20} />,
@@ -93,16 +73,7 @@ const STATUS_CONFIG: Record<
     bg: "rgba(95,168,119,0.1)",
     border: "rgba(95,168,119,0.35)",
   },
-  waitlisted: {
-    label: "Waitlisted",
-    description:
-      "You're on the waitlist. We'll reach out if a spot opens up — keep making du'a.",
-    icon: <Clock size={20} />,
-    color: BRAND.goldSoft,
-    bg: "rgba(231,192,120,0.08)",
-    border: "rgba(221,168,83,0.25)",
-  },
-  declined: {
+  rejected: {
     label: "Not selected",
     description:
       "Unfortunately we weren't able to offer you a spot this year. We hope to see you again next time, in shaa Allah.",
@@ -115,17 +86,16 @@ const STATUS_CONFIG: Record<
 
 // ─── Timeline steps ───────────────────────────────────────────────────────────
 const TIMELINE: { key: AppStatus; label: string }[] = [
-  { key: "submitted", label: "Application submitted" },
-  { key: "under_review", label: "Under review" },
-  { key: "accepted", label: "Decision sent" },
+  { key: "draft", label: "Draft saved" },
+  { key: "pending", label: "Submitted" },
+  { key: "approved", label: "Decision" },
 ];
 
 const TIMELINE_ORDER: AppStatus[] = [
   "not_started",
-  "in_progress",
-  "submitted",
-  "under_review",
-  "accepted",
+  "draft",
+  "pending",
+  "approved",
 ];
 
 function timelineIndex(status: AppStatus) {
@@ -235,15 +205,50 @@ function StatCard({
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 export default function Dashboard() {
-  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
-  const status = MOCK_STATUS;
+  const [loading, setLoading] = useState(true);
+  const [userSummary, setUserSummary] = useState<UserSummaryResponse | null>(
+    null
+  );
+  const [status, setStatus] = useState<AppStatus>("not_started");
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setUserSummary(await fetchUserSummary());
+        console.log("User summary:", userSummary);
+        setStatus(
+          (userSummary?.summary?.application_status as AppStatus) ||
+            "not_started"
+        );
+        if (!userSummary) {
+          navigate("/");
+        }
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404) {
+          toast.error("User summary not found.");
+          navigate("/");
+        } else {
+          toast.error(
+            error instanceof ApiError
+              ? error.message
+              : "Failed to load Dashboard"
+          );
+          // navigate("/");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void load();
+  }, [userSummary]);
+
   const cfg = STATUS_CONFIG[status];
-  const canEdit =
-    status === "not_started" ||
-    status === "in_progress" ||
-    status === "submitted";
+  const canEdit = status === "draft";
   const hasStarted = status !== "not_started";
+  const firstName = userSummary?.summary?.full_name.split(" ")[0] || "";
+  const lastName = userSummary?.summary?.full_name.split(" ")[1] || "";
 
   return (
     <div
@@ -268,7 +273,7 @@ export default function Dashboard() {
           borderColor: "rgba(221,168,83,0.1)",
         }}
       >
-        <div className="w-100 mx-0 px-6 py-4 flex items-center justify-between">
+        <div className="w-100 px-6 py-4 flex items-center justify-between">
           <Link to="/">
             <img
               src={muslimHacksLogo}
@@ -278,42 +283,13 @@ export default function Dashboard() {
           </Link>
 
           <div className="flex items-center gap-4">
-            {/* User pill */}
-            <div
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full"
-              style={{
-                background: "rgba(245,238,227,0.07)",
-                border: "1px solid rgba(221,168,83,0.15)",
-              }}
-            >
-              <div
-                className="w-5 h-5 rounded-full flex items-center justify-center"
-                style={{ background: BRAND.purple }}
-              >
-                <User size={11} style={{ color: BRAND.cream }} />
-              </div>
-              <span
-                className="font-sans text-xs"
-                style={{ color: BRAND.creamMuted }}
-              >
-                {MOCK_USER.name.split(" ")[0]}
-              </span>
-            </div>
-
-            <button
-              onClick={logout}
-              className="flex items-center gap-1.5 font-sans text-xs hover:opacity-70 transition-opacity focus-visible:ring-2 rounded"
-              style={{ color: BRAND.sand }}
-            >
-              <LogOut size={13} />
-              Sign out
-            </button>
+            <Profile />
           </div>
         </div>
       </header>
 
       {/* Page */}
-      <main className="relative z-10 max-w-4xl mx-auto px-6 py-10 flex flex-col gap-10">
+      <main className="relative z-10 max-w-4xl mx-auto px-6 py-14 flex flex-col gap-10">
         {/* Greeting */}
         <div className="flex flex-col gap-2">
           <Eyebrow>Dashboard</Eyebrow>
@@ -324,7 +300,7 @@ export default function Dashboard() {
               letterSpacing: "-0.02em",
             }}
           >
-            Ahlan, <GoldText>{MOCK_USER.name.split(" ")[0]}</GoldText>
+            {`${firstName}, `} <GoldText>{lastName}</GoldText>
           </h1>
           <p
             className="font-intimate text-lg"

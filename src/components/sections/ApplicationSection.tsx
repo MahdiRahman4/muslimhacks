@@ -5,7 +5,6 @@ import NotFound from "../../pages/NotFound";
 import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
 import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
 import Footer from "../ui/footer";
-import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { Application, ApplicationForm } from "@/types/application";
 import {
@@ -14,6 +13,7 @@ import {
   ApiError,
   toFormValuesV2,
 } from "@/lib/api";
+import Profile from "../ui/profile";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -487,7 +487,6 @@ function Field({ children }: { children: React.ReactNode }) {
 
 // ─── Apply page ───────────────────────────────────────────────────────────────
 export default function ApplicationSection() {
-  const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState<ApplicationForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
@@ -522,6 +521,9 @@ export default function ApplicationSection() {
         const data = await fetchMyApplication();
         setApplication(data.application);
         setForm(toFormValuesV2(data.application) ?? EMPTY_FORM);
+        if (data.application){
+          setIsApplicationFilled(true);
+        }
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
           setApplication(null);
@@ -618,7 +620,7 @@ export default function ApplicationSection() {
         }}
       >
         {/* Nav row */}
-        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="w-100 px-6 py-4 flex items-center justify-between">
           <span
             className="font-sans text-xs tabular-nums"
             style={{ color: BRAND.sand }}
@@ -626,38 +628,7 @@ export default function ApplicationSection() {
             {progress}% complete
           </span>
           <div className="flex items-center gap-3">
-            {isAdmin && (
-              <>
-                <Link
-                  to="/admin/applications"
-                  className="font-sans text-xs uppercase tracking-[0.2em] flex items-center gap-1.5 hover:opacity-70 transition-opacity focus-visible:ring-2 rounded"
-                  style={{ color: BRAND.purpleLight }}
-                >
-                  Admin
-                </Link>
-                <span style={{ color: BRAND.purpleLight }}> | </span>
-              </>
-            )}
-            {!isAdmin && application && (
-              <>
-                <Link
-                  to="/dashboard"
-                  className="font-sans text-xs uppercase tracking-[0.2em] flex items-center gap-1.5 hover:opacity-70 transition-opacity focus-visible:ring-2 rounded"
-                  style={{ color: BRAND.purpleLight }}
-                >
-                  Back
-                </Link>
-                <span style={{ color: BRAND.purpleLight }}> | </span>
-              </>
-            )}
-            <button
-              onClick={logout}
-              className="flex items-center gap-1.5 font-sans text-xs hover:opacity-70 transition-opacity focus-visible:ring-2 rounded"
-              style={{ color: BRAND.sand }}
-            >
-              <LogOut size={13} />
-              Sign out
-            </button>
+            <Profile/>
           </div>
         </div>
 
@@ -1002,7 +973,7 @@ export default function ApplicationSection() {
                   }}
                   disabled={submitAttempted}
                 >
-                  {setSubmitAttempted ? "Submitting..." : application ? "Update application" : "Submit application"}
+                  {submitAttempted ? "Submitting..." : application ? "Update application" : "Submit application"}
                 </button>
 
                 <p
