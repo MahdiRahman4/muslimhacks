@@ -1,5 +1,19 @@
 type TokenGetter = () => Promise<string | null>;
 
+/** Seconds until this JWT expires, by the browser clock. NaN if undecodable. */
+export function tokenRemainingSeconds(token: string): number {
+  try {
+    const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(atob(base64)) as { exp?: number };
+    if (!payload.exp) {
+      return NaN;
+    }
+    return (payload.exp * 1000 - Date.now()) / 1000;
+  } catch {
+    return NaN;
+  }
+}
+
 let tokenGetter: TokenGetter | null = null;
 
 export function setAuthTokenGetter(getter: TokenGetter) {
