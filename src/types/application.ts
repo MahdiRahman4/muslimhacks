@@ -3,14 +3,8 @@ export type UserRole = "applicant" | "volunteer" | "admin";
 /** Internal DB / admin statuses */
 export type ApplicationStatus = "draft" | "pending" | "approved" | "rejected";
 
-/** Student dashboard statuses from GET /api/users/me/summary */
-export type DashboardApplicationStatus =
-  | "not_started"
-  | "in_progress"
-  | "submitted"
-  | "under_review"
-  | "accepted"
-  | "declined";
+/** Student dashboard statuses from GET /api/users/me/summary: raw status + not_started default */
+export type DashboardApplicationStatus = "not_started" | ApplicationStatus;
 
 export interface AuthUser {
   id: string;

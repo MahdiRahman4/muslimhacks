@@ -215,15 +215,12 @@ export default function Dashboard() {
     const load = async () => {
       try {
         setLoading(true);
-        setUserSummary(await fetchUserSummary());
-        console.log("User summary:", userSummary);
+        const response = await fetchUserSummary();
+        setUserSummary(response);
+        const apiStatus = response.summary.application_status;
         setStatus(
-          (userSummary?.summary?.application_status as AppStatus) ||
-            "not_started"
+          apiStatus in STATUS_CONFIG ? (apiStatus as AppStatus) : "not_started"
         );
-        if (!userSummary) {
-          navigate("/");
-        }
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
           toast.error("User summary not found.");
@@ -234,7 +231,6 @@ export default function Dashboard() {
               ? error.message
               : "Failed to load Dashboard"
           );
-          // navigate("/");
         }
       } finally {
         setLoading(false);
@@ -242,13 +238,15 @@ export default function Dashboard() {
     };
 
     void load();
-  }, [userSummary]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const cfg = STATUS_CONFIG[status];
   const canEdit = status === "draft";
   const hasStarted = status !== "not_started";
-  const firstName = userSummary?.summary?.full_name.split(" ")[0] || "";
-  const lastName = userSummary?.summary?.full_name.split(" ")[1] || "";
+  const nameParts = (userSummary?.summary?.full_name ?? "").split(" ").filter(Boolean);
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ");
 
   return (
     <div
@@ -300,7 +298,16 @@ export default function Dashboard() {
               letterSpacing: "-0.02em",
             }}
           >
-            {`${firstName}, `} <GoldText>{lastName}</GoldText>
+            {firstName ? (
+              <>
+                {`${firstName} `}
+                <GoldText>{lastName}</GoldText>
+              </>
+            ) : (
+              <>
+                Ahlan, <GoldText>friend</GoldText>
+              </>
+            )}
           </h1>
           <p
             className="font-intimate text-lg"
