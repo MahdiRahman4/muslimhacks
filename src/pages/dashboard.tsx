@@ -234,7 +234,7 @@ export default function Dashboard() {
               ? error.message
               : "Failed to load Dashboard"
           );
-          // navigate("/");
+          // navigate("/"); 
         }
       } finally {
         setLoading(false);

@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
+import { clerkAppearance } from "@/lib/clerkTheme";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { RequireAdmin, RequireAuth } from "@/components/auth/RequireAuth";
 import { AuthTokenBridge } from "@/components/auth/AuthTokenBridge";
@@ -35,7 +36,7 @@ const App = () => {
   }
 
   return (
-    <ClerkProvider publishableKey={clerkPublishableKey}>
+    <ClerkProvider publishableKey={clerkPublishableKey} appearance={clerkAppearance}>
       <QueryClientProvider client={queryClient}>
         <AuthTokenBridge />
         <TooltipProvider>

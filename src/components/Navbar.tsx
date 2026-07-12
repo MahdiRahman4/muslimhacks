@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import GoldButton from "./ui/goldButton";
 import muslimHacksLogo from "../assets/muslimhacks-logo-white.svg";
 import Profile from "./ui/profile";
+import { LogIn } from "lucide-react";
 
 const navItems = [
   { label: "Home", href: "#home" },
@@ -119,7 +120,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
           <SignedOut>
             <SignInButton mode="modal">
               <button className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream">
-                Sign in
+                <LogIn size={15} /><span>Sign in</span>
               </button>
             </SignInButton>
           </SignedOut>
@@ -138,6 +139,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               </GoldButton>
             </SignInButton>
           </SignedOut>
+          
           <SignedIn>
             <Profile/>
           </SignedIn>
