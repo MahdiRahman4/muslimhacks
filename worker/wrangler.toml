@@ -5,6 +5,13 @@ compatibility_date = "2025-02-04"
 [vars]
 CORS_ORIGIN = "http://localhost:8080"
 JWT_SECRET = "local-dev-jwt-secret-change-before-production"
+EMAIL_FROM = "info@muslimhacks.ca"
+
+# Cloudflare Email Sending (beta). Needs muslimhacks.ca onboarded + Active zone.
+# remote = true so local wrangler dev can send real emails.
+[[send_email]]
+name = "EMAIL"
+remote = true
 
 [[d1_databases]]
 binding = "DB"

@@ -1,4 +1,6 @@
+import type { AuthUser } from "../auth/types";
 import type { Env } from "../env";
+import { sendApplicationConfirmationEmail } from "../email/application-confirmation";
 import type { ApplicationInput, ApplicationResponse, ApplicationRow } from "./types";
 import {
   formDataToFieldRecord,
@@ -246,7 +248,7 @@ async function persistApplication(
 async function handleMultipartUpsert(
   request: Request,
   env: Env,
-  user: { id: string },
+  user: AuthUser,
   respond: JsonResponder,
 ): Promise<Response> {
   let formData: FormData;
@@ -300,13 +302,17 @@ async function handleMultipartUpsert(
     return respond({ error: "Failed to save application" }, 500);
   }
 
+  if (!existing) {
+    await sendApplicationConfirmationEmail(env, user.email, saved.full_name);
+  }
+
   return respond({ application: toResponse(saved) }, existing ? 200 : 201);
 }
 
 async function handleJsonUpsert(
   request: Request,
   env: Env,
-  user: { id: string },
+  user: AuthUser,
   respond: JsonResponder,
 ): Promise<Response> {
   const body = await readJson(request);
@@ -381,6 +387,11 @@ async function handleJsonUpsert(
     return respond({ error: "Failed to save application" }, 500);
   }
 
+  // Confirmation only on first create (not draft updates)
+  if (!existing) {
+    await sendApplicationConfirmationEmail(env, user.email, saved.full_name);
+  }
+
   return respond({ application: toResponse(saved) }, existing ? 200 : 201);
 }
 
@@ -388,7 +399,7 @@ async function handleUpsert(
   request: Request,
   env: Env,
   respond: JsonResponder,
-  user: { id: string },
+  user: AuthUser,
 ): Promise<Response> {
   const contentType = request.headers.get("content-type") || "";
   if (contentType.includes("multipart/form-data")) {
@@ -433,7 +444,7 @@ export async function handleApplicationRoutes(
   request: Request,
   env: Env,
   respond: JsonResponder,
-  user: { id: string } | null,
+  user: AuthUser | null,
 ): Promise<Response> {
   const url = new URL(request.url);
   const { pathname } = url;
