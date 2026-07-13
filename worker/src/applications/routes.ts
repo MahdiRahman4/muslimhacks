@@ -93,6 +93,42 @@ async function uploadResume(
   return { key, url: key };
 }
 
+export function resumeFilenameFromKey(key: string): string {
+  const base = key.split("/").pop() || "resume.pdf";
+  // Strip leading timestamp- prefix: 1719...-filename.pdf
+  return base.replace(/^\d+-/, "") || base;
+}
+
+export async function streamResumeFromR2(
+  env: Env,
+  resumeKey: string,
+): Promise<Response | null> {
+  if (!env.RESUMES) {
+    return null;
+  }
+
+  const object = await env.RESUMES.get(resumeKey);
+  if (!object) {
+    return null;
+  }
+
+  const filename = resumeFilenameFromKey(resumeKey);
+  const headers = new Headers();
+  headers.set(
+    "Content-Type",
+    object.httpMetadata?.contentType || "application/pdf",
+  );
+  headers.set(
+    "Content-Disposition",
+    `inline; filename="${filename.replace(/"/g, "")}"`,
+  );
+  if (object.size != null) {
+    headers.set("Content-Length", String(object.size));
+  }
+
+  return new Response(object.body, { status: 200, headers });
+}
+
 async function persistApplication(
   env: Env,
   userId: string,
@@ -229,25 +265,34 @@ async function handleMultipartUpsert(
   const resumeEntry = formData.get("resumeFile");
   const resumeFile =
     resumeEntry && typeof resumeEntry !== "string" ? (resumeEntry as File) : null;
-  const resumeValidated = validateResumeFile(resumeFile);
-  if (!resumeValidated.ok) {
-    return respond({ error: resumeValidated.error }, 400);
-  }
 
   const existing = await getApplicationByUserId(env, user.id);
   if (existing && (existing.status === "approved" || existing.status === "rejected")) {
     return respond({ error: "Application can no longer be edited" }, 403);
   }
 
-  const upload = await uploadResume(env, user.id, resumeValidated.file);
-  if ("error" in upload) {
-    return respond({ error: upload.error }, 500);
+  let resumeKey = existing?.resume_key ?? null;
+  let resumeUrl = existing?.resume_url ?? null;
+
+  if (resumeFile) {
+    const resumeValidated = validateResumeFile(resumeFile);
+    if (!resumeValidated.ok) {
+      return respond({ error: resumeValidated.error }, 400);
+    }
+    const upload = await uploadResume(env, user.id, resumeValidated.file);
+    if ("error" in upload) {
+      return respond({ error: upload.error }, 500);
+    }
+    resumeKey = upload.key;
+    resumeUrl = upload.url;
+  } else if (!existing?.resume_key) {
+    return respond({ error: "resumeFile is required" }, 400);
   }
 
   const data: ApplicationInput = {
     ...validated.data,
-    resume_key: upload.key,
-    resume_url: upload.url,
+    resume_key: resumeKey,
+    resume_url: resumeUrl,
   };
 
   const saved = await persistApplication(env, user.id, data, existing);
@@ -366,6 +411,24 @@ async function handleGetMine(
   return respond({ application: toResponse(application) });
 }
 
+async function handleGetMyResume(
+  env: Env,
+  respond: JsonResponder,
+  user: { id: string },
+): Promise<Response> {
+  const application = await getApplicationByUserId(env, user.id);
+  if (!application?.resume_key) {
+    return respond({ error: "Resume not found" }, 404);
+  }
+
+  const fileResponse = await streamResumeFromR2(env, application.resume_key);
+  if (!fileResponse) {
+    return respond({ error: "Resume not found" }, 404);
+  }
+
+  return fileResponse;
+}
+
 export async function handleApplicationRoutes(
   request: Request,
   env: Env,
@@ -386,6 +449,10 @@ export async function handleApplicationRoutes(
 
   if (pathname === "/api/applications/me" && method === "GET") {
     return handleGetMine(env, respond, user);
+  }
+
+  if (pathname === "/api/applications/me/resume" && method === "GET") {
+    return handleGetMyResume(env, respond, user);
   }
 
   return respond({ error: "Not found" }, 404);

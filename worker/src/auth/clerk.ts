@@ -6,6 +6,20 @@ import { bearerToken } from "./jwt";
 interface ClerkIdentity {
   clerkId: string;
   email: string;
+  fullName: string | null;
+}
+
+function clerkFullName(clerkUser: {
+  firstName: string | null;
+  lastName: string | null;
+  fullName: string | null;
+}): string | null {
+  const fromParts = [clerkUser.firstName, clerkUser.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  const name = fromParts || clerkUser.fullName?.trim() || "";
+  return name || null;
 }
 
 async function resolveClerkIdentity(
@@ -24,7 +38,11 @@ async function resolveClerkIdentity(
     return null;
   }
 
-  return { clerkId: clerkUserId, email };
+  return {
+    clerkId: clerkUserId,
+    email,
+    fullName: clerkFullName(clerkUser),
+  };
 }
 
 export async function ensureUserForClerk(
@@ -38,7 +56,7 @@ export async function ensureUserForClerk(
     .first<{ id: string; email: string; role: Role }>();
 
   if (byClerk) {
-    return byClerk;
+    return { ...byClerk, full_name: identity.fullName };
   }
 
   const byEmail = await env.DB.prepare(
@@ -51,7 +69,7 @@ export async function ensureUserForClerk(
     await env.DB.prepare("UPDATE users SET clerk_id = ? WHERE id = ?")
       .bind(identity.clerkId, byEmail.id)
       .run();
-    return byEmail;
+    return { ...byEmail, full_name: identity.fullName };
   }
 
   const id = crypto.randomUUID();
@@ -63,7 +81,12 @@ export async function ensureUserForClerk(
     .bind(id, identity.clerkId, identity.email, "", "applicant", createdAt)
     .run();
 
-  return { id, email: identity.email, role: "applicant" };
+  return {
+    id,
+    email: identity.email,
+    role: "applicant",
+    full_name: identity.fullName,
+  };
 }
 
 export async function authenticateClerk(

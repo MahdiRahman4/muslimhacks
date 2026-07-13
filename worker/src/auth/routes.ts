@@ -43,7 +43,8 @@ async function handleUserSummary(
   return respond({
     user: publicUser(user),
     summary: {
-      full_name: application?.full_name ?? null,
+      // Prefer application name; fall back to Clerk first+last for pre-submit dashboard
+      full_name: application?.full_name ?? user.full_name ?? null,
       has_application: Boolean(application),
       application_status: dashboardStatus,
       submitted_at: application?.updated_at ?? null,

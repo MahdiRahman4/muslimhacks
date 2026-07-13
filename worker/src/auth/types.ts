@@ -6,6 +6,8 @@ export interface AuthUser {
   id: string;
   email: string;
   role: Role;
+  /** From Clerk first+last name when available */
+  full_name: string | null;
 }
 
 export interface JwtPayload {

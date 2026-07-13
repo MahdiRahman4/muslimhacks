@@ -10,10 +10,12 @@ import { Application, ApplicationForm } from "@/types/application";
 import {
   saveApplicationV2,
   fetchMyApplication,
+  fetchMyResumeFile,
   ApiError,
   toFormValuesV2,
 } from "@/lib/api";
 import Profile from "../ui/profile";
+import { useUser } from "@clerk/clerk-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,7 +69,7 @@ function calcProgress(form: ApplicationForm): number {
   return Math.round((filled.length / REQUIRED_FIELDS.length) * 100);
 }
 
-function validate(form: ApplicationForm): Errors {
+function validate(form: ApplicationForm, requireResume: boolean): Errors {
   const e: Errors = {};
   if (!form.fullName.trim()) e.fullName = "Please enter your full name.";
   if (!form.phone) e.phone = "Phone number is required.";
@@ -76,7 +78,7 @@ function validate(form: ApplicationForm): Errors {
   if (!form.gender.trim()) e.gender = "Please enter your gender.";
   if (!form.github.trim()) e.github = "Please enter your GitHub profile.";
   if (!form.linkedin.trim()) e.linkedin = "Please enter your LinkedIn profile.";
-  if (!form.resumeFile) e.resumeFile = "Please upload your resume or CV.";
+  if (requireResume && !form.resumeFile) e.resumeFile = "Please upload your resume or CV.";
   if (!form.dietary.trim())
     e.dietary = "Please let us know about dietary needs.";
   if (form.firstHackathon === null)
@@ -488,6 +490,7 @@ function Field({ children }: { children: React.ReactNode }) {
 // ─── Apply page ───────────────────────────────────────────────────────────────
 export default function ApplicationSection() {
   const navigate = useNavigate();
+  const { user: clerkUser } = useUser();
   const [form, setForm] = useState<ApplicationForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -520,14 +523,34 @@ export default function ApplicationSection() {
         setLoading(true);
         const data = await fetchMyApplication();
         setApplication(data.application);
-        setForm(toFormValuesV2(data.application) ?? EMPTY_FORM);
-        if (data.application){
+        const values = toFormValuesV2(data.application) ?? EMPTY_FORM;
+
+        if (data.application?.resume_key || data.application?.resume_url) {
+          try {
+            const resumeFile = await fetchMyResumeFile();
+            if (resumeFile) {
+              values.resumeFile = resumeFile;
+            }
+          } catch {
+            // Keep form usable even if resume download fails
+          }
+        }
+
+        setForm(values);
+        if (data.application) {
           setIsApplicationFilled(true);
         }
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
           setApplication(null);
-          setForm(EMPTY_FORM);
+          const clerkName = [clerkUser?.firstName, clerkUser?.lastName]
+            .filter(Boolean)
+            .join(" ")
+            .trim();
+          setForm({
+            ...EMPTY_FORM,
+            fullName: clerkName || EMPTY_FORM.fullName,
+          });
         } else {
           toast.error(
             error instanceof ApiError
@@ -541,12 +564,14 @@ export default function ApplicationSection() {
     };
 
     void load();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clerkUser?.id]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitAttempted(true);
-    const errs = validate(form);
+    const requireResume = !(application?.resume_key || application?.resume_url);
+    const errs = validate(form, requireResume);
     setErrors(errs);
     // scrolling works sometimes need more time to fix this
     // if (Object.keys(errs).length > 0) {

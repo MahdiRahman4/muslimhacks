@@ -7,6 +7,7 @@ import Profile from "@/components/ui/profile";
 import {
   ApiError,
   fetchAdminApplication,
+  openAdminApplicationResume,
   submitApplicationReview,
 } from "@/lib/api";
 import type { Application, ApplicationReview, ApplicationStatus } from "@/types/application";
@@ -255,19 +256,26 @@ const AdminApplicationDetailPage = () => {
               <Field label="Portfolio" value={application.portfolio_url} isLink />
 
               {/* Resume */}
-              {application.resume_url ? (
+              {application.resume_key || application.resume_url ? (
                 <div className="flex flex-col gap-0.5 py-3" style={{ borderBottom: "1px solid rgba(221,168,83,0.07)" }}>
                   <span className="font-sans text-xs uppercase tracking-[0.18em]" style={{ color: BRAND.sand }}>Resume</span>
-                  <a
-                    href={application.resume_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void openAdminApplicationResume(application.id).catch((err) => {
+                        setError(
+                          err instanceof ApiError
+                            ? err.message
+                            : "Failed to open resume",
+                        );
+                      });
+                    }}
                     className="inline-flex items-center gap-2 font-sans text-sm mt-1 px-3.5 py-2 rounded-lg w-fit transition-all hover:opacity-80"
                     style={{ background: "rgba(221,168,83,0.08)", border: "1px solid rgba(221,168,83,0.2)", color: BRAND.gold }}
                   >
                     <FileText size={13} />
                     View resume
-                  </a>
+                  </button>
                 </div>
               ) : (
                 <Field label="Resume" value={null} />

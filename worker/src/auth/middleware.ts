@@ -31,6 +31,7 @@ async function authenticateLegacyJwt(
     id: row.id,
     email: row.email,
     role: row.role,
+    full_name: null,
   };
 }
 

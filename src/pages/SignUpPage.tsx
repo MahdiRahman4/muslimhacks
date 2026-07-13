@@ -58,7 +58,12 @@ const SignUpPage = () => (
     </div>
 
     <div className="relative z-10 w-full max-w-md flex flex-col gap-6">
-      <SignUp forceRedirectUrl="/apply" signInUrl="/signin" />
+      <SignUp
+        forceRedirectUrl="/apply"
+        signInUrl="/signin"
+        // First + last name must be Required in Clerk Dashboard
+        // (User & authentication → Email, phone, username → Name)
+      />
       <p className="text-center font-sans text-xs" style={{ color: BRAND.sand }}>
         <Link
           to="/"

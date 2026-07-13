@@ -80,6 +80,48 @@ export async function fetchMyApplication() {
   return apiFetch<{ application: Application }>("/api/applications/me");
 }
 
+/** Fetch the applicant's stored resume as a File (for update form autofill). */
+export async function fetchMyResumeFile(): Promise<File | null> {
+  const token = await getAuthTokenAsync();
+  const response = await fetch(`${apiBaseUrl}/api/applications/me/resume`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new ApiError(response.status, "Failed to load resume");
+  }
+
+  const blob = await response.blob();
+  const disposition = response.headers.get("Content-Disposition") || "";
+  const match = disposition.match(/filename="([^"]+)"/);
+  const filename = match?.[1] || "resume.pdf";
+  const type = response.headers.get("Content-Type") || blob.type || "application/pdf";
+  return new File([blob], filename, { type });
+}
+
+/** Open an applicant resume in a new tab (admin). Uses auth header, not a bare href. */
+export async function openAdminApplicationResume(applicationId: string) {
+  const token = await getAuthTokenAsync();
+  const response = await fetch(
+    `${apiBaseUrl}/api/admin/applications/${applicationId}/resume`,
+    { headers: token ? { Authorization: `Bearer ${token}` } : {} },
+  );
+
+  if (!response.ok) {
+    const data = (await parseJson(response)) as { error?: string } | null;
+    throw new ApiError(response.status, data?.error || "Failed to open resume");
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  window.open(url, "_blank", "noopener,noreferrer");
+  // Revoke after the tab has a chance to load
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
 export function toFormValues(application: Application): ApplicationFormValues {
   return {
     full_name: application.full_name,

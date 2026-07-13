@@ -1,7 +1,13 @@
 import type { Env } from "../env";
 import { requireAdmin, readJson, escapeLike, type JsonResponder } from "./auth";
 import type { ApplicationRow, ApplicationStatus } from "../applications/types";
-import { ensureParticipantForApprovedApplication } from "../participants/service";
+import {
+  ensureParticipantForApprovedApplication,
+} from "../participants/service";
+import {
+  resumeFilenameFromKey,
+  streamResumeFromR2,
+} from "../applications/routes";
 import {
   buildCsv,
   csvDownloadResponse,
@@ -396,8 +402,8 @@ const APPLICATION_EXPORT_HEADERS = [
   "github_url",
   "linkedin_url",
   "portfolio_url",
-  "resume_url",
-  "resume_key",
+  "resume_filename",
+  "resume_download_path",
   "dietary_restrictions",
   "accessibility",
   "needs_travel_support",
@@ -422,6 +428,7 @@ function formatNullableBool(value: number | null): string {
 }
 
 function applicationToCsvRow(row: ApplicationWithEmail): unknown[] {
+  const resumeKey = row.resume_key;
   return [
     row.id,
     row.user_id,
@@ -435,8 +442,8 @@ function applicationToCsvRow(row: ApplicationWithEmail): unknown[] {
     row.github_url,
     row.linkedin_url,
     row.portfolio_url,
-    row.resume_url,
-    row.resume_key,
+    resumeKey ? resumeFilenameFromKey(resumeKey) : "",
+    resumeKey ? `/api/admin/applications/${row.id}/resume` : "",
     row.dietary_restrictions,
     row.accessibility,
     formatCsvBoolean(row.needs_travel_support),
@@ -494,6 +501,43 @@ async function handleExportApplications(
   );
 }
 
+async function handleAdminGetResume(
+  request: Request,
+  env: Env,
+  respond: JsonResponder,
+  applicationId: string,
+): Promise<Response> {
+  const auth = await requireAdmin(request, env, respond);
+  if (auth instanceof Response) {
+    return auth;
+  }
+
+  const application = await getApplicationWithEmail(env, applicationId);
+  if (!application?.resume_key) {
+    return respond({ error: "Resume not found" }, 404);
+  }
+
+  const fileResponse = await streamResumeFromR2(env, application.resume_key);
+  if (!fileResponse) {
+    return respond({ error: "Resume not found" }, 404);
+  }
+
+  // Attach CORS so browser can open the PDF in a new tab from the admin UI
+  const origin = env.CORS_ORIGIN || "*";
+  const requestOrigin = request.headers.get("Origin");
+  const allowOrigin =
+    origin === "*" || (requestOrigin && requestOrigin === origin)
+      ? requestOrigin ?? origin
+      : origin;
+  const headers = new Headers(fileResponse.headers);
+  headers.set("Access-Control-Allow-Origin", allowOrigin);
+
+  return new Response(fileResponse.body, {
+    status: 200,
+    headers,
+  });
+}
+
 export async function handleAdminApplicationRoutes(
   request: Request,
   env: Env,
@@ -510,6 +554,13 @@ export async function handleAdminApplicationRoutes(
   // Must be before the /:id detail route so "export" is not treated as an id
   if (pathname === "/api/admin/applications/export" && method === "GET") {
     return handleExportApplications(request, env, respond);
+  }
+
+  const resumeMatch = pathname.match(
+    /^\/api\/admin\/applications\/([^/]+)\/resume$/,
+  );
+  if (resumeMatch && method === "GET") {
+    return handleAdminGetResume(request, env, respond, resumeMatch[1]);
   }
 
   const detailMatch = pathname.match(/^\/api\/admin\/applications\/([^/]+)$/);
