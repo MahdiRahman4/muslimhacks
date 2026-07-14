@@ -27,3 +27,8 @@ worker/.dev.vars
 *.sln
 *.sw?
 worker/.wrangler/
+.vercel
+.env
+.env.local
+.env.*.local
+!.env.example

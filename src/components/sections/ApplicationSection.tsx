@@ -34,6 +34,7 @@ const EMPTY_FORM: ApplicationForm = {
   dietary: "",
   accessibility: "",
   firstHackathon: null,
+  hackathonCount: null,
   csCareer: null,
   motivation: "",
   pastProject: "",
@@ -46,6 +47,7 @@ const REQUIRED_FIELDS: (keyof ApplicationForm)[] = [
   "fullName",
   "phone",
   "gender",
+  "institution",
   "github",
   "linkedin",
   "resumeFile",
@@ -57,37 +59,91 @@ const REQUIRED_FIELDS: (keyof ApplicationForm)[] = [
   "interests",
 ];
 
+function isValidGithubUrl(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const url = new URL(withProtocol);
+    const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+    if (host !== "github.com") return false;
+    const parts = url.pathname.split("/").filter(Boolean);
+    return parts.length >= 1 && parts[0].toLowerCase() !== "settings";
+  } catch {
+    return false;
+  }
+}
+
+function isValidLinkedinUrl(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  const withProtocol = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  try {
+    const url = new URL(withProtocol);
+    const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+    if (host !== "linkedin.com") return false;
+    const parts = url.pathname.split("/").filter(Boolean);
+    if (parts.length < 2) return false;
+    const kind = parts[0].toLowerCase();
+    if (kind === "in" || kind === "pub") return Boolean(parts[1]);
+    if (kind === "mwlite") return parts[1]?.toLowerCase() === "in" && Boolean(parts[2]);
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 function calcProgress(form: ApplicationForm): number {
-  const filled = REQUIRED_FIELDS.filter((k) => {
+  const keys = [...REQUIRED_FIELDS];
+  if (form.firstHackathon === false) {
+    keys.push("hackathonCount");
+  }
+  const filled = keys.filter((k) => {
     const v = form[k];
     if (v === null || v === undefined) return false;
     if (typeof v === "string") return v.trim().length > 0;
     if (v instanceof File) return true;
     if (typeof v === "boolean") return true;
+    if (typeof v === "number") return v >= 1;
     return false;
   });
-  return Math.round((filled.length / REQUIRED_FIELDS.length) * 100);
+  return Math.round((filled.length / keys.length) * 100);
 }
 
 function validate(form: ApplicationForm, requireResume: boolean): Errors {
   const e: Errors = {};
-  if (!form.fullName.trim()) e.fullName = "Please enter your full name.";
+  if (!form.fullName.trim()) e.fullName = "Full name is required.";
   if (!form.phone) e.phone = "Phone number is required.";
   else if (form.phone.length < 7) e.phone = "Phone number is too short.";
   else if (form.phone.length > 16) e.phone = "Phone number is too long.";
-  if (!form.gender.trim()) e.gender = "Please enter your gender.";
-  if (!form.github.trim()) e.github = "Please enter your GitHub profile.";
-  if (!form.linkedin.trim()) e.linkedin = "Please enter your LinkedIn profile.";
-  if (requireResume && !form.resumeFile) e.resumeFile = "Please upload your resume or CV.";
+  if (!form.gender.trim()) e.gender = "Select Male or Female.";
+  else if (form.gender !== "male" && form.gender !== "female") {
+    e.gender = "Select Male or Female.";
+  }
+  if (!form.institution.trim()) e.institution = "School / university is required.";
+  if (!form.github.trim()) e.github = "GitHub is required.";
+  else if (!isValidGithubUrl(form.github)) {
+    e.github = "Use a link like github.com/yourusername.";
+  }
+  if (!form.linkedin.trim()) e.linkedin = "LinkedIn is required.";
+  else if (!isValidLinkedinUrl(form.linkedin)) {
+    e.linkedin = "Use a link like linkedin.com/in/yourname.";
+  }
+  if (requireResume && !form.resumeFile) e.resumeFile = "Resume is required.";
   if (!form.dietary.trim())
-    e.dietary = "Please let us know about dietary needs.";
+    e.dietary = "Dietary info is required (put none if nothing).";
   if (form.firstHackathon === null)
-    e.firstHackathon = "Please select yes or no.";
-  if (form.csCareer === null) e.csCareer = "Please select yes or no.";
-  if (!form.motivation.trim()) e.motivation = "Please share your motivation.";
+    e.firstHackathon = "Select yes or no.";
+  if (form.firstHackathon === false) {
+    if (form.hackathonCount == null || form.hackathonCount < 1) {
+      e.hackathonCount = "Enter how many hackathons you've done.";
+    }
+  }
+  if (form.csCareer === null) e.csCareer = "Select yes or no.";
+  if (!form.motivation.trim()) e.motivation = "This field is required.";
   if (!form.pastProject.trim())
-    e.pastProject = "Please describe a past project.";
-  if (!form.interests.trim()) e.interests = "Please share your interests.";
+    e.pastProject = "This field is required.";
+  if (!form.interests.trim()) e.interests = "This field is required.";
   return e;
 }
 
@@ -103,6 +159,7 @@ function toApplicationPayload(form: ApplicationForm): ApplicationForm {
     dietary: form.dietary,
     accessibility: form.accessibility,
     firstHackathon: form.firstHackathon,
+    hackathonCount: form.firstHackathon === false ? form.hackathonCount : null,
     csCareer: form.csCareer,
     motivation: form.motivation,
     pastProject: form.pastProject,
@@ -124,7 +181,7 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="font-intimate text-base leading-snug"
+      className="font-intimate text-lg sm:text-xl leading-snug"
       style={{ fontStyle: "italic", color: BRAND.cream }}
     >
       {children}
@@ -332,7 +389,7 @@ function ResumeUpload({
   }
 
   function handleFile(file: File) {
-    if (file.size > 10 * 1024 * 1024) return;
+    if (file.size > 5 * 1024 * 1024) return;
     onChange(file);
   }
 
@@ -407,7 +464,7 @@ function ResumeUpload({
         role={readOnly ? undefined : "button"}
         tabIndex={readOnly ? undefined : 0}
         onKeyDown={(e) => !readOnly && e.key === "Enter" && inputRef.current?.click()}
-        aria-label={readOnly ? undefined : "Upload resume — click or drag and drop"}
+        aria-label={readOnly ? undefined : "Upload resume"}
       >
         <Upload size={24} style={{ color: BRAND.gold }} />
         <div className="text-center flex flex-col gap-1">
@@ -426,7 +483,7 @@ function ResumeUpload({
             </span>
           </p>
           <p className="font-sans text-xs" style={{ color: BRAND.sand }}>
-            PDF preferred · max 10 MB
+            PDF preferred · max 5 MB
           </p>
         </div>
       </div>
@@ -694,7 +751,7 @@ export default function ApplicationSection() {
                 color: BRAND.creamMuted,
               }}
             >
-              Tell us a little about you — it takes about 10 minutes.
+              This should take about 10 minutes.
             </p>
           </div>
           <div className="h-full w-auto">
@@ -772,7 +829,7 @@ export default function ApplicationSection() {
                   }
                 >
                   <option value="" disabled style={{ background: BRAND.navy }}>
-                    Select you gender
+                    Select your gender
                   </option>
                   <option value="male" style={{ background: BRAND.navy }}>
                     Male
@@ -780,23 +837,26 @@ export default function ApplicationSection() {
                   <option value="female" style={{ background: BRAND.navy }}>
                     Female
                   </option>
-                  <option value="prefer_not" style={{ background: BRAND.navy }}>
-                    Prefer not to say
-                  </option>
                 </select>
+                <HelperText>
+                  For rooming and prayer spaces.
+                </HelperText>
+                <FieldError message={errors.gender} />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="institution">
-                  If you're a student, which school or institution?
+                <FieldLabel htmlFor="institution" required>
+                  School / university
                 </FieldLabel>
                 <TextInput
                   id="institution"
                   value={form.institution}
                   onChange={(v) => set("institution", v)}
-                  placeholder="e.g. Concordia University (optional)"
+                  placeholder="e.g. Concordia University"
                   readOnly={readOnly}
+                  error={errors.institution}
                 />
+                <FieldError message={errors.institution} />
               </Field>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -808,7 +868,7 @@ export default function ApplicationSection() {
                   id="linkedin"
                   value={form.linkedin}
                   onChange={(v) => set("linkedin", v)}
-                  placeholder="linkedin.com/in/username"
+                  placeholder="linkedin.com/in/yourname"
                   readOnly={readOnly}
                   error={errors.linkedin}
                 />
@@ -823,10 +883,13 @@ export default function ApplicationSection() {
                   id="github"
                   value={form.github}
                   onChange={(v) => set("github", v)}
-                  placeholder="github.com/username"
+                  placeholder="github.com/yourusername"
                   readOnly={readOnly}
                   error={errors.github}
                 />
+                <HelperText>
+                  Even a mostly empty profile is fine if you're new.
+                </HelperText>
                 <FieldError message={errors.github} />
               </Field>
             </div>
@@ -862,7 +925,7 @@ export default function ApplicationSection() {
                 error={errors.dietary}
               />
               <HelperText>
-                All food is halal — let us know about allergies or other needs.
+                All food is already halal. Just tell us about allergies or anything else.
               </HelperText>
               <FieldError message={errors.dietary} />
             </Field>
@@ -875,7 +938,7 @@ export default function ApplicationSection() {
                 id="accessibility"
                 value={form.accessibility}
                 onChange={(v) => set("accessibility", v)}
-                placeholder="Let us know how we can best support you (optional)"
+                placeholder="Optional"
                 rows={3}
                 readOnly={readOnly}
               />
@@ -896,7 +959,10 @@ export default function ApplicationSection() {
                 <YesNoToggle
                   id="firstHackathon"
                   value={form.firstHackathon}
-                  onChange={(v) => set("firstHackathon", v)}
+                  onChange={(v) => {
+                    set("firstHackathon", v);
+                    if (v === true) set("hackathonCount", null);
+                  }}
                   readOnly={readOnly}
                   error={errors.firstHackathon}
                 />
@@ -906,7 +972,7 @@ export default function ApplicationSection() {
               <Field>
                 <div id="csCareer-label">
                   <FieldLabel htmlFor="csCareer" required>
-                    Is Computer Science the main focus of your career?
+                    Are you studying or going into tech / CS?
                   </FieldLabel>
                 </div>
                 <YesNoToggle
@@ -916,20 +982,41 @@ export default function ApplicationSection() {
                   readOnly={readOnly}
                   error={errors.csCareer}
                 />
+                <HelperText>Beginners and non-CS majors are welcome.</HelperText>
                 <FieldError message={errors.csCareer} />
               </Field>
             </div>
 
+            {form.firstHackathon === false && (
+              <Field>
+                <FieldLabel htmlFor="hackathonCount" required>
+                  About how many hackathons have you done before?
+                </FieldLabel>
+                <TextInput
+                  id="hackathonCount"
+                  type="number"
+                  value={form.hackathonCount == null ? "" : String(form.hackathonCount)}
+                  onChange={(v) => {
+                    const n = Number(v);
+                    set("hackathonCount", Number.isInteger(n) && n >= 1 ? n : null);
+                  }}
+                  placeholder="e.g. 2"
+                  readOnly={readOnly}
+                  error={errors.hackathonCount}
+                />
+                <FieldError message={errors.hackathonCount} />
+              </Field>
+            )}
+
             <Field>
               <FieldLabel htmlFor="motivation" required>
-                What kind of experience, skill, or knowledge do you wish to gain
-                from MuslimHacks, and why is it important to you?
+                What do you want to get out of MuslimHacks, and why?
               </FieldLabel>
               <Textarea
                 id="motivation"
                 value={form.motivation}
                 onChange={(v) => set("motivation", v)}
-                placeholder="Share your niyyah — what brought you here and what you hope to carry away..."
+                placeholder="Be honest. A few sentences is enough."
                 rows={5}
                 readOnly={readOnly}
                 error={errors.motivation}
@@ -939,13 +1026,13 @@ export default function ApplicationSection() {
 
             <Field>
               <FieldLabel htmlFor="pastProject" required>
-                Please briefly describe a project you've done in the past.
+                Describe a project or thing you've worked on before.
               </FieldLabel>
               <Textarea
                 id="pastProject"
                 value={form.pastProject}
                 onChange={(v) => set("pastProject", v)}
-                placeholder="It doesn't have to be technical — a community project counts too..."
+                placeholder="School project, club stuff, a personal thing, volunteering, whatever. Doesn't have to be code."
                 rows={4}
                 readOnly={readOnly}
                 error={errors.pastProject}
@@ -956,13 +1043,13 @@ export default function ApplicationSection() {
 
             <Field>
               <FieldLabel htmlFor="interests" required>
-                What kind of challenges and tasks are you most interested in?
+                What are you most interested in doing at the hackathon?
               </FieldLabel>
               <Textarea
                 id="interests"
                 value={form.interests}
                 onChange={(v) => set("interests", v)}
-                placeholder="e.g. front-end, data, hardware, design, community outreach..."
+                placeholder="e.g. building stuff, design, pitching, learning, meeting people"
                 rows={3}
                 readOnly={readOnly}
                 error={errors.interests}
@@ -972,14 +1059,13 @@ export default function ApplicationSection() {
 
             <Field>
               <FieldLabel htmlFor="community">
-                Have you ever contributed or volunteered in the Muslim
-                community? If so, how?
+                Have you volunteered or been involved in the Muslim community?
               </FieldLabel>
               <Textarea
                 id="community"
                 value={form.community}
                 onChange={(v) => set("community", v)}
-                placeholder="Mosque volunteering, community events, online spaces — anything counts (optional)"
+                placeholder="Optional. Mosque, events, online, etc."
                 rows={3}
                 readOnly={readOnly}
               />
@@ -1022,7 +1108,7 @@ export default function ApplicationSection() {
                 }}
               >
                 <AlertCircle size={15} className="shrink-0" />
-                Please fill in all required fields before submitting.
+                Fill in the required fields first.
               </div>
             )}
           </div>

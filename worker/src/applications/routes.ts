@@ -46,6 +46,7 @@ function toResponse(row: ApplicationRow): ApplicationResponse {
     gender: row.gender,
     accessibility: row.accessibility,
     first_hackathon: dbToBool(row.first_hackathon),
+    hackathon_count: row.hackathon_count,
     cs_career: dbToBool(row.cs_career),
     motivation: row.motivation,
     past_project: row.past_project,
@@ -159,6 +160,7 @@ async function persistApplication(
         gender = ?,
         accessibility = ?,
         first_hackathon = ?,
+        hackathon_count = ?,
         cs_career = ?,
         motivation = ?,
         past_project = ?,
@@ -186,6 +188,7 @@ async function persistApplication(
         data.gender,
         data.accessibility,
         boolToDb(data.first_hackathon),
+        data.hackathon_count,
         boolToDb(data.cs_career),
         data.motivation,
         data.past_project,
@@ -207,9 +210,9 @@ async function persistApplication(
       id, user_id, full_name, phone, school, program, graduation_year,
       github_url, linkedin_url, portfolio_url, resume_url, resume_key,
       why_join, project_idea, dietary_restrictions, needs_travel_support,
-      gender, accessibility, first_hackathon, cs_career, motivation,
+      gender, accessibility, first_hackathon, hackathon_count, cs_career, motivation,
       past_project, interests, community, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       id,
@@ -231,6 +234,7 @@ async function persistApplication(
       data.gender,
       data.accessibility,
       boolToDb(data.first_hackathon),
+      data.hackathon_count,
       boolToDb(data.cs_career),
       data.motivation,
       data.past_project,
@@ -373,6 +377,10 @@ async function handleJsonUpsert(
           "first_hackathon" in input || "firstHackathon" in input
             ? parsed.first_hackathon
             : dbToBool(existing.first_hackathon),
+        hackathon_count:
+          "hackathon_count" in input || "hackathonCount" in input
+            ? parsed.hackathon_count
+            : existing.hackathon_count,
         cs_career:
           "cs_career" in input || "csCareer" in input ? parsed.cs_career : dbToBool(existing.cs_career),
         motivation: "motivation" in input ? parsed.motivation : existing.motivation,

@@ -47,6 +47,7 @@ export interface Application {
   gender: string | null;
   accessibility: string | null;
   first_hackathon: boolean | null;
+  hackathon_count: number | null;
   cs_career: boolean | null;
   motivation: string | null;
   past_project: string | null;
@@ -98,6 +99,7 @@ export interface ApplicationForm {
   dietary: string;
   accessibility: string;
   firstHackathon: boolean | null;
+  hackathonCount: number | null;
   csCareer: boolean | null;
   motivation: string;
   pastProject: string;
@@ -118,6 +120,7 @@ export interface AdminApplicationSummary {
   status: ApplicationStatus;
   needs_travel_support: boolean;
   first_hackathon: boolean | null;
+  hackathon_count?: number | null;
   cs_career: boolean | null;
   reviewed_by: string | null;
   reviewed_at: number | null;

@@ -30,7 +30,7 @@ function requireString(value: unknown, maxLen: number): string | null {
   return trimmed || null;
 }
 
-function normalizeProfileUrl(value: unknown): string | null {
+function normalizeHttpUrl(value: unknown): URL | null {
   const trimmed = trimString(value, 2048);
   if (!trimmed) {
     return null;
@@ -43,10 +43,57 @@ function normalizeProfileUrl(value: unknown): string | null {
     if (url.protocol !== "http:" && url.protocol !== "https:") {
       return null;
     }
-    return url.toString();
+    return url;
   } catch {
     return null;
   }
+}
+
+function normalizeProfileUrl(value: unknown): string | null {
+  const url = normalizeHttpUrl(value);
+  return url ? url.toString() : null;
+}
+
+function normalizeGithubUrl(value: unknown): string | null {
+  const url = normalizeHttpUrl(value);
+  if (!url) {
+    return null;
+  }
+  const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+  if (host !== "github.com") {
+    return null;
+  }
+  const parts = url.pathname.split("/").filter(Boolean);
+  if (parts.length < 1 || parts[0].toLowerCase() === "settings") {
+    return null;
+  }
+  return `https://github.com/${parts[0]}`;
+}
+
+function normalizeLinkedinUrl(value: unknown): string | null {
+  const url = normalizeHttpUrl(value);
+  if (!url) {
+    return null;
+  }
+  const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+  if (host !== "linkedin.com") {
+    return null;
+  }
+  const parts = url.pathname.split("/").filter(Boolean);
+  if (parts.length < 2) {
+    return null;
+  }
+  const kind = parts[0].toLowerCase();
+  if (kind !== "in" && kind !== "pub" && kind !== "mwlite") {
+    return null;
+  }
+  if (kind === "mwlite") {
+    if (parts[1]?.toLowerCase() !== "in" || !parts[2]) {
+      return null;
+    }
+    return `https://www.linkedin.com/in/${parts[2]}`;
+  }
+  return `https://www.linkedin.com/${kind}/${parts[1]}`;
 }
 
 function parseUrl(value: unknown): string | null {
@@ -62,6 +109,17 @@ function parseGraduationYear(value: unknown): number | null {
     return null;
   }
   return year;
+}
+
+function parseHackathonCount(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+  const count = typeof value === "number" ? value : Number(value);
+  if (!Number.isInteger(count) || count < 1 || count > 100) {
+    return null;
+  }
+  return count;
 }
 
 function parseBoolean(value: unknown): boolean {
@@ -112,8 +170,20 @@ export function validateApplicationBody(
   const program = trimString(getField(input, "program"), 200);
   const graduation_year = parseGraduationYear(getField(input, "graduation_year", "graduationYear"));
 
-  const github_url = normalizeProfileUrl(getField(input, "github_url", "github"));
-  const linkedin_url = normalizeProfileUrl(getField(input, "linkedin_url", "linkedin"));
+  const rawGithub = getField(input, "github_url", "github");
+  const rawLinkedin = getField(input, "linkedin_url", "linkedin");
+  const githubProvided = trimString(rawGithub, 2048) !== null;
+  const linkedinProvided = trimString(rawLinkedin, 2048) !== null;
+  const github_url = githubProvided ? normalizeGithubUrl(rawGithub) : null;
+  const linkedin_url = linkedinProvided ? normalizeLinkedinUrl(rawLinkedin) : null;
+
+  if (githubProvided && !github_url) {
+    return { ok: false, error: "github must be a valid github.com profile URL" };
+  }
+  if (linkedinProvided && !linkedin_url) {
+    return { ok: false, error: "linkedin must be a valid linkedin.com/in profile URL" };
+  }
+
   const portfolio_url = parseUrl(getField(input, "portfolio_url", "portfolioUrl"));
   const resume_url = parseUrl(getField(input, "resume_url", "resumeUrl"));
 
@@ -121,7 +191,13 @@ export function validateApplicationBody(
     getField(input, "dietary_restrictions", "dietary"),
     MAX_SHORT,
   );
-  const gender = trimString(getField(input, "gender"), 50);
+  const genderRaw = trimString(getField(input, "gender"), 50);
+  let gender: string | null = null;
+  if (genderRaw === "male" || genderRaw === "female") {
+    gender = genderRaw;
+  } else if (genderRaw) {
+    return { ok: false, error: "gender must be male or female" };
+  }
   const accessibility = trimString(getField(input, "accessibility"), MAX_TEXT);
   const motivation = trimString(getField(input, "motivation", "why_join", "whyJoin"), MAX_TEXT);
   const past_project = trimString(
@@ -137,6 +213,13 @@ export function validateApplicationBody(
 
   const first_hackathon = parseNullableBoolean(getField(input, "first_hackathon", "firstHackathon"));
   const cs_career = parseNullableBoolean(getField(input, "cs_career", "csCareer"));
+  let hackathon_count = parseHackathonCount(
+    getField(input, "hackathon_count", "hackathonCount"),
+  );
+
+  if (first_hackathon === true) {
+    hackathon_count = null;
+  }
 
   return {
     ok: true,
@@ -158,6 +241,7 @@ export function validateApplicationBody(
       gender,
       accessibility,
       first_hackathon,
+      hackathon_count,
       cs_career,
       motivation,
       past_project,
@@ -177,17 +261,29 @@ export function validateApplicationFormFields(
 
   const data = validated.data;
 
+  if (!data.school) {
+    return { ok: false, error: "institution / school is required" };
+  }
+  if (!data.gender) {
+    return { ok: false, error: "gender is required (male or female)" };
+  }
   if (!data.github_url) {
-    return { ok: false, error: "github must be a valid profile URL" };
+    return { ok: false, error: "github must be a valid github.com profile URL" };
   }
   if (!data.linkedin_url) {
-    return { ok: false, error: "linkedin must be a valid profile URL" };
+    return { ok: false, error: "linkedin must be a valid linkedin.com/in profile URL" };
   }
   if (!data.dietary_restrictions) {
     return { ok: false, error: "dietary is required" };
   }
   if (data.first_hackathon === null) {
     return { ok: false, error: "firstHackathon is required" };
+  }
+  if (data.first_hackathon === false && data.hackathon_count === null) {
+    return {
+      ok: false,
+      error: "hackathonCount is required when this is not your first hackathon (1–100)",
+    };
   }
   if (data.cs_career === null) {
     return { ok: false, error: "csCareer is required" };

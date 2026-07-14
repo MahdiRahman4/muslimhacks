@@ -16,7 +16,10 @@ type SortKey = "name" | "email" | "gender" | "status" | "updated";
 type SortDir = "asc" | "desc";
 
 const PAGE_SIZE = 8;
-const GENDER_OPTIONS = ["Male", "Female", "Prefer not to say"];
+const GENDER_OPTIONS = [
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+];
 
 // ─── Status badge ─────────────────────────────────────────────────────────────
 const STATUS_STYLES: Record<ApplicationStatus, { label: string; color: string; bg: string; border: string }> = {
@@ -355,7 +358,9 @@ const AdminApplicationsPage = () => {
             >
               <option value="all" style={{ background: BRAND.navy }}>All genders</option>
               {GENDER_OPTIONS.map((g) => (
-                <option key={g} value={g} style={{ background: BRAND.navy }}>{g}</option>
+                <option key={g.value} value={g.value} style={{ background: BRAND.navy }}>
+                  {g.label}
+                </option>
               ))}
             </select>
           </div>

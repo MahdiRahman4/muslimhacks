@@ -23,6 +23,7 @@ export interface ApplicationRow {
   gender: string | null;
   accessibility: string | null;
   first_hackathon: number | null;
+  hackathon_count: number | null;
   cs_career: number | null;
   motivation: string | null;
   past_project: string | null;
@@ -51,6 +52,7 @@ export interface ApplicationInput {
   gender: string | null;
   accessibility: string | null;
   first_hackathon: boolean | null;
+  hackathon_count: number | null;
   cs_career: boolean | null;
   motivation: string | null;
   past_project: string | null;
@@ -78,6 +80,7 @@ export interface ApplicationResponse {
   gender: string | null;
   accessibility: string | null;
   first_hackathon: boolean | null;
+  hackathon_count: number | null;
   cs_career: boolean | null;
   motivation: string | null;
   past_project: string | null;

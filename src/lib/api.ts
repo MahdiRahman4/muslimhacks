@@ -156,6 +156,7 @@ export function toFormValuesV2(application: Application): ApplicationForm {
     dietary: application.dietary_restrictions ?? "",
     accessibility: application.accessibility ?? "",
     firstHackathon: application.first_hackathon,
+    hackathonCount: application.hackathon_count ?? null,
     csCareer: application.cs_career,
     motivation: application.motivation ?? application.why_join ?? "",
     pastProject: application.past_project ?? application.project_idea ?? "",
@@ -197,6 +198,9 @@ export function toApplicationFormData(form: ApplicationForm): FormData {
   formData.append("dietary", form.dietary);
   formData.append("accessibility", form.accessibility);
   formData.append("firstHackathon", String(form.firstHackathon));
+  if (form.hackathonCount != null) {
+    formData.append("hackathonCount", String(form.hackathonCount));
+  }
   formData.append("csCareer", String(form.csCareer));
   formData.append("motivation", form.motivation);
   formData.append("pastProject", form.pastProject);

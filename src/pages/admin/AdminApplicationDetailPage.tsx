@@ -297,6 +297,18 @@ const AdminApplicationDetailPage = () => {
                 value={application.first_hackathon == null ? null : application.first_hackathon ? "Yes" : "No"}
               />
               <Field
+                label="Prior hackathons"
+                value={
+                  application.first_hackathon === false
+                    ? application.hackathon_count == null
+                      ? "—"
+                      : String(application.hackathon_count)
+                    : application.first_hackathon === true
+                      ? "0 (first)"
+                      : null
+                }
+              />
+              <Field
                 label="CS career"
                 value={application.cs_career == null ? null : application.cs_career ? "Yes" : "No"}
               />
