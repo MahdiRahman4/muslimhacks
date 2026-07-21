@@ -111,6 +111,21 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               </SignUpButton>
             </SignedOut>
           )}
+          {displayApplyDialog && (
+            <SignedIn>
+              {!isAdmin && (
+                <GoldButton
+                  as={Link}
+                  to="/apply"
+                  className="w-full sm:w-auto sm:self-start"
+                  isNavButton={true}
+                  displayApplyDialog={displayApplyDialog}
+                >
+                  {applicationButtonLabel}
+                </GoldButton>
+              )}
+            </SignedIn>
+          )}
           {(isAdmin && applicationButtonLabel === "Apply now") && (<SignedIn>
             <GoldButton
               as={Link}

@@ -114,8 +114,12 @@ function validate(form: ApplicationForm, requireResume: boolean): Errors {
   const e: Errors = {};
   if (!form.fullName.trim()) e.fullName = "Full name is required.";
   if (!form.phone) e.phone = "Phone number is required.";
-  else if (form.phone.length < 7) e.phone = "Phone number is too short.";
-  else if (form.phone.length > 16) e.phone = "Phone number is too long.";
+  else {
+    const digits = form.phone.replace(/[^\d+]/g, "");
+    const digitCount = digits.replace(/\D/g, "").length;
+    if (digitCount < 7) e.phone = "Phone number is too short.";
+    else if (digitCount > 15) e.phone = "Phone number is too long.";
+  }
   if (!form.gender.trim()) e.gender = "Select Male or Female.";
   else if (form.gender !== "male" && form.gender !== "female") {
     e.gender = "Select Male or Female.";
@@ -389,7 +393,10 @@ function ResumeUpload({
   }
 
   function handleFile(file: File) {
-    if (file.size > 5 * 1024 * 1024) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Resume must be 5 MB or smaller.");
+      return;
+    }
     onChange(file);
   }
 

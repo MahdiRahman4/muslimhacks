@@ -242,7 +242,7 @@ export default function Dashboard() {
   }, []);
 
   const cfg = STATUS_CONFIG[status];
-  const canEdit = status === "draft";
+  const canEdit = status === "draft" || status === "pending";
   const hasStarted = status !== "not_started";
   const nameParts = (userSummary?.summary?.full_name ?? "").split(" ").filter(Boolean);
   const firstName = nameParts[0] || "";

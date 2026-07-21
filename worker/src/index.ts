@@ -8,17 +8,29 @@ export type { Env } from "./env";
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
-function corsHeaders(origin: string, requestOrigin: string | null): HeadersInit {
+function parseAllowedOrigins(originConfig: string): string[] {
+  return originConfig
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function corsHeaders(originConfig: string, requestOrigin: string | null): HeadersInit {
+  const allowed = parseAllowedOrigins(originConfig);
+  const allowAll = allowed.includes("*");
   const allowOrigin =
-    origin === "*" || (requestOrigin && requestOrigin === origin)
-      ? requestOrigin ?? origin
-      : origin;
+    allowAll
+      ? requestOrigin ?? "*"
+      : requestOrigin && allowed.includes(requestOrigin)
+        ? requestOrigin
+        : allowed[0] ?? "*";
 
   return {
     "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
+    Vary: "Origin",
   };
 }
 

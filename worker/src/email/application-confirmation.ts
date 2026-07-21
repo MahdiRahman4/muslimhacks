@@ -1,25 +1,25 @@
 import type { Env } from "../env";
 
-const DEFAULT_FROM = "info@muslimhacks.ca";
+const DEFAULT_FROM = "sponsors@muslimhacksoutreach.ca";
 const DEFAULT_FROM_NAME = "MuslimHacks";
+const DEFAULT_REPLY_TO = "info@muslimhacks.ca";
 
 /**
- * Sends application confirmation. Never throws — failures are logged so
- * a bad email provider can't block registration.
+ * Sends application confirmation via Resend.
+ * Never throws — failures are logged so email can't block registration.
  */
 export async function sendApplicationConfirmationEmail(
   env: Env,
   to: string,
   fullName: string,
 ): Promise<void> {
-  if (!env.EMAIL) {
-    console.warn(
-      "[email] EMAIL binding missing — skip confirmation (add [[send_email]] to wrangler.toml)",
-    );
+  if (!env.RESEND_API_KEY) {
+    console.warn("[email] RESEND_API_KEY missing — skip confirmation");
     return;
   }
 
   const fromAddress = env.EMAIL_FROM || DEFAULT_FROM;
+  const replyTo = env.EMAIL_REPLY_TO || DEFAULT_REPLY_TO;
   const firstName = fullName.split(" ")[0] || "there";
 
   const subject = "MuslimHacks 2026 — Application received";
@@ -33,7 +33,7 @@ export async function sendApplicationConfirmationEmail(
     "You can view your application anytime from your dashboard:",
     "https://muslimhacks.ca/dashboard",
     "",
-    "Questions? Reply to this email or contact us at info@muslimhacks.ca",
+    `Questions? Reply to this email or contact us at ${replyTo}`,
     "",
     "Jazakum Allahu khayran,",
     "The MuslimHacks Team",
@@ -53,21 +53,35 @@ export async function sendApplicationConfirmationEmail(
   </p>
   <p style="color: #666; font-size: 14px;">
     Questions? Reply to this email or contact
-    <a href="mailto:info@muslimhacks.ca" style="color: #b8860b;">info@muslimhacks.ca</a>
+    <a href="mailto:${escapeHtml(replyTo)}" style="color: #b8860b;">${escapeHtml(replyTo)}</a>
   </p>
   <p>Jazakum Allahu khayran,<br><strong>The MuslimHacks Team</strong></p>
 </body>
 </html>`.trim();
 
   try {
-    await env.EMAIL.send({
-      to,
-      from: { email: fromAddress, name: DEFAULT_FROM_NAME },
-      replyTo: fromAddress,
-      subject,
-      html,
-      text,
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${DEFAULT_FROM_NAME} <${fromAddress}>`,
+        to: [to],
+        reply_to: replyTo,
+        subject,
+        html,
+        text,
+      }),
     });
+
+    if (!response.ok) {
+      const body = await response.text();
+      console.error("[email] Resend error", response.status, body);
+      return;
+    }
+
     console.log("[email] application confirmation sent to", to);
   } catch (error) {
     console.error("[email] failed to send application confirmation", error);
