@@ -3,7 +3,7 @@ main = "src/index.ts"
 compatibility_date = "2025-02-04"
 
 [vars]
-CORS_ORIGIN = "https://muslimhacks.ca,https://www.muslimhacks.ca,http://localhost:8080,http://localhost:8081"
+CORS_ORIGIN = "https://muslimhacks.ca,https://www.muslimhacks.ca,https://muslimhacks.vercel.app,http://localhost:8080,http://localhost:8081"
 JWT_SECRET = "uCQ0bap7PpPId0n2xh0HGEzkn74zRxQ4jox7LwJqfJr"
 EMAIL_FROM = "sponsors@muslimhacksoutreach.ca"
 EMAIL_REPLY_TO = "info@muslimhacks.ca"

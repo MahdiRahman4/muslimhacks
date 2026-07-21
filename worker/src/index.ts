@@ -15,23 +15,36 @@ function parseAllowedOrigins(originConfig: string): string[] {
     .filter(Boolean);
 }
 
+function isOriginAllowed(allowed: string[], requestOrigin: string): boolean {
+  if (allowed.includes("*") || allowed.includes(requestOrigin)) {
+    return true;
+  }
+  // Preview / production Vercel URLs for this project
+  try {
+    const host = new URL(requestOrigin).hostname;
+    return host === "muslimhacks.vercel.app" || host.endsWith("-muslim-hacks.vercel.app");
+  } catch {
+    return false;
+  }
+}
+
 function corsHeaders(originConfig: string, requestOrigin: string | null): HeadersInit {
   const allowed = parseAllowedOrigins(originConfig);
-  const allowAll = allowed.includes("*");
-  const allowOrigin =
-    allowAll
-      ? requestOrigin ?? "*"
-      : requestOrigin && allowed.includes(requestOrigin)
-        ? requestOrigin
-        : allowed[0] ?? "*";
+  const matched =
+    requestOrigin && isOriginAllowed(allowed, requestOrigin) ? requestOrigin : null;
 
-  return {
-    "Access-Control-Allow-Origin": allowOrigin,
+  const headers: Record<string, string> = {
     "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };
+
+  if (matched) {
+    headers["Access-Control-Allow-Origin"] = matched;
+  }
+
+  return headers;
 }
 
 function jsonResponse(
