@@ -42,7 +42,7 @@ const VisionSection = () => {
           }`}
         >
           <h2 className="font-display text-5xl md:text-6xl lg:text-7xl text-cream leading-none mb-6">
-            Québec.<br />
+            Quebec.<br />
             <span className="text-gradient-sunset">September 2026.</span>
           </h2>
           <p className="font-intimate text-xl md:text-2xl lg:text-3xl text-cream/80">

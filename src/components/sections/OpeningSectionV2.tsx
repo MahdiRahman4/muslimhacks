@@ -79,7 +79,7 @@ export default function OpeningSectionV2({
       <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-24 w-full">
         <div className="max-w-2xl flex flex-col gap-6">
           <Eyebrow className="animate-fade-in-up">
-            Québec's Largest Muslim Charity Hackathon
+            Quebec's Largest Muslim Charity Hackathon
           </Eyebrow>
 
           <h1
@@ -108,7 +108,7 @@ export default function OpeningSectionV2({
             <GoldText>September 2026</GoldText>
             <span style={{ color: BRAND.creamMuted }}>
               {" "}
-              · Concordia University, Downtown Campus, Montréal, Québec
+              · Concordia University, Downtown Campus, Montréal, Quebec
             </span>
           </p>
 

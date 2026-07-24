@@ -110,7 +110,7 @@ export default function SponsorsSectionV2() {
         </p>
         <p className="font-sans text-sm max-w-md" style={{ color: BRAND.creamMuted }}>
           Reach a community of Muslim technologists, developers, and community leaders
-          across Québec and beyond.
+          across Quebec and beyond.
         </p>
         <a
           href="mailto:sponsors@muslimhacksoutreach.ca"

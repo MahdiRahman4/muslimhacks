@@ -32,7 +32,7 @@ export default function StorySectionV2 () {
               <p className="font-sans text-base leading-relaxed" style={{ color: BRAND.creamMuted }}>
                 That question became MuslimHacks — a 24-hour gathering of builders, designers,
                 and dreamers united by faith and a commitment to solving real problems for the
-                ummah. What began as a niyyah is now Québec's largest Muslim charity hackathon.
+                ummah. What began as a niyyah is now Quebec's largest Muslim charity hackathon.
               </p>
             </div>
 

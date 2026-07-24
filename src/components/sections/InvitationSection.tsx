@@ -203,7 +203,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
               MuslimHacks
             </p>
             <p className="font-sans text-base md:text-lg text-cream/40">
-              Québec's largest Muslim charity hackathon
+              Quebec's largest Muslim charity hackathon
             </p>
             <p className="font-sans text-sm text-cream/30 mt-4">
               In partnership with Islamic Relief Canada

@@ -53,7 +53,7 @@ const OpeningSection = () => {
             {/* Eyebrow */}
             <div className="mb-6 animate-fade-in-up">
               <p className="font-sans text-base md:text-lg uppercase tracking-[0.3em] text-cream mb-4">
-                Québec's Largest Muslim Charity Hackathon
+                Quebec's Largest Muslim Charity Hackathon
               </p>
             </div>
             
