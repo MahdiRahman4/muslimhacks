@@ -1,0 +1,20 @@
+name = "muslimhacks-api"
+main = "src/index.ts"
+compatibility_date = "2025-02-04"
+
+[vars]
+CORS_ORIGIN = "https://muslimhacks.ca,https://www.muslimhacks.ca,https://muslimhacks.vercel.app,http://localhost:8080,http://localhost:8081"
+JWT_SECRET = "uCQ0bap7PpPId0n2xh0HGEzkn74zRxQ4jox7LwJqfJr"
+EMAIL_FROM = "sponsors@muslimhacksoutreach.ca"
+EMAIL_REPLY_TO = "info@muslimhacks.ca"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "muslimhacks-registration"
+database_id = "3b79a39c-2e2f-42eb-a75b-d7f2d11b4c55"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "RESUMES"
+bucket_name = "muslimhacks-resumes"
+preview_bucket_name = "muslimhacks-resumes-preview"

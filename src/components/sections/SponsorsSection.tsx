@@ -4,7 +4,7 @@ const SponsorsSection = () => {
   const [headerRef, headerVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
   const [contentRef, contentVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.2 });
   const [ctaRef, ctaVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
-
+  
   return (
     <section id="sponsors" className="relative min-h-screen py-32 overflow-hidden">
       {/* Background */}
@@ -135,13 +135,13 @@ const SponsorsSection = () => {
             Interested in partnering with us?
           </p>
           <a 
-            href="mailto:sponsors@muslimhacks.ca" 
+            href="mailto:sponsors@muslimhacksoutreach.ca" 
             className="inline-block font-sans text-base uppercase tracking-wider text-amber border border-amber/50 rounded-full px-8 py-3 hover:bg-amber/10 transition-all duration-300"
           >
             Become a Sponsor
           </a>
           <p className="font-sans text-sm text-cream/40 mt-4">
-            sponsors@muslimhacks.ca
+            sponsors@muslimhacksoutreach.ca
           </p>
         </div>
         

@@ -8,7 +8,7 @@ const footerLinks = [
 
 const contactEmails = [
   { label: 'General inquiries', email: 'info@muslimhacks.ca' },
-  { label: 'Sponsorship', email: 'sponsors@muslimhacks.ca' },
+  { label: 'Sponsorship', email: 'sponsors@muslimhacksoutreach.ca' },
 ];
 
 const Footer = () => {
