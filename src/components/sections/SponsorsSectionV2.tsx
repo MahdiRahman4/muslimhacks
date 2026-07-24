@@ -113,7 +113,7 @@ export default function SponsorsSectionV2() {
           across Québec and beyond.
         </p>
         <a
-          href="mailto:sponsors@muslimhacks.ca"
+          href="mailto:sponsors@muslimhacksoutreach.ca"
           className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-sans text-sm font-semibold uppercase tracking-[0.15em] transition-all duration-200 hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2"
           style={{
             background: `linear-gradient(135deg, ${BRAND.goldSoft} 0%, ${BRAND.gold} 100%)`,
@@ -125,7 +125,7 @@ export default function SponsorsSectionV2() {
           <ExternalLink size={14} />
         </a>
         <p className="font-sans text-xs" style={{ color: BRAND.sand }}>
-          sponsors@muslimhacks.ca
+          sponsors@muslimhacksoutreach.ca
         </p>
       </div>
     </div>
