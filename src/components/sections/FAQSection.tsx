@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     question: "Is the event in-person or virtual?",
-    answer: "MuslimHacks 2026 will be an in-person event in Québec. We believe the best collaborations happen face-to-face, and we're creating a space for meaningful connection as much as coding."
+    answer: "MuslimHacks 2026 will be an in-person event in Quebec. We believe the best collaborations happen face-to-face, and we're creating a space for meaningful connection as much as coding."
   },
   {
     question: "What's the cost?",

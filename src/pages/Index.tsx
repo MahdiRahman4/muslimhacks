@@ -33,7 +33,7 @@ const Index = () => {
     <main className="relative overflow-x-hidden">
       {/* SEO: Primary heading for the page */}
       <h1 className="sr-only">
-        MuslimHacks - Québec's Largest Muslim Charity Hackathon | September 2026
+        MuslimHacks - Quebec's Largest Muslim Charity Hackathon | September 2026
       </h1>
 
       {/* Navigation */}

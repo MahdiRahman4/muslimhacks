@@ -50,7 +50,7 @@ const StorySection = () => {
           }`}
         >
           <p className="font-intimate text-xl md:text-2xl lg:text-3xl leading-relaxed">
-            We are Muslims in Québec. We speak French at the dépanneur 
+            We are Muslims in Quebec. We speak French at the dépanneur 
             and English on GitHub. We fast in summers that stretch past 9pm 
             and pray fajr in winters when the sun barely rises.
           </p>
