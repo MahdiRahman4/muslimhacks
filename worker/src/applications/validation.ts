@@ -5,11 +5,7 @@ const MAX_SHORT = 500;
 const MIN_GRAD_YEAR = 1950;
 const MAX_GRAD_YEAR = 2040;
 const MAX_RESUME_BYTES = 5 * 1024 * 1024;
-const ALLOWED_RESUME_TYPES = new Set([
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-]);
+const ALLOWED_RESUME_TYPES = new Set(["application/pdf"]);
 
 function trimString(value: unknown, maxLen: number): string | null {
   if (value === null || value === undefined || value === "") {
@@ -309,7 +305,7 @@ export function validateResumeFile(file: File | null): { ok: true; file: File } 
 
   const type = file.type || "application/octet-stream";
   if (!ALLOWED_RESUME_TYPES.has(type) && !file.name.toLowerCase().endsWith(".pdf")) {
-    return { ok: false, error: "resumeFile must be a PDF or Word document" };
+    return { ok: false, error: "resumeFile must be a PDF" };
   }
 
   return { ok: true, file };

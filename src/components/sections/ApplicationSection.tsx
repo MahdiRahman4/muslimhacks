@@ -389,6 +389,12 @@ function ResumeUpload({
   }
 
   function handleFile(file: File) {
+    const isPdf =
+      file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (!isPdf) {
+      toast.error("Resume must be a PDF.");
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Resume must be 5 MB or smaller.");
       return;
@@ -486,14 +492,14 @@ function ResumeUpload({
             </span>
           </p>
           <p className="font-sans text-xs" style={{ color: BRAND.sand }}>
-            PDF preferred · max 5 MB
+            PDF only · max 5 MB
           </p>
         </div>
       </div>
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf,.doc,.docx"
+        accept=".pdf,application/pdf"
         className="sr-only"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -872,7 +878,7 @@ export default function ApplicationSection() {
                   readOnly={readOnly}
                   error={errors.linkedin}
                 />
-                <HelperText>Optional — add it if you have a profile.</HelperText>
+                <HelperText>Optional but recommended for recruiters.</HelperText>
                 <FieldError message={errors.linkedin} />
               </Field>
 
@@ -886,9 +892,7 @@ export default function ApplicationSection() {
                   readOnly={readOnly}
                   error={errors.github}
                 />
-                <HelperText>
-                  Optional — even a mostly empty profile is fine if you're new.
-                </HelperText>
+                <HelperText>Optional but recommended for recruiters.</HelperText>
                 <FieldError message={errors.github} />
               </Field>
             </div>
@@ -902,7 +906,7 @@ export default function ApplicationSection() {
                 error={errors.resumeFile}
               />
               <HelperText>
-                Optional — PDF or Word. Recommended if you have one, but not required.
+                Optional but recommended for recruiters. PDF only.
               </HelperText>
               <FieldError message={errors.resumeFile} />
             </Field>
