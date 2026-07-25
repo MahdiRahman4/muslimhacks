@@ -181,13 +181,13 @@ function FieldLabel({
   return (
     <label
       htmlFor={htmlFor}
-      className="font-intimate text-lg sm:text-xl leading-snug"
-      style={{ fontStyle: "italic", color: BRAND.cream }}
+      className="font-sans text-base sm:text-lg leading-snug font-medium"
+      style={{ color: BRAND.cream }}
     >
       {children}
       {required && (
         <span
-          className="ml-1 font-sans not-italic text-xs"
+          className="ml-1 font-sans text-xs"
           style={{ color: BRAND.gold }}
         >
           *
