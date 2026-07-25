@@ -48,9 +48,6 @@ const REQUIRED_FIELDS: (keyof ApplicationForm)[] = [
   "phone",
   "gender",
   "institution",
-  "github",
-  "linkedin",
-  "resumeFile",
   "dietary",
   "firstHackathon",
   "csCareer",
@@ -111,7 +108,7 @@ function calcProgress(form: ApplicationForm): number {
   return Math.round((filled.length / keys.length) * 100);
 }
 
-function validate(form: ApplicationForm, requireResume: boolean): Errors {
+function validate(form: ApplicationForm): Errors {
   const e: Errors = {};
   if (!form.fullName.trim()) e.fullName = "Full name is required.";
   if (!form.phone) e.phone = "Phone number is required.";
@@ -126,15 +123,12 @@ function validate(form: ApplicationForm, requireResume: boolean): Errors {
     e.gender = "Select Male or Female.";
   }
   if (!form.institution.trim()) e.institution = "School / university is required.";
-  if (!form.github.trim()) e.github = "GitHub is required.";
-  else if (!isValidGithubUrl(form.github)) {
+  if (form.github.trim() && !isValidGithubUrl(form.github)) {
     e.github = "Use a link like github.com/yourusername.";
   }
-  if (!form.linkedin.trim()) e.linkedin = "LinkedIn is required.";
-  else if (!isValidLinkedinUrl(form.linkedin)) {
+  if (form.linkedin.trim() && !isValidLinkedinUrl(form.linkedin)) {
     e.linkedin = "Use a link like linkedin.com/in/yourname.";
   }
-  if (requireResume && !form.resumeFile) e.resumeFile = "Resume is required.";
   if (!form.dietary.trim())
     e.dietary = "Dietary info is required (put none if nothing).";
   if (form.firstHackathon === null)
@@ -636,8 +630,7 @@ export default function ApplicationSection() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitAttempted(true);
-    const requireResume = !(application?.resume_key || application?.resume_url);
-    const errs = validate(form, requireResume);
+    const errs = validate(form);
     setErrors(errs);
     // scrolling works sometimes need more time to fix this
     // if (Object.keys(errs).length > 0) {
@@ -870,9 +863,7 @@ export default function ApplicationSection() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field>
-                <FieldLabel htmlFor="linkedin" required>
-                  LinkedIn
-                </FieldLabel>
+                <FieldLabel htmlFor="linkedin">LinkedIn</FieldLabel>
                 <TextInput
                   id="linkedin"
                   value={form.linkedin}
@@ -881,13 +872,12 @@ export default function ApplicationSection() {
                   readOnly={readOnly}
                   error={errors.linkedin}
                 />
+                <HelperText>Optional — add it if you have a profile.</HelperText>
                 <FieldError message={errors.linkedin} />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="github" required>
-                  GitHub
-                </FieldLabel>
+                <FieldLabel htmlFor="github">GitHub</FieldLabel>
                 <TextInput
                   id="github"
                   value={form.github}
@@ -897,15 +887,13 @@ export default function ApplicationSection() {
                   error={errors.github}
                 />
                 <HelperText>
-                  Even a mostly empty profile is fine if you're new.
+                  Optional — even a mostly empty profile is fine if you're new.
                 </HelperText>
                 <FieldError message={errors.github} />
               </Field>
             </div>
             <Field>
-              <FieldLabel htmlFor="resumeFile" required>
-                Resume / CV
-              </FieldLabel>
+              <FieldLabel htmlFor="resumeFile">Resume / CV</FieldLabel>
               <ResumeUpload
                 id="resumeFile"
                 value={form.resumeFile}
@@ -913,6 +901,9 @@ export default function ApplicationSection() {
                 readOnly={readOnly}
                 error={errors.resumeFile}
               />
+              <HelperText>
+                Optional — PDF or Word. Recommended if you have one, but not required.
+              </HelperText>
               <FieldError message={errors.resumeFile} />
             </Field>
           </FormSection>
@@ -1036,8 +1027,8 @@ export default function ApplicationSection() {
 
             <Field>
               <FieldLabel htmlFor="pastProject" required>
-                Tell us about something you're proud of accomplishing. It can be
-                technical or non-technical. Why is it meaningful to you?
+                Tell us about something you're proud of accomplishing. What was
+                it, and why is it meaningful to you?
               </FieldLabel>
               <Textarea
                 id="pastProject"

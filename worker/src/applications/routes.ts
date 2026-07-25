@@ -292,8 +292,6 @@ async function handleMultipartUpsert(
     }
     resumeKey = upload.key;
     resumeUrl = upload.url;
-  } else if (!existing?.resume_key) {
-    return respond({ error: "resumeFile is required" }, 400);
   }
 
   const data: ApplicationInput = {

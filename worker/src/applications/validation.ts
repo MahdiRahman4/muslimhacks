@@ -267,12 +267,6 @@ export function validateApplicationFormFields(
   if (!data.gender) {
     return { ok: false, error: "gender is required (male or female)" };
   }
-  if (!data.github_url) {
-    return { ok: false, error: "github must be a valid github.com profile URL" };
-  }
-  if (!data.linkedin_url) {
-    return { ok: false, error: "linkedin must be a valid linkedin.com/in profile URL" };
-  }
   if (!data.dietary_restrictions) {
     return { ok: false, error: "dietary is required" };
   }
