@@ -283,10 +283,22 @@ const AdminApplicationDetailPage = () => {
 
               {/* Essay answers */}
               <p className="font-sans text-xs uppercase tracking-[0.2em] mb-1 mt-5" style={{ color: BRAND.gold, opacity: 0.6 }}>Essay answers</p>
-              <Field label="Motivation" value={application.motivation ?? application.why_join} />
-              <Field label="Past project" value={application.past_project ?? application.project_idea} />
-              <Field label="Interests" value={application.interests} />
-              <Field label="Community" value={application.community} />
+              <Field
+                label="Why attend / hope to learn, build, or contribute"
+                value={application.motivation ?? application.why_join}
+              />
+              <Field
+                label="Proud accomplishment"
+                value={application.past_project ?? application.project_idea}
+              />
+              <Field
+                label="Build for the Ummah"
+                value={application.interests}
+              />
+              <Field
+                label="Community contribution"
+                value={application.community}
+              />
 
               {/* Logistics */}
               <p className="font-sans text-xs uppercase tracking-[0.2em] mb-1 mt-5" style={{ color: BRAND.gold, opacity: 0.6 }}>Logistics</p>

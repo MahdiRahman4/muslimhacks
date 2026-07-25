@@ -1,3 +1,5 @@
+import { resolveAllowOrigin } from "../cors";
+
 export function escapeCsvValue(value: unknown): string {
   if (value === null || value === undefined) {
     return "";
@@ -40,19 +42,20 @@ export function csvDownloadResponse(
   corsOrigin: string,
   requestOrigin: string | null,
 ): Response {
-  const allowOrigin =
-    corsOrigin === "*" || (requestOrigin && requestOrigin === corsOrigin)
-      ? requestOrigin ?? corsOrigin
-      : corsOrigin;
+  const allowOrigin = resolveAllowOrigin(corsOrigin, requestOrigin);
+  const headers: Record<string, string> = {
+    "Content-Type": "text/csv; charset=utf-8",
+    "Content-Disposition": `attachment; filename="${filename}"`,
+    "Access-Control-Expose-Headers": "Content-Disposition",
+    Vary: "Origin",
+  };
+  if (allowOrigin) {
+    headers["Access-Control-Allow-Origin"] = allowOrigin;
+  }
 
   return new Response(content, {
     status: 200,
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${filename}"`,
-      "Access-Control-Allow-Origin": allowOrigin,
-      "Access-Control-Expose-Headers": "Content-Disposition",
-    },
+    headers,
   });
 }
 

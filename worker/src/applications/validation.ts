@@ -297,6 +297,9 @@ export function validateApplicationFormFields(
   if (!data.interests) {
     return { ok: false, error: "interests is required" };
   }
+  if (!data.community) {
+    return { ok: false, error: "community is required" };
+  }
 
   return { ok: true, data };
 }

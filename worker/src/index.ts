@@ -3,49 +3,11 @@ import { handleAdminRoutes } from "./admin/routes";
 import { handleApplicationRoutes } from "./applications/routes";
 import { handleAuthRoutes } from "./auth/routes";
 import { authenticate } from "./auth/middleware";
+import { corsHeaders } from "./cors";
 
 export type { Env } from "./env";
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
-
-function parseAllowedOrigins(originConfig: string): string[] {
-  return originConfig
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
-}
-
-function isOriginAllowed(allowed: string[], requestOrigin: string): boolean {
-  if (allowed.includes("*") || allowed.includes(requestOrigin)) {
-    return true;
-  }
-  // Preview / production Vercel URLs for this project
-  try {
-    const host = new URL(requestOrigin).hostname;
-    return host === "muslimhacks.vercel.app" || host.endsWith("-muslim-hacks.vercel.app");
-  } catch {
-    return false;
-  }
-}
-
-function corsHeaders(originConfig: string, requestOrigin: string | null): HeadersInit {
-  const allowed = parseAllowedOrigins(originConfig);
-  const matched =
-    requestOrigin && isOriginAllowed(allowed, requestOrigin) ? requestOrigin : null;
-
-  const headers: Record<string, string> = {
-    "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Max-Age": "86400",
-    Vary: "Origin",
-  };
-
-  if (matched) {
-    headers["Access-Control-Allow-Origin"] = matched;
-  }
-
-  return headers;
-}
 
 function jsonResponse(
   body: unknown,

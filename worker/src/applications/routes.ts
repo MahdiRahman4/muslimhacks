@@ -1,5 +1,6 @@
 import type { AuthUser } from "../auth/types";
 import type { Env } from "../env";
+import { resolveAllowOrigin } from "../cors";
 import { sendApplicationConfirmationEmail } from "../email/application-confirmation";
 import type { ApplicationInput, ApplicationResponse, ApplicationRow } from "./types";
 import {
@@ -431,6 +432,7 @@ async function handleGetMine(
 }
 
 async function handleGetMyResume(
+  request: Request,
   env: Env,
   respond: JsonResponder,
   user: { id: string },
@@ -445,7 +447,20 @@ async function handleGetMyResume(
     return respond({ error: "Resume not found" }, 404);
   }
 
-  return fileResponse;
+  const headers = new Headers(fileResponse.headers);
+  const allowOrigin = resolveAllowOrigin(
+    env.CORS_ORIGIN || "*",
+    request.headers.get("Origin"),
+  );
+  if (allowOrigin) {
+    headers.set("Access-Control-Allow-Origin", allowOrigin);
+    headers.set("Vary", "Origin");
+  }
+
+  return new Response(fileResponse.body, {
+    status: 200,
+    headers,
+  });
 }
 
 export async function handleApplicationRoutes(
@@ -471,7 +486,7 @@ export async function handleApplicationRoutes(
   }
 
   if (pathname === "/api/applications/me/resume" && method === "GET") {
-    return handleGetMyResume(env, respond, user);
+    return handleGetMyResume(request, env, respond, user);
   }
 
   return respond({ error: "Not found" }, 404);

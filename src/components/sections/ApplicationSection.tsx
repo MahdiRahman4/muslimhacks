@@ -57,6 +57,7 @@ const REQUIRED_FIELDS: (keyof ApplicationForm)[] = [
   "motivation",
   "pastProject",
   "interests",
+  "community",
 ];
 
 function isValidGithubUrl(value: string): boolean {
@@ -148,6 +149,7 @@ function validate(form: ApplicationForm, requireResume: boolean): Errors {
   if (!form.pastProject.trim())
     e.pastProject = "This field is required.";
   if (!form.interests.trim()) e.interests = "This field is required.";
+  if (!form.community.trim()) e.community = "This field is required.";
   return e;
 }
 
@@ -1017,7 +1019,8 @@ export default function ApplicationSection() {
 
             <Field>
               <FieldLabel htmlFor="motivation" required>
-                What do you want to get out of MuslimHacks, and why?
+                Why do you want to attend MuslimHacks? What are you hoping to
+                learn, build, or contribute?
               </FieldLabel>
               <Textarea
                 id="motivation"
@@ -1033,31 +1036,32 @@ export default function ApplicationSection() {
 
             <Field>
               <FieldLabel htmlFor="pastProject" required>
-                Describe a project or thing you've worked on before.
+                Tell us about something you're proud of accomplishing. It can be
+                technical or non-technical. Why is it meaningful to you?
               </FieldLabel>
               <Textarea
                 id="pastProject"
                 value={form.pastProject}
                 onChange={(v) => set("pastProject", v)}
-                placeholder="School project, club stuff, a personal thing, volunteering, whatever. Doesn't have to be code."
+                placeholder="School, work, personal, volunteering — anything that matters to you."
                 rows={4}
                 readOnly={readOnly}
                 error={errors.pastProject}
               />
-              <HelperText>Skill level doesn't matter.</HelperText>
               <FieldError message={errors.pastProject} />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="interests" required>
-                What are you most interested in doing at the hackathon?
+                If you had the opportunity to build something that benefits the
+                Ummah, what would you build, and why?
               </FieldLabel>
               <Textarea
                 id="interests"
                 value={form.interests}
                 onChange={(v) => set("interests", v)}
-                placeholder="e.g. building stuff, design, pitching, learning, meeting people"
-                rows={3}
+                placeholder="An idea, a problem you'd solve, or a direction you'd explore."
+                rows={4}
                 readOnly={readOnly}
                 error={errors.interests}
               />
@@ -1065,17 +1069,20 @@ export default function ApplicationSection() {
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="community">
-                Have you volunteered or been involved in the Muslim community?
+              <FieldLabel htmlFor="community" required>
+                Have you volunteered or contributed to your community? Tell us
+                about it.
               </FieldLabel>
               <Textarea
                 id="community"
                 value={form.community}
                 onChange={(v) => set("community", v)}
-                placeholder="Optional. Mosque, events, online, etc."
+                placeholder="Mosque, school, events, online, neighborhood — whatever you've done."
                 rows={3}
                 readOnly={readOnly}
+                error={errors.community}
               />
+              <FieldError message={errors.community} />
             </Field>
           </FormSection>
 

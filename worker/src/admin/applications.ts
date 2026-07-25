@@ -8,6 +8,7 @@ import {
   resumeFilenameFromKey,
   streamResumeFromR2,
 } from "../applications/routes";
+import { resolveAllowOrigin } from "../cors";
 import {
   buildCsv,
   csvDownloadResponse,
@@ -525,15 +526,16 @@ async function handleAdminGetResume(
     return respond({ error: "Resume not found" }, 404);
   }
 
-  // Attach CORS so browser can open the PDF in a new tab from the admin UI
-  const origin = env.CORS_ORIGIN || "*";
-  const requestOrigin = request.headers.get("Origin");
-  const allowOrigin =
-    origin === "*" || (requestOrigin && requestOrigin === origin)
-      ? requestOrigin ?? origin
-      : origin;
+  // Attach CORS so browser can read the PDF blob from the admin UI
   const headers = new Headers(fileResponse.headers);
-  headers.set("Access-Control-Allow-Origin", allowOrigin);
+  const allowOrigin = resolveAllowOrigin(
+    env.CORS_ORIGIN || "*",
+    request.headers.get("Origin"),
+  );
+  if (allowOrigin) {
+    headers.set("Access-Control-Allow-Origin", allowOrigin);
+    headers.set("Vary", "Origin");
+  }
 
   return new Response(fileResponse.body, {
     status: 200,
