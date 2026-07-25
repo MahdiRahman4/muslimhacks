@@ -25,7 +25,7 @@ const faqs = [
   },
   {
     question: "What's the cost?",
-    answer: "There will be a cost to participate, but we keep it as low as possible. All proceeds go to charity through Islamic Relief Canada."
+    answer: "MuslimHacks is free to attend. We still raise funds for charity through Islamic Relief Canada."
   },
   {
     question: "Will there be prayer spaces and halal food?",
