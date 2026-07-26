@@ -86,7 +86,7 @@ export default function QuestionSectionV2 () {
               style={{ fontStyle: "italic", color: BRAND.creamMuted }}
             >
               Technology is a tool. In the right hands, with the right
-              intention, it becomes an act of worship — sadaqah jariyah, a
+              intention, it becomes an act of worship, sadaqah jariyah, a
               charity whose reward flows long after the keyboard goes quiet.
             </p>
           </div>

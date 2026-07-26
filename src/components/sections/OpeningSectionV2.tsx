@@ -1,5 +1,6 @@
 import { BRAND, GoldText, Eyebrow } from "../Shared";
 import GoldButton from "../ui/goldButton";
+import GoldenCoin from "@/components/GoldenCoin";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -51,9 +52,9 @@ export default function OpeningSectionV2({
           className="absolute inset-0"
           style={{
             background: `linear-gradient(135deg,
-                rgba(180,60,20,0.72) 0%,
-                rgba(140,30,100,0.75) 30%,
-                rgba(75,46,99,0.82) 60%,
+                rgba(180,60,20,0.82) 0%,
+                rgba(140,30,100,0.85) 30%,
+                rgba(75,46,99,0.85) 60%,
                 rgba(12,31,63,0.92) 100%)`,
           }}
         />
@@ -76,8 +77,17 @@ export default function OpeningSectionV2({
         بسم الله
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-24 w-full">
-        <div className="max-w-2xl flex flex-col gap-6">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-24 w-full flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+        <div className="relative max-w-2xl">
+          {/* Rounded scrim behind the text, so copy stays legible over the photo */}
+          <div
+            className="absolute -inset-x-8 -inset-y-10 rounded-[2.5rem] pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(6,10,20,0) 0%, rgba(6,10,20,0.35) 35%, rgba(6,10,20,0.65) 100%)",
+            }}
+          />
+          <div className="relative flex flex-col gap-6">
           <Eyebrow className="animate-fade-in-up">
             Quebec's Largest Muslim Charity Hackathon
           </Eyebrow>
@@ -96,14 +106,14 @@ export default function OpeningSectionV2({
 
           <p
             className="font-intimate text-2xl leading-snug animate-fade-in-up"
-            style={{ fontStyle: "italic", color: BRAND.creamMuted }}
+            style={{ fontStyle: "normal", color: BRAND.creamMuted, textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}
           >
             24 hours to build technology with purpose.
           </p>
 
           <p
             className="font-intimate text-lg animate-fade-in-up"
-            style={{ fontStyle: "italic" }}
+            style={{ fontStyle: "normal", textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}
           >
             <GoldText>September 2026</GoldText>
             <span style={{ color: BRAND.creamMuted }}>
@@ -117,7 +127,7 @@ export default function OpeningSectionV2({
             <div className="max-w-md animate-fade-in-up animation-delay-400">
               <p
                 className="font-intimate text-2xl leading-snug animate-fade-in-up mb-4"
-                style={{ fontStyle: "italic", color: BRAND.creamMuted }}
+                style={{ fontStyle: "normal", color: BRAND.creamMuted, textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}
               >
                 Be the first to know when registration opens
               </p>
@@ -188,6 +198,12 @@ export default function OpeningSectionV2({
               </SignedIn>
             </div>
           )}
+          </div>
+        </div>
+
+        {/* Right side - 3D golden coin (falls back to a static badge without WebGL) */}
+        <div className="flex-1 w-full lg:w-auto flex justify-center animate-fade-in-up animation-delay-400">
+          <GoldenCoin className="w-full h-[280px] sm:h-[340px] lg:h-[420px]" />
         </div>
       </div>
 
