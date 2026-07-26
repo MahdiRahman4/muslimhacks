@@ -2,7 +2,8 @@ import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import * as THREE from 'three';
-import logoTexture from '@/assets/muslimhacks-logo.png';
+import logoTexture from '@/assets/muslimhacks-white.png';
+import logoWhite from '@/assets/muslimhacks-logo-white.svg';
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 function isWebGLAvailable(): boolean {
@@ -20,7 +21,32 @@ function isWebGLAvailable(): boolean {
 }
 
 function CoinFallback() {
-  return null;
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <div
+        className="relative w-48 h-48 md:w-64 md:h-64 rounded-full flex items-center justify-center motion-safe:animate-[coin-float_4s_ease-in-out_infinite]"
+        style={{
+          background:
+            'radial-gradient(circle at 35% 30%, #F2D48A 0%, #D4AF37 45%, #B8960C 80%, #93760A 100%)',
+          boxShadow:
+            '0 0 60px 10px hsl(40 90% 60% / 0.35), inset 0 2px 6px hsl(45 90% 90% / 0.6), inset 0 -8px 16px hsl(30 70% 25% / 0.5)',
+        }}
+      >
+        <div className="absolute inset-2 rounded-full border border-amber-200/40" />
+        <img
+          src={logoWhite}
+          alt="MuslimHacks logo"
+          className="w-1/2 h-1/2 object-contain opacity-90 drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]"
+        />
+      </div>
+      <style>{`
+        @keyframes coin-float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+      `}</style>
+    </div>
+  );
 }
 
 const CoinMesh = () => {
