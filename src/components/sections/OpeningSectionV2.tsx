@@ -78,10 +78,6 @@ export default function OpeningSectionV2({
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-24 w-full flex items-center">
         <div className="relative max-w-2xl">
-          {/* Rounded scrim behind the text, so copy stays legible over the photo */}
-          <div
-            className="absolute -inset-x-8 -inset-y-10 rounded-[2.5rem] pointer-events-none"
-          />
           <div className="relative flex flex-col gap-6">
             <Eyebrow className="animate-fade-in-up">
               Quebec's Largest Muslim Charity Hackathon
