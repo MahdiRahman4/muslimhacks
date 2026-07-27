@@ -69,35 +69,46 @@ const MARQUEE_WORDS = [
   { en: "Ihsan", ar: "إحسان" },
 ];
 
+function MarqueeTrack() {
+  return (
+    <>
+      {MARQUEE_WORDS.map((w, i) => (
+        <span key={i} className="inline-flex items-center gap-3 shrink-0">
+          <span
+            className="font-sans text-xs uppercase tracking-[0.28em] font-medium whitespace-nowrap"
+            style={{ color: BRAND.creamMuted }}
+          >
+            {w.en}
+          </span>
+          <span
+            className="font-arabic text-lg leading-none"
+            style={{ color: BRAND.gold, direction: "rtl" }}
+          >
+            {w.ar}
+          </span>
+          <span className="shrink-0" style={{ color: "rgba(221,168,83,0.3)" }}>·</span>
+        </span>
+      ))}
+    </>
+  );
+}
+
 function Marquee() {
   return (
     <div
-      className="py-6 border-y"
+      className="group/marquee relative py-6 border-y overflow-hidden"
       style={{
         borderColor: "rgba(221,168,83,0.2)",
         background: `linear-gradient(135deg, ${BRAND.purpleDeep} 0%, ${BRAND.navy} 100%)`,
       }}
     >
-      <div className="w-full px-6 flex flex-nowrap justify-between overflow-hidden">
-        {MARQUEE_WORDS.map((w, i) => (
-          <span key={i} className="inline-flex items-center gap-3">
-            <span
-              className="font-sans text-xs uppercase tracking-[0.28em] font-medium"
-              style={{ color: BRAND.creamMuted }}
-            >
-              {w.en}
-            </span>
-            <span
-              className="font-arabic text-lg leading-none"
-              style={{ color: BRAND.gold, direction: "rtl" }}
-            >
-              {w.ar}
-            </span>
-            {i < MARQUEE_WORDS.length - 1 && (
-              <span style={{ color: "rgba(221,168,83,0.3)" }}>·</span>
-            )}
-          </span>
-        ))}
+      <div className="flex w-max flex-nowrap animate-marquee">
+        <div className="flex flex-nowrap items-center gap-6 pr-6">
+          <MarqueeTrack />
+        </div>
+        <div className="flex flex-nowrap items-center gap-6 pr-6" aria-hidden="true">
+          <MarqueeTrack />
+        </div>
       </div>
     </div>
   );
