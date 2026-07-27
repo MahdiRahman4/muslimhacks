@@ -57,9 +57,9 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
             "linear-gradient(180deg, hsl(280 40% 20%) 0%, hsl(235 45% 12%) 60%, hsl(240 50% 8%) 100%)",
         }}
       />
-      {/* <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <StarPattern opacity={0.04} />
-      </div> */}
+      </div>
 
       {/* Subtle glow at center */}
       <div
