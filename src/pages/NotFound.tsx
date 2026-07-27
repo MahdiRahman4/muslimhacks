@@ -69,13 +69,6 @@ const NotFound = () => {
             >
               Lost on the <GoldText>path</GoldText>
             </h1>
-            <p
-              className="font-intimate text-xl leading-relaxed"
-              style={{ fontStyle: "italic", color: BRAND.creamMuted }}
-            >
-              This page doesn't exist — but every wrong turn is a chance to find
-              a better way.
-            </p>
           </div>
 
           {/* Hadith-style quote */}
