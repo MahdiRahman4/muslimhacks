@@ -53,23 +53,6 @@ const NotFound = () => {
         </span>
       </div>
 
-      {/* Arabic calligraphy watermark */}
-      <div
-        className="fixed right-0 bottom-0 pointer-events-none select-none hidden lg:block"
-        style={{
-          fontSize: "clamp(14rem, 20vw, 22rem)",
-          lineHeight: 1,
-          color: BRAND.gold,
-          opacity: 0.04,
-          fontFamily: "'Amiri', serif",
-          direction: "rtl",
-          transform: "translate(20%, 20%)",
-        }}
-        aria-hidden="true"
-      >
-        بسم الله
-      </div>
-
       {/* Main */}
       <main className="relative z-10 flex-1 flex items-center justify-center px-6 py-16">
         <div className="max-w-lg w-full flex flex-col items-center text-center gap-10">
