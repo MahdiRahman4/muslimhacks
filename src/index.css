@@ -155,18 +155,19 @@
     font-feature-settings: "liga" 1;
   }
 
-  .font-display {
-    font-family: "Playfair Display", Georgia, serif;
-    letter-spacing: -0.02em;
+  .font-sans {
+    font-family: "Biotif", "Inter", system-ui, sans-serif;
   }
 
   .font-intimate {
-    font-family: "Crimson Text", "Times New Roman", serif;
+    font-family: "Literata", "Garfield", serif;
     font-style: italic;
   }
 
-  .font-sans {
-    font-family: "Inter", system-ui, sans-serif;
+  .font-display {
+    font-family: "Fraunces", "Lora", serif;
+    font-weight: 600;
+    letter-spacing: -0.02rem;
   }
 
   .text-balance {
