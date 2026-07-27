@@ -29,7 +29,7 @@ export default function StorySectionV2 () {
                 isn't the Muslim community building technology for itself? Why are we
                 consumers of tools made without us in mind?
               </p>
-              <p className="font-sans text-base leading-relaxed" style={{ color: BRAND.creamMuted }}>
+              <p className="font-intimate text-lg leading-relaxed" style={{ color: BRAND.creamMuted }}>
                 That question became MuslimHacks — a 24-hour gathering of builders, designers,
                 and dreamers united by faith and a commitment to solving real problems for the
                 ummah. What began as a niyyah is now Quebec's largest Muslim charity hackathon.

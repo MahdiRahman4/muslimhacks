@@ -53,7 +53,7 @@ const Footer = () => {
                   <a
                     href={item.href}
                     onClick={(e) => handleClick(e, item.href)}
-                    className="font-intimate text-base md:text-lg text-cream/70 hover:text-cream transition-colors"
+                    className="font-sans text-base md:text-lg text-cream/70 hover:text-cream transition-colors" style={{ fontSize: '0.875rem' }}
                   >
                     {item.label}
                   </a>
@@ -75,7 +75,8 @@ const Footer = () => {
                   </span>
                   <a
                     href={`mailto:${item.email}`}
-                    className="font-intimate text-base md:text-lg text-cream/80 hover:text-amber transition-colors"
+                    style={{ fontSize: '0.875rem' }}
+                    className="font-sans text-base md:text-lg text-cream/80 hover:text-amber transition-colors"
                   >
                     {item.email}
                   </a>

@@ -1,6 +1,5 @@
 import { BRAND, GoldText, Eyebrow } from "../Shared";
 import GoldButton from "../ui/goldButton";
-import GoldenCoin from "@/components/GoldenCoin";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -51,11 +50,11 @@ export default function OpeningSectionV2({
         <div
           className="absolute inset-0"
           style={{
-            background: `linear-gradient(135deg,
-                rgba(180,60,20,0.82) 0%,
-                rgba(140,30,100,0.85) 30%,
-                rgba(75,46,99,0.85) 60%,
-                rgba(12,31,63,0.92) 100%)`,
+            background: `linear-gradient(105deg,
+                rgba(6,15,32,0.92) 0%,
+                rgba(6,15,32,0.82) 35%,
+                rgba(6,15,32,0.55) 60%,
+                rgba(6,15,32,0.25) 100%)`,
           }}
         />
       </div>
@@ -77,7 +76,7 @@ export default function OpeningSectionV2({
         بسم الله
       </div>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-24 w-full flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 pt-32 pb-24 w-full flex items-center">
         <div className="relative max-w-2xl">
           {/* Rounded scrim behind the text, so copy stays legible over the photo */}
           <div
@@ -88,122 +87,127 @@ export default function OpeningSectionV2({
             }}
           />
           <div className="relative flex flex-col gap-6">
-          <Eyebrow className="animate-fade-in-up">
-            Quebec's Largest Muslim Charity Hackathon
-          </Eyebrow>
+            <Eyebrow className="animate-fade-in-up">
+              Quebec's Largest Muslim Charity Hackathon
+            </Eyebrow>
 
-          <h1
-            className="font-display font-black leading-none animate-fade-in-up"
-            style={{
-              fontSize: "clamp(4rem, 10vw, 8rem)",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            <span style={{ color: BRAND.cream }}>Muslim</span>
-            <br />
-            <GoldText>Hacks</GoldText>
-          </h1>
+            <h1
+              className="font-display font-black leading-none animate-fade-in-up"
+              style={{
+                fontSize: "clamp(4rem, 10vw, 8rem)",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              <span style={{ color: BRAND.cream }}>Muslim</span>
+              <br />
+              <GoldText>Hacks</GoldText>
+            </h1>
 
-          <p
-            className="font-intimate text-2xl leading-snug animate-fade-in-up"
-            style={{ fontStyle: "normal", color: BRAND.creamMuted, textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}
-          >
-            24 hours to build technology with purpose.
-          </p>
+            <p
+              className="font-intimate text-2xl leading-snug animate-fade-in-up"
+              style={{
+                fontStyle: "normal",
+                color: BRAND.creamMuted,
+                textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+              }}
+            >
+              24 hours to build technology with purpose.
+            </p>
 
-          <p
-            className="font-intimate text-lg animate-fade-in-up"
-            style={{ fontStyle: "normal", textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}
-          >
-            <GoldText>September 2026</GoldText>
-            <span style={{ color: BRAND.creamMuted }}>
-              {" "}
-              · Concordia University, Downtown Campus, Montréal, Quebec
-            </span>
-          </p>
+            <p
+              className="font-intimate text-lg animate-fade-in-up"
+              style={{
+                fontStyle: "normal",
+                textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+              }}
+            >
+              <GoldText>September 2026</GoldText>
+              <span style={{ color: BRAND.creamMuted }}>
+                {" "}
+                · Concordia University, Downtown Campus, Montréal, Quebec
+              </span>
+            </p>
 
-          {/* Email signup for notification*/}
-          {displayInviteDialog && (
-            <div className="max-w-md animate-fade-in-up animation-delay-400">
-              <p
-                className="font-intimate text-2xl leading-snug animate-fade-in-up mb-4"
-                style={{ fontStyle: "normal", color: BRAND.creamMuted, textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}
-              >
-                Be the first to know when registration opens
-              </p>
-              <form
-                onSubmit={handleSubmit}
-                className="flex flex-col sm:flex-row gap-3"
-              >
-                <Input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 bg-cream/10 border-cream/30 text-cream placeholder:text-cream/50 focus:border-amber/50 focus:ring-amber/30 h-12 text-base"
-                  required
-                />
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-gradient-to-r from-amber to-rose hover:from-amber-glow hover:to-rose text-plum-deep font-semibold px-8 h-12 text-base transition-all duration-300"
+            {/* Email signup for notification*/}
+            {displayInviteDialog && (
+              <div className="max-w-md animate-fade-in-up animation-delay-400">
+                <p
+                  className="font-intimate text-2xl leading-snug animate-fade-in-up mb-4"
+                  style={{
+                    fontStyle: "normal",
+                    color: BRAND.creamMuted,
+                    textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+                  }}
                 >
-                  {isSubmitting ? "Sending..." : "Notify me"}
-                </Button>
-              </form>
-
-              <SubscribeDialog
-                open={dialogOpen}
-                onOpenChange={onDialogOpenChange}
-                email={email}
-                isSubmitting={isSubmitting}
-                stage={dialogStage}
-                resultVariant={resultVariant}
-                onConfirm={handleConfirm}
-                onGoBack={handleGoBack}
-              />
-            </div>
-          )}
-
-          {/* Apply now button */}
-          {displayApplyDialog && (
-            <div className="flex flex-col gap-4 mt-2 animate-fade-in-up">
-              <SignedOut>
-                <SignUpButton mode="modal">
-                  <GoldButton className="w-full sm:w-auto sm:self-start">
-                    {applicationButtonLabel}
-                  </GoldButton>
-                </SignUpButton>
-              </SignedOut>
-              <SignedIn>
-                {(!isAdmin) && (
-
-                  <GoldButton
-                    as={Link}
-                    to="/apply"
-                    className="w-full sm:w-auto sm:self-start"
+                  Be the first to know when registration opens
+                </p>
+                <form
+                  onSubmit={handleSubmit}
+                  className="flex flex-col sm:flex-row gap-3"
+                >
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="flex-1 bg-cream/10 border-cream/30 text-cream placeholder:text-cream/50 focus:border-amber/50 focus:ring-amber/30 h-12 text-base"
+                    required
+                  />
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-gradient-to-r from-amber to-rose hover:from-amber-glow hover:to-rose text-plum-deep font-semibold px-8 h-12 text-base transition-all duration-300"
                   >
-                    {applicationButtonLabel}
-                  </GoldButton>
-                )}
-                {(isAdmin) && (
-                  <GoldButton
-                    as={Link}
-                    to="/admin/applications"
-                    className="w-full sm:w-auto sm:self-start"
-                  >
-                    Go to Applications
-                  </GoldButton>
-                )}
-              </SignedIn>
-            </div>
-          )}
+                    {isSubmitting ? "Sending..." : "Notify me"}
+                  </Button>
+                </form>
+
+                <SubscribeDialog
+                  open={dialogOpen}
+                  onOpenChange={onDialogOpenChange}
+                  email={email}
+                  isSubmitting={isSubmitting}
+                  stage={dialogStage}
+                  resultVariant={resultVariant}
+                  onConfirm={handleConfirm}
+                  onGoBack={handleGoBack}
+                />
+              </div>
+            )}
+
+            {/* Apply now button */}
+            {displayApplyDialog && (
+              <div className="flex flex-col gap-4 mt-2 animate-fade-in-up">
+                <SignedOut>
+                  <SignUpButton mode="modal">
+                    <GoldButton className="w-full sm:w-auto sm:self-start">
+                      {applicationButtonLabel}
+                    </GoldButton>
+                  </SignUpButton>
+                </SignedOut>
+                <SignedIn>
+                  {!isAdmin && (
+                    <GoldButton
+                      as={Link}
+                      to="/apply"
+                      className="w-full sm:w-auto sm:self-start"
+                    >
+                      {applicationButtonLabel}
+                    </GoldButton>
+                  )}
+                  {isAdmin && (
+                    <GoldButton
+                      as={Link}
+                      to="/admin/applications"
+                      className="w-full sm:w-auto sm:self-start"
+                    >
+                      Go to Applications
+                    </GoldButton>
+                  )}
+                </SignedIn>
+              </div>
+            )}
           </div>
-        </div>
-
-        {/* Right side - 3D golden coin (falls back to a static badge without WebGL) */}
-        <div className="flex-1 w-full lg:w-auto flex justify-center animate-fade-in-up animation-delay-400">
-          <GoldenCoin className="w-full h-[280px] sm:h-[340px] lg:h-[420px]" />
         </div>
       </div>
 

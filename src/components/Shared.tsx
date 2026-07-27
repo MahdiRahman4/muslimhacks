@@ -97,10 +97,6 @@ export const GLOBAL_CSS = `
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     :focus-visible { outline: 2px solid #DDA853; outline-offset: 2px; }
-    .font-display { font-family: 'Playfair Display', Georgia, serif; }
-    .font-intimate { font-family: 'Crimson Text', Georgia, serif; }
-    .font-sans { font-family: 'Inter', system-ui, sans-serif; }
-    .font-arabic { font-family: 'Amiri', serif; }
     .scrollbar-none::-webkit-scrollbar { display: none; }
     .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
     @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }

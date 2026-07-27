@@ -17,21 +17,21 @@
     --amber: 35 85% 55%;
     --amber-light: 40 90% 70%;
     --amber-glow: 30 95% 60%;
-    
+
     /* Deep plum tones */
     --plum: 280 40% 25%;
     --plum-deep: 280 45% 18%;
     --plum-light: 280 35% 40%;
-    
+
     /* Dusty rose */
     --rose: 350 45% 65%;
     --rose-muted: 350 30% 55%;
-    
+
     /* Twilight blues */
     --twilight: 230 35% 25%;
     --twilight-deep: 235 40% 15%;
     --twilight-soft: 225 30% 45%;
-    
+
     /* Cream/off-white for text on dark */
     --cream: 40 40% 95%;
     --cream-muted: 35 25% 85%;
@@ -65,10 +65,24 @@
     --radius: 0.5rem;
 
     /* Gradients as custom properties */
-    --gradient-sunset: linear-gradient(135deg, hsl(35 85% 55%) 0%, hsl(350 45% 65%) 50%, hsl(280 40% 25%) 100%);
-    --gradient-twilight: linear-gradient(180deg, hsl(280 40% 25%) 0%, hsl(235 40% 15%) 100%);
-    --gradient-dawn: linear-gradient(180deg, hsl(40 90% 70%) 0%, hsl(35 85% 55%) 50%, hsl(350 45% 65%) 100%);
-    
+    --gradient-sunset: linear-gradient(
+      135deg,
+      hsl(35 85% 55%) 0%,
+      hsl(350 45% 65%) 50%,
+      hsl(280 40% 25%) 100%
+    );
+    --gradient-twilight: linear-gradient(
+      180deg,
+      hsl(280 40% 25%) 0%,
+      hsl(235 40% 15%) 100%
+    );
+    --gradient-dawn: linear-gradient(
+      180deg,
+      hsl(40 90% 70%) 0%,
+      hsl(35 85% 55%) 50%,
+      hsl(350 45% 65%) 100%
+    );
+
     /* Sidebar tokens */
     --sidebar-background: 35 30% 97%;
     --sidebar-foreground: 280 25% 15%;
@@ -108,7 +122,7 @@
     --border: 235 30% 20%;
     --input: 235 30% 20%;
     --ring: 35 85% 55%;
-    
+
     --sidebar-background: 235 40% 8%;
     --sidebar-foreground: 40 40% 95%;
     --sidebar-primary: 35 85% 55%;
@@ -128,7 +142,7 @@
   body {
     @apply bg-background text-foreground antialiased;
   }
-  
+
   html {
     scroll-behavior: smooth;
   }
@@ -137,34 +151,46 @@
 /* Custom typography for Arabic calligraphy feel */
 @layer utilities {
   .font-arabic {
-    font-family: 'Amiri', 'Scheherazade New', serif;
+    font-family: "Amiri", "Scheherazade New", serif;
     font-feature-settings: "liga" 1;
   }
-  
+
   .font-display {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: "Playfair Display", Georgia, serif;
     letter-spacing: -0.02em;
   }
-  
+
   .font-intimate {
-    font-family: 'Crimson Text', 'Times New Roman', serif;
+    font-family: "Crimson Text", "Times New Roman", serif;
     font-style: italic;
   }
-  
+
+  .font-sans {
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
-  
+
   /* Gradient text utility */
   .text-gradient-sunset {
-    background: linear-gradient(135deg, hsl(35 85% 55%) 0%, hsl(350 45% 65%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(35 85% 55%) 0%,
+      hsl(350 45% 65%) 100%
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  
+
   .text-gradient-twilight {
-    background: linear-gradient(135deg, hsl(350 45% 65%) 0%, hsl(280 40% 25%) 100%);
+    background: linear-gradient(
+      135deg,
+      hsl(350 45% 65%) 0%,
+      hsl(280 40% 25%) 100%
+    );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -206,7 +232,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0) translateX(0);
   }
   25% {
@@ -230,7 +257,8 @@
 }
 
 @keyframes pulse-slow {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.3;
   }
   50% {
@@ -247,51 +275,68 @@
   }
 }
 
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @layer utilities {
   .animate-fade-in-up {
     animation: fadeInUp 0.8s ease-out forwards;
   }
-  
+
   .animate-fade-in-left {
     animation: fadeInLeft 0.8s ease-out forwards;
   }
-  
+
   .animate-fade-in-right {
     animation: fadeInRight 0.8s ease-out forwards;
   }
-  
+
   .animate-float {
     animation: float 8s ease-in-out infinite;
   }
-  
+
   .animate-drift {
     animation: drift 15s linear infinite;
   }
-  
+
   .animate-pulse-slow {
     animation: pulse-slow 4s ease-in-out infinite;
   }
-  
+
   .animate-reveal-text {
     animation: reveal-text 1.2s ease-out forwards;
   }
-  
+
+  .animate-marquee {
+    animation: marquee-scroll 30s linear infinite;
+  }
+
+  .group\/marquee:hover .animate-marquee {
+    animation-play-state: paused;
+  }
+
   .animation-delay-200 {
     animation-delay: 200ms;
   }
-  
+
   .animation-delay-400 {
     animation-delay: 400ms;
   }
-  
+
   .animation-delay-600 {
     animation-delay: 600ms;
   }
-  
+
   .animation-delay-800 {
     animation-delay: 800ms;
   }
-  
+
   .animation-delay-1000 {
     animation-delay: 1000ms;
   }
