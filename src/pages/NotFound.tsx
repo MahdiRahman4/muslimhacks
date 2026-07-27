@@ -30,9 +30,9 @@ const NotFound = () => {
       <style>{GLOBAL_CSS}</style>
 
       {/* Star field */}
-      <div className="fixed inset-0 pointer-events-none">
+      {/* <div className="fixed inset-0 pointer-events-none">
         <StarPattern opacity={0.06} />
-      </div>
+      </div> */}
 
       {/* Large faint 404 watermark */}
       <div

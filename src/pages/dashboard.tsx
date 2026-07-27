@@ -258,9 +258,9 @@ export default function Dashboard() {
     >
       <style>{GLOBAL_CSS}</style>
 
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {/* <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <StarPattern opacity={0.04} />
-      </div>
+      </div> */}
 
       {/* Nav */}
       <header

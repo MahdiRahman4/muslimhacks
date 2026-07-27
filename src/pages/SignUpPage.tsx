@@ -36,9 +36,9 @@ const SignUpPage = () => (
       }
     `}</style>
 
-    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+    {/* <div className="fixed inset-0 pointer-events-none overflow-hidden">
       <StarPattern opacity={0.04} />
-    </div>
+    </div> */}
 
     {/* Bismillah watermark */}
     <div

@@ -34,9 +34,9 @@ export default function ApplicationSubmittedSection() {
       <style>{GLOBAL_CSS}</style>
 
       {/* Star field */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      {/* <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <StarPattern opacity={0.05} />
-      </div>
+      </div> */}
 
       {/* Bismillah watermark */}
       <div

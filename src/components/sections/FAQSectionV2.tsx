@@ -92,7 +92,7 @@ export default function FAQSection() {
         className="relative py-24 px-6 overflow-hidden"
         style={{ background: `linear-gradient(180deg, ${BRAND.purpleDeep} 0%, ${BRAND.navyDeep} 100%)` }}
       >
-        <StarPattern opacity={0.045} />
+        {/* <StarPattern opacity={0.045} /> */}
         <div className="relative max-w-3xl mx-auto flex flex-col gap-12">
           <div className="flex flex-col gap-4">
             <Eyebrow>Questions Answered</Eyebrow>

@@ -128,7 +128,7 @@ export default function VisionSectionV2 () {
             background: `linear-gradient(135deg, ${BRAND.purpleDeep} 0%, #2A2150 50%, ${BRAND.navy} 100%)`,
           }}
         >
-          <StarPattern opacity={0.07} />
+          {/* <StarPattern opacity={0.07} /> */}
           <div className="relative max-w-6xl mx-auto flex flex-col gap-12">
             <div className="text-center flex flex-col gap-3">
               <Eyebrow>What We Stand For</Eyebrow>

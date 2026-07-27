@@ -16,7 +16,7 @@ export default function SponsorsSectionV2() {
       background: `linear-gradient(180deg, ${BRAND.navy} 0%, ${BRAND.purpleDeep} 100%)`,
     }}
   >
-    <StarPattern opacity={0.05} />
+    {/* <StarPattern opacity={0.05} /> */}
     <div className="relative max-w-5xl mx-auto flex flex-col gap-16">
       <div className="text-center flex flex-col gap-4">
         <Eyebrow>Partners in Purpose</Eyebrow>
