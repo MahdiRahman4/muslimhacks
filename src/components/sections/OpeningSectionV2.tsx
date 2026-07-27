@@ -81,10 +81,6 @@ export default function OpeningSectionV2({
           {/* Rounded scrim behind the text, so copy stays legible over the photo */}
           <div
             className="absolute -inset-x-8 -inset-y-10 rounded-[2.5rem] pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(6,10,20,0) 0%, rgba(6,10,20,0.35) 35%, rgba(6,10,20,0.65) 100%)",
-            }}
           />
           <div className="relative flex flex-col gap-6">
             <Eyebrow className="animate-fade-in-up">
