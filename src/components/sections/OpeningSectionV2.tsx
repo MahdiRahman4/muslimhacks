@@ -103,7 +103,7 @@ export default function OpeningSectionV2({
                 textShadow: "0 2px 10px rgba(0,0,0,0.5)",
               }}
             >
-              24 hours to build technology with purpose.
+              24 hours. One weekend. Build something that actually helps people.
             </p>
 
             <p

@@ -81,16 +81,15 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
             }`}
         >
           <p className="font-sans text-base uppercase tracking-[0.3em] text-amber mb-6">
-            Registrations are open!
+            Applications are open
           </p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream leading-tight mb-8">
-            Will you build
+            Want to build
             <br />
             <span className="text-gradient-sunset">with us?</span>
           </h2>
           <p className="font-intimate text-2xl md:text-3xl text-cream/80 max-w-md mx-auto leading-relaxed">
-            Join thousands of builders, dreamers, and believers who are shaping
-            technology with intention.
+            Come for the weekend. Meet people. Try to ship something useful.
           </p>
         </div>
 

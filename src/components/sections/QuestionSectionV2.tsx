@@ -22,7 +22,7 @@ export default function QuestionSectionV2 () {
           }}
         >
           <div className="max-w-3xl mx-auto flex flex-col items-center text-center gap-8">
-            <Eyebrow>Our Why</Eyebrow>
+            <Eyebrow>Why we do this</Eyebrow>
             <h2
               ref={titleRef}
               className={`font-display font-bold leading-tight ${
@@ -85,9 +85,9 @@ export default function QuestionSectionV2 () {
               }`}
               style={{ fontStyle: "italic", color: BRAND.creamMuted }}
             >
-              Technology is a tool. In the right hands, with the right
-              intention, it becomes an act of worship, sadaqah jariyah, a
-              charity whose reward flows long after the keyboard goes quiet.
+              Most of us already write code for school or work. MuslimHacks is
+              about putting that same energy toward something that helps people,
+              with a real intention behind it.
             </p>
           </div>
         </div>

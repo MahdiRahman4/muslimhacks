@@ -19,17 +19,17 @@ export default function SponsorsSectionV2() {
     {/* <StarPattern opacity={0.05} /> */}
     <div className="relative max-w-5xl mx-auto flex flex-col gap-16">
       <div className="text-center flex flex-col gap-4">
-        <Eyebrow>Partners in Purpose</Eyebrow>
+        <Eyebrow>Our partners</Eyebrow>
         <h2
           className="font-display font-bold"
           style={{ fontSize: "clamp(2.25rem, 5vw, 3.75rem)", color: BRAND.cream }}
         >
-          Those who believe in{" "}
-          <GoldText>building with barakah</GoldText>
+          People who help make this{" "}
+          <GoldText>happen</GoldText>
         </h2>
         <p className="font-intimate text-xl max-w-xl mx-auto" style={{ fontStyle: "italic", color: BRAND.creamMuted }}>
-          Sponsoring MuslimHacks is not a transaction — it is sadaqah jariyah. Every
-          dollar invested in this event is an investment in the ummah's future.
+          Sponsoring MuslimHacks supports students building for their communities,
+          and funds raised go to charity through Islamic Relief Canada.
         </p>
       </div>
 
@@ -53,7 +53,7 @@ export default function SponsorsSectionV2() {
               Islamic Relief Canada
             </p>
             <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>
-              Humanitarian impact through faith-driven action
+              Charity partner
             </p>
           </div>
         </div>
@@ -109,8 +109,8 @@ export default function SponsorsSectionV2() {
           Interested in partnering <GoldText>with us?</GoldText>
         </p>
         <p className="font-sans text-sm max-w-md" style={{ color: BRAND.creamMuted }}>
-          Reach a community of Muslim technologists, developers, and community leaders
-          across Quebec and beyond.
+          You'll reach Muslim students and builders across Quebec, plus people who
+          care about the communities we serve.
         </p>
         <a
           href="mailto:sponsors@muslimhacksoutreach.ca"

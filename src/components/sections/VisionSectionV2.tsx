@@ -131,29 +131,29 @@ export default function VisionSectionV2 () {
           {/* <StarPattern opacity={0.07} /> */}
           <div className="relative max-w-6xl mx-auto flex flex-col gap-12">
             <div className="text-center flex flex-col gap-3">
-              <Eyebrow>What We Stand For</Eyebrow>
+              <Eyebrow>What matters to us</Eyebrow>
               <h2
                 className="font-display font-bold"
                 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: BRAND.cream }}
               >
-                Building with <GoldText>barakah</GoldText>
+                Build with <GoldText>purpose</GoldText>
               </h2>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               <ValueCard
-                eyebrow="The Gathering"
-                title="Sincere People"
-                body="We bring together Muslims and allies who care deeply — developers, designers, community organizers — united by a shared niyyah to build something real."
+                eyebrow="The people"
+                title="Show up together"
+                body="Muslims and friends of the community, designers, organizers, and people still learning to code. If you care about the work, you belong here."
               />
               <ValueCard
-                eyebrow="The Challenge"
-                title="Real Impact"
-                body="24 hours. One mission. Projects at MuslimHacks tackle real challenges facing Muslim communities — from accessibility to food security to mental health."
+                eyebrow="The work"
+                title="Solve real problems"
+                body="You've got 24 hours. Pick something that actually affects Muslim communities, like access to resources, education, or local needs, and try to ship something useful."
               />
               <ValueCard
-                eyebrow="The Barakah"
-                title="Sadaqah Jariyah"
-                body="The best hacks live on. We invest in projects that keep giving — open-source tools, charitable platforms, and technology built for the ummah."
+                eyebrow="The point"
+                title="Leave something behind"
+                body="We're hoping some of these projects keep going after the weekend. Open-source tools, charity platforms, small apps people can keep using."
               />
             </div>
           </div>
@@ -163,9 +163,9 @@ export default function VisionSectionV2 () {
         <div className="py-12" style={{ background: BRAND.navyDeep }}>
           <div className="max-w-6xl mx-auto px-0 md:px-6 flex flex-col gap-6">
             <div className="px-6 md:px-0 flex flex-col gap-2">
-              <Eyebrow>The Community</Eyebrow>
+              <Eyebrow>Past weekends</Eyebrow>
               <p className="font-intimate text-xl" style={{ fontStyle: "italic", color: BRAND.creamMuted }}>
-                This is what belonging looks like.
+                Late nights, sticky notes, and people who stayed to help.
               </p>
             </div>
             <PhotoStrip />

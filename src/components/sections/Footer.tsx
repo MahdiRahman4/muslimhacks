@@ -35,7 +35,7 @@ const Footer = () => {
               MuslimHacks
             </p>
             <p className="font-intimate text-base md:text-lg text-cream/60 leading-relaxed">
-              Quebec's largest Muslim charity hackathon. 24 hours to build technology with purpose.
+              Quebec's largest Muslim charity hackathon. One weekend to build something useful.
             </p>
             <p className="font-sans text-sm text-cream/40 mt-4">
               September 2026 · Concordia University, Downtown Campus, Montreal, Quebec
@@ -94,7 +94,7 @@ const Footer = () => {
               Islamic Relief Canada
             </p>
             <p className="font-intimate text-base text-cream/50 mt-1">
-              Serving humanity since 1984. All hackathon proceeds go to charity through IR Canada.
+              Funds raised go to charity through IR Canada.
             </p>
           </div>
         </div>
@@ -105,7 +105,7 @@ const Footer = () => {
             © {new Date().getFullYear()} MuslimHacks. All rights reserved.
           </p>
           <p className="font-sans text-sm text-cream/40">
-            Built with intention · Montreal, Quebec
+            Made in Montreal
           </p>
         </div>
       </div>

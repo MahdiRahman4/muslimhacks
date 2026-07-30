@@ -18,35 +18,35 @@ interface Faqs {
 const FAQ_ITEMS : Faqs[] = [
   {
     question: "Do I need to be Muslim to participate?",
-    answer: "MuslimHacks welcomes everyone who wants to build technology for social good. While our event is rooted in Islamic values of charity and service, participants of all backgrounds who share our mission are welcome."
+    answer: "Nope. The event is rooted in Islamic values of service and charity, but anyone who wants to build something useful is welcome."
   },
   {
     question: "Do I need a team?",
-    answer: "You can register solo or with a team of up to 4 people. If you come alone, we'll help you find teammates during our team formation session on the first evening."
+    answer: "You can come solo or with up to 4 people. If you show up alone, we'll help you find a team on the first evening."
   },
   {
     question: "Will you offer travel reimbursements?",
-    answer: "Unfortunately we won't be able to offer travel reimbursements this year. We know that travel costs can be a barrier, and it's something we really hope to support in future editions as MuslimHacks grows. We appreciate your understanding and your interest in being part of the event."
+    answer: "Not this year, unfortunately. We know travel can be tough, and we hope to support it more as the event grows."
   },
   {
     question: "Is the event in-person or virtual?",
-    answer: "MuslimHacks 2026 will be an in-person event in Quebec. We believe the best collaborations happen face-to-face, and we're creating a space for meaningful connection as much as coding."
+    answer: "In person, in Quebec. We want people in the same room, not just on a Zoom call."
   },
   {
     question: "What's the cost?",
-    answer: "MuslimHacks is free to attend. We still raise funds for charity through Islamic Relief Canada."
+    answer: "It's free. We still fundraise for charity through Islamic Relief Canada."
   },
   {
     question: "Will there be prayer spaces and halal food?",
-    answer: "Absolutely! Not only will spaces be provided for prayer, but there will be a masjid nearby. All food provided will be halal, and we accommodate dietary restrictions."
+    answer: "Yes. We'll have prayer space, and there's a masjid nearby. All food is halal, and we can work with dietary restrictions."
   },
   {
     question: "What if I'm a beginner?",
-    answer: "Perfect! Hackathons are for learning. We'll have mentors, workshops, and team balancing to ensure beginners can contribute meaningfully. Your perspective matters more than your years of experience."
+    answer: "You're good. Bring what you know. There will be mentors and workshops, and plenty of people still figuring things out too."
   },
   {
     question: "How are projects judged?",
-    answer: "Projects are evaluated on impact potential, technical execution, creativity, and presentation. But honestly? The real measure is whether your work could genuinely help someone. That's what we're here for."
+    answer: "We look at impact, how well it's built, creativity, and the pitch. Mostly though: does this actually help someone?"
   },
 ];
 
@@ -95,13 +95,12 @@ export default function FAQSection() {
         {/* <StarPattern opacity={0.045} /> */}
         <div className="relative max-w-3xl mx-auto flex flex-col gap-12">
           <div className="flex flex-col gap-4">
-            <Eyebrow>Questions Answered</Eyebrow>
+            <Eyebrow>FAQ</Eyebrow>
             <h2
               className="font-display font-bold"
               style={{ fontSize: "clamp(2rem, 4.5vw, 3.25rem)", color: BRAND.cream }}
             >
-              Everything you need{" "}
-              <GoldText>to know</GoldText>
+              Common <GoldText>questions</GoldText>
             </h2>
             <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>
               Still have questions?{" "}

@@ -14,7 +14,7 @@ export default function StorySectionV2 () {
         >
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div className="flex flex-col gap-6">
-              <Eyebrow>The Beginning</Eyebrow>
+              <Eyebrow>How it started</Eyebrow>
               <h2
                 className="font-display font-bold leading-tight"
                 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: BRAND.cream }}
@@ -22,17 +22,17 @@ export default function StorySectionV2 () {
                 It started as a{" "}
                 <GoldText>niyyah</GoldText>
                 <br />
-                — an intention between friends.
+                between friends.
               </h2>
               <p className="font-intimate text-lg leading-relaxed" style={{ fontStyle: "italic", color: BRAND.creamMuted }}>
-                A small group of Muslim developers in Montréal asked a simple question: why
-                isn't the Muslim community building technology for itself? Why are we
-                consumers of tools made without us in mind?
+                A few Muslim students in Montréal kept asking the same thing: why aren't we
+                building tools for our own communities? Why do we always use stuff that was
+                never made with us in mind?
               </p>
               <p className="font-intimate text-lg leading-relaxed" style={{ color: BRAND.creamMuted }}>
-                That question became MuslimHacks — a 24-hour gathering of builders, designers,
-                and dreamers united by faith and a commitment to solving real problems for the
-                ummah. What began as a niyyah is now Quebec's largest Muslim charity hackathon.
+                So they put on a hackathon. One weekend, people coding, designing, and
+                figuring things out together. That small idea turned into MuslimHacks,
+                now Quebec's largest Muslim charity hackathon.
               </p>
             </div>
 
@@ -60,7 +60,7 @@ export default function StorySectionV2 () {
                 }}
               >
                 <p className="font-intimate text-sm" style={{ fontStyle: "italic", color: BRAND.creamMuted }}>
-                  An intention between friends
+                  Friends who decided to just start
                 </p>
               </div>
             </div>
