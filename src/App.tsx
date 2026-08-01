@@ -16,6 +16,8 @@ import AdminApplicationsPage from "./pages/admin/AdminApplicationsPage";
 import AdminApplicationDetailPage from "./pages/admin/AdminApplicationDetailPage";
 import EventOpsDashboardPage from "./pages/admin/EventOpsDashboardPage";
 import Dashboard from "./pages/dashboard";
+import SignInPage from "./pages/SignInPage";
+import SignUpPage from "./pages/SignUpPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +48,8 @@ const App = () => {
               <BrowserRouter>
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/signin" element={<SignInPage />} />
+                  <Route path="/signup" element={<SignUpPage />} />
                   <Route path="/login" element={<Navigate to="/signin" replace />} />
                   <Route
                     path="/user-dashboard"

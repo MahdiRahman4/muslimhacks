@@ -1,8 +1,13 @@
 import { SignIn } from "@clerk/clerk-react";
-import { Link } from "react-router-dom";
-import { BRAND, StarPattern, GLOBAL_CSS } from "../components/Shared";
+import { Link, useLocation } from "react-router-dom";
+import { BRAND, GLOBAL_CSS } from "../components/Shared";
 
-const SignInPage = () => (
+const SignInPage = () => {
+  const location = useLocation();
+  const redirectTo =
+    (location.state as { from?: string } | null)?.from ?? "/apply";
+
+  return (
   <div
     className="min-h-screen font-sans flex flex-col items-center justify-center relative px-4 py-12"
     style={{
@@ -58,7 +63,7 @@ const SignInPage = () => (
     </div>
 
     <div className="relative z-10 w-full max-w-md flex flex-col gap-6">
-      <SignIn forceRedirectUrl="/apply" signUpUrl="/signup" />
+      <SignIn forceRedirectUrl={redirectTo} signUpUrl="/signup" />
       <p className="text-center font-sans text-xs" style={{ color: BRAND.sand }}>
         <Link
           to="/"
@@ -69,6 +74,7 @@ const SignInPage = () => (
       </p>
     </div>
   </div>
-);
+  );
+};
 
 export default SignInPage;
