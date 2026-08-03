@@ -6,12 +6,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { checkinByCode, getEventOpsErrorMessage, EventOpsApiError } from "@/lib/event-ops-api";
 import type { ParticipantSummary } from "@/types/event-ops";
+import { QrCheckinScanner } from "./QrCheckinScanner";
 
 interface CheckinCardProps {
   onSuccess: (participant: ParticipantSummary) => void;
 }
 
+type CheckinMode = "type" | "scan";
+
 export function CheckinCard({ onSuccess }: CheckinCardProps) {
+  const [mode, setMode] = useState<CheckinMode>("scan");
   const [code, setCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -47,30 +51,58 @@ export function CheckinCard({ onSuccess }: CheckinCardProps) {
     }
   };
 
+  const handleScanSuccess = (participant: ParticipantSummary) => {
+    setSuccess(participant);
+    setError(null);
+    onSuccess(participant);
+  };
+
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Manual check-in</CardTitle>
+      <CardHeader className="space-y-3">
+        <CardTitle className="text-base">Check-in</CardTitle>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={mode === "scan" ? "default" : "outline"}
+            onClick={() => setMode("scan")}
+          >
+            Scan QR
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={mode === "type" ? "default" : "outline"}
+            onClick={() => setMode("type")}
+          >
+            Type code
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="space-y-2">
-            <Label htmlFor="checkin-code">Public check-in code</Label>
-            <Input
-              id="checkin-code"
-              value={code}
-              onChange={(e) => setCode(e.target.value.toUpperCase())}
-              placeholder="e.g. SM53H769"
-              className="font-mono"
-              disabled={submitting}
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={submitting || !code.trim()}>
-            {submitting ? "Checking in…" : "Check in"}
-          </Button>
-        </form>
+        {mode === "scan" ? (
+          <QrCheckinScanner onSuccess={handleScanSuccess} disabled={submitting} />
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="checkin-code">Public check-in code</Label>
+              <Input
+                id="checkin-code"
+                value={code}
+                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                placeholder="e.g. SM53H769"
+                className="font-mono"
+                disabled={submitting}
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={submitting || !code.trim()}>
+              {submitting ? "Checking in…" : "Check in"}
+            </Button>
+          </form>
+        )}
 
-        {success && (
+        {mode === "type" && success && (
           <Alert className="mt-4">
             <AlertDescription>
               <strong>{success.full_name}</strong> — {success.checkin_status.replace("_", " ")}
@@ -78,13 +110,13 @@ export function CheckinCard({ onSuccess }: CheckinCardProps) {
           </Alert>
         )}
 
-        {info && (
+        {mode === "type" && info && (
           <Alert className="mt-4">
             <AlertDescription>{info}</AlertDescription>
           </Alert>
         )}
 
-        {error && (
+        {mode === "type" && error && (
           <Alert variant="destructive" className="mt-4">
             <AlertDescription>{error}</AlertDescription>
           </Alert>

@@ -71,6 +71,12 @@ export interface ApplicationReview {
   created_at: number;
 }
 
+export interface ApplicationParticipant {
+  id: string;
+  public_checkin_code: string;
+  checkin_status: string;
+}
+
 export interface ApplicationFormValues {
   full_name: string;
   phone: string;

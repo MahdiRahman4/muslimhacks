@@ -10,7 +10,8 @@ import {
   openAdminApplicationResume,
   submitApplicationReview,
 } from "@/lib/api";
-import type { Application, ApplicationReview, ApplicationStatus } from "@/types/application";
+import type { Application, ApplicationParticipant, ApplicationReview, ApplicationStatus } from "@/types/application";
+import { AdminCheckinQr } from "@/components/admin/AdminCheckinQr";
 
 type ReviewStatus = "pending" | "approved" | "rejected";
 
@@ -79,6 +80,7 @@ const AdminApplicationDetailPage = () => {
 
   const [application, setApplication] = useState<Application | null>(null);
   const [reviews, setReviews] = useState<ApplicationReview[]>([]);
+  const [participant, setParticipant] = useState<ApplicationParticipant | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,6 +102,7 @@ const AdminApplicationDetailPage = () => {
         if (cancelled) return;
         setApplication(data.application);
         setReviews(data.reviews);
+        setParticipant(data.participant);
         setReviewStatus(
           data.application.status === "approved" || data.application.status === "rejected"
             ? data.application.status
@@ -144,6 +147,7 @@ const AdminApplicationDetailPage = () => {
       const data = await submitApplicationReview(id, payload);
       setApplication(data.application);
       setReviews((current) => [data.review, ...current]);
+      setParticipant(data.participant);
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
       setNotes("");
@@ -334,6 +338,27 @@ const AdminApplicationDetailPage = () => {
 
             {/* ── Right column ──────────────────────────────────────── */}
             <div className="flex flex-col gap-4">
+
+              {participant && (
+                <div className="rounded-2xl p-6 flex flex-col gap-4 items-center text-center" style={cardStyle}>
+                  <h2 className="font-display font-bold text-lg w-full text-left" style={{ letterSpacing: "-0.01em" }}>
+                    Check-in (admin only)
+                  </h2>
+                  <p className="font-sans text-xs w-full text-left" style={{ color: BRAND.sand }}>
+                    Print or scan at registration. Also emailed to the applicant as text.
+                  </p>
+                  <AdminCheckinQr code={participant.public_checkin_code} />
+                  <p
+                    className="font-mono text-lg tracking-[0.14em] font-semibold"
+                    style={{ color: BRAND.gold }}
+                  >
+                    {participant.public_checkin_code}
+                  </p>
+                  <p className="font-sans text-xs" style={{ color: BRAND.creamMuted }}>
+                    Status: {participant.checkin_status.replace("_", " ")}
+                  </p>
+                </div>
+              )}
 
               {/* Submit review */}
               <div className="rounded-2xl p-6 flex flex-col gap-4" style={cardStyle}>

@@ -5,6 +5,7 @@ import type {
   ApplicationForm,
   ApplicationFormValues,
   ApplicationReview,
+  ApplicationParticipant,
   AuthUser,
   UserSummaryResponse,
 } from "@/types/application";
@@ -286,9 +287,11 @@ export async function downloadApplicationsCsv(params: {
 }
 
 export async function fetchAdminApplication(id: string) {
-  return apiFetch<{ application: Application; reviews: ApplicationReview[] }>(
-    `/api/admin/applications/${id}`,
-  );
+  return apiFetch<{
+    application: Application;
+    reviews: ApplicationReview[];
+    participant: ApplicationParticipant | null;
+  }>(`/api/admin/applications/${id}`);
 }
 
 export async function submitApplicationReview(
@@ -299,13 +302,14 @@ export async function submitApplicationReview(
     status: "pending" | "approved" | "rejected";
   },
 ) {
-  return apiFetch<{ application: Application; review: ApplicationReview }>(
-    `/api/admin/applications/${id}/review`,
-    {
-      method: "POST",
-      body: JSON.stringify(body),
-    },
-  );
+  return apiFetch<{
+    application: Application;
+    review: ApplicationReview;
+    participant: ApplicationParticipant | null;
+  }>(`/api/admin/applications/${id}/review`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
 
 export function logoutUser() {

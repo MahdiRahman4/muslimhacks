@@ -4,6 +4,8 @@ import type { ApplicationRow, ApplicationStatus } from "../applications/types";
 import {
   ensureParticipantForApprovedApplication,
 } from "../participants/service";
+import { sendApplicationApprovedEmail } from "../email/application-approved";
+import { sendApplicationRejectedEmail } from "../email/application-rejected";
 import {
   resumeFilenameFromKey,
   streamResumeFromR2,
@@ -223,6 +225,36 @@ async function handleListApplications(
   });
 }
 
+async function getParticipantSummaryForApplication(
+  env: Env,
+  applicationId: string,
+) {
+  return env.DB.prepare(
+    `SELECT id, public_checkin_code, checkin_status
+     FROM participants
+     WHERE application_id = ?
+     LIMIT 1`,
+  )
+    .bind(applicationId)
+    .first<{
+      id: string;
+      public_checkin_code: string;
+      checkin_status: string;
+    }>();
+}
+
+function toParticipantPayload(participant: {
+  id: string;
+  public_checkin_code: string;
+  checkin_status: string;
+}) {
+  return {
+    id: participant.id,
+    public_checkin_code: participant.public_checkin_code,
+    checkin_status: participant.checkin_status,
+  };
+}
+
 async function getApplicationWithEmail(
   env: Env,
   applicationId: string,
@@ -264,11 +296,14 @@ async function handleGetApplication(
     .bind(applicationId)
     .all<ApplicationReviewRow & { reviewer_email: string }>();
 
+  const participant = await getParticipantSummaryForApplication(env, applicationId);
+
   return respond({
     application: toApplicationDetail(application),
     reviews: (reviews.results ?? []).map((row) =>
       toReviewResponse(row, row.reviewer_email),
     ),
+    participant: participant ? toParticipantPayload(participant) : null,
   });
 }
 
@@ -370,24 +405,31 @@ async function handleReviewApplication(
     participant = await ensureParticipantForApprovedApplication(env, applicationId);
   }
 
+  const updated = await getApplicationWithEmail(env, applicationId);
+
+  if (updated) {
+    if (status === "approved" && participant) {
+      await sendApplicationApprovedEmail(
+        env,
+        updated.email,
+        updated.full_name,
+        participant.public_checkin_code,
+      );
+    } else if (status === "rejected") {
+      await sendApplicationRejectedEmail(env, updated.email, updated.full_name);
+    }
+  }
+
   const review = await env.DB.prepare(
     "SELECT * FROM application_reviews WHERE id = ? LIMIT 1",
   )
     .bind(reviewId)
     .first<ApplicationReviewRow>();
 
-  const updated = await getApplicationWithEmail(env, applicationId);
-
   return respond({
     application: updated ? toApplicationDetail(updated) : null,
     review: review ? toReviewResponse(review, admin.email) : null,
-    participant: participant
-      ? {
-          id: participant.id,
-          public_checkin_code: participant.public_checkin_code,
-          checkin_status: participant.checkin_status,
-        }
-      : null,
+    participant: participant ? toParticipantPayload(participant) : null,
   }, 201);
 }
 
