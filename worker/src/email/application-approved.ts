@@ -4,8 +4,9 @@ import {
   escapeHtml,
   firstName,
   sendResendEmail,
+  type ResendAttachment,
 } from "./shared";
-import { checkinQrDataUrl } from "./qr";
+import { checkinQrPngBase64 } from "./qr";
 
 /**
  * Sent when an admin approves an application. Includes check-in code + QR.
@@ -20,9 +21,19 @@ export async function sendApplicationApprovedEmail(
   const name = firstName(fullName);
   const code = checkinCode.trim().toUpperCase();
   let qrImgHtml = "";
+  let attachments: ResendAttachment[] | undefined;
+
   try {
-    const qrDataUrl = await checkinQrDataUrl(code);
-    qrImgHtml = `<p style="margin: 16px 0;"><img src="${qrDataUrl}" alt="Check-in QR code" width="240" height="240" style="display: block; border-radius: 8px;" /></p>`;
+    const qrBase64 = await checkinQrPngBase64(code);
+    qrImgHtml = `<p style="margin: 16px 0;"><img src="cid:checkin-qr" alt="Check-in QR code" width="240" height="240" style="display: block; border-radius: 8px;" /></p>`;
+    attachments = [
+      {
+        filename: "checkin-qr.png",
+        content: qrBase64,
+        content_id: "checkin-qr",
+        content_type: "image/png",
+      },
+    ];
   } catch (error) {
     console.error("Failed to generate check-in QR for email:", error);
   }
@@ -89,5 +100,6 @@ export async function sendApplicationApprovedEmail(
     text,
     html,
     logLabel: "application approved",
+    attachments,
   });
 }

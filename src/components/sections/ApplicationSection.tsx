@@ -115,7 +115,7 @@ function validate(form: ApplicationForm): Errors {
   else {
     const digitCount = form.phone.replace(/\D/g, "").length;
     if (digitCount === 0) {
-      e.phone = "Enter a valid phone number — use numbers only.";
+      e.phone = "Enter a valid phone number. Use numbers only.";
     } else if (/[a-zA-Z]/.test(form.phone)) {
       e.phone = "Phone numbers can't contain letters.";
     } else if (digitCount < 7) {

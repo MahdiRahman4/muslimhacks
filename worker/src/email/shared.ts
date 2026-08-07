@@ -16,6 +16,13 @@ export function firstName(fullName: string): string {
   return fullName.split(" ")[0] || "there";
 }
 
+export interface ResendAttachment {
+  filename: string;
+  content: string;
+  content_id?: string;
+  content_type?: string;
+}
+
 export async function sendResendEmail(
   env: Env,
   options: {
@@ -24,6 +31,7 @@ export async function sendResendEmail(
     text: string;
     html: string;
     logLabel: string;
+    attachments?: ResendAttachment[];
   },
 ): Promise<void> {
   if (!env.RESEND_API_KEY) {
@@ -48,6 +56,7 @@ export async function sendResendEmail(
         subject: options.subject,
         html: options.html,
         text: options.text,
+        ...(options.attachments?.length ? { attachments: options.attachments } : {}),
       }),
     });
 
