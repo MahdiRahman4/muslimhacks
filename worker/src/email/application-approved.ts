@@ -4,12 +4,12 @@ import {
   escapeHtml,
   firstName,
   sendResendEmail,
-  type ResendAttachment,
 } from "./shared";
-import { checkinQrPngBase64 } from "./qr";
+
+const DASHBOARD_URL = "https://muslimhacks.ca/dashboard";
 
 /**
- * Sent when an admin approves an application. Includes check-in code + QR.
+ * Sent when an admin approves an application. Points to dashboard for QR check-in.
  * Never throws — failures are logged so email can't block the review.
  */
 export async function sendApplicationApprovedEmail(
@@ -20,40 +20,23 @@ export async function sendApplicationApprovedEmail(
 ): Promise<void> {
   const name = firstName(fullName);
   const code = checkinCode.trim().toUpperCase();
-  let qrImgHtml = "";
-  let attachments: ResendAttachment[] | undefined;
 
-  try {
-    const qrBase64 = await checkinQrPngBase64(code);
-    qrImgHtml = `<p style="margin: 16px 0;"><img src="cid:checkin-qr" alt="Check-in QR code" width="240" height="240" style="display: block; border-radius: 8px;" /></p>`;
-    attachments = [
-      {
-        filename: "checkin-qr.png",
-        content: qrBase64,
-        content_id: "checkin-qr",
-        content_type: "image/png",
-      },
-    ];
-  } catch (error) {
-    console.error("Failed to generate check-in QR for email:", error);
-  }
-
-  const subject = "MuslimHacks 2026 — You're in!";
+  const subject = "MuslimHacks 2026: You're in!";
   const text = [
     `Assalamu alaikum ${name},`,
     "",
-    "Alhamdulillah — you've been accepted to MuslimHacks 2026!",
+    "Alhamdulillah, you've been accepted to MuslimHacks 2026!",
     "",
     "Event details:",
     "• September 2026",
     "• Concordia University, Downtown Campus, Montréal, Quebec",
-    "• In person — free to attend",
+    "• In person, free to attend",
     "",
-    "Your check-in code (show this at registration):",
+    "For check-in, open your dashboard to get your QR code:",
+    DASHBOARD_URL,
+    "",
+    "Backup check-in code (if needed):",
     code,
-    "",
-    "Your approval email also includes a QR code — scan it at the door for fast check-in.",
-    "You can also open your dashboard anytime: https://muslimhacks.ca/dashboard",
     "",
     `Questions? Reply to this email or contact us at ${DEFAULT_REPLY_TO}`,
     "",
@@ -66,26 +49,25 @@ export async function sendApplicationApprovedEmail(
 <html>
 <body style="font-family: Georgia, serif; color: #1a1a2e; line-height: 1.6; max-width: 560px; margin: 0 auto; padding: 24px;">
   <p>Assalamu alaikum <strong>${escapeHtml(name)}</strong>,</p>
-  <p>Alhamdulillah — you've been accepted to <strong>MuslimHacks 2026</strong>!</p>
+  <p>Alhamdulillah, you've been accepted to <strong>MuslimHacks 2026</strong>!</p>
   <p><strong>Event details</strong></p>
   <ul>
     <li>September 2026</li>
     <li>Concordia University, Downtown Campus, Montréal, Quebec</li>
-    <li>In person — free to attend</li>
+    <li>In person, free to attend</li>
   </ul>
-  <p><strong>Your check-in QR code</strong> — show this at registration for a fast check-in:</p>
-  ${qrImgHtml}
-  <p><strong>Or use this code:</strong></p>
+  <p><strong>Check-in</strong></p>
+  <p>Open your dashboard to get your QR code. Show it at registration for a fast check-in:</p>
+  <p style="margin: 20px 0;">
+    <a href="${DASHBOARD_URL}" style="display: inline-block; padding: 14px 24px; background: #b8860b; color: #ffffff; font-weight: bold; text-decoration: none; border-radius: 999px;">
+      Open my dashboard
+    </a>
+  </p>
+  <p><strong>Backup code</strong> (if you can't open the dashboard):</p>
   <p style="font-family: monospace; font-size: 22px; letter-spacing: 0.12em; font-weight: bold; color: #b8860b;">
     ${escapeHtml(code)}
   </p>
-  <p style="color: #666; font-size: 14px;">Save this QR or code on your phone. You'll need it when you arrive.</p>
-  <p>
-    <a href="https://muslimhacks.ca/dashboard" style="color: #b8860b; font-weight: bold;">
-      View your dashboard
-    </a>
-    — your QR is always there too.
-  </p>
+  <p style="color: #666; font-size: 14px;">Save this code on your phone just in case.</p>
   <p style="color: #666; font-size: 14px;">
     Questions? Reply to this email or contact
     <a href="mailto:${escapeHtml(DEFAULT_REPLY_TO)}" style="color: #b8860b;">${escapeHtml(DEFAULT_REPLY_TO)}</a>
@@ -100,6 +82,5 @@ export async function sendApplicationApprovedEmail(
     text,
     html,
     logLabel: "application approved",
-    attachments,
   });
 }
