@@ -77,6 +77,16 @@ export interface ApplicationParticipant {
   checkin_status: string;
 }
 
+export interface MyParticipant {
+  checkin_code: string;
+  checkin_status: "not_checked_in" | "checked_in";
+  checked_in_at: number | null;
+}
+
+export interface MyParticipantResponse {
+  participant: MyParticipant | null;
+}
+
 export interface ApplicationFormValues {
   full_name: string;
   phone: string;

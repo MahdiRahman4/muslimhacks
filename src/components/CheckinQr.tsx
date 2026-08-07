@@ -1,13 +1,13 @@
 import { useEffect, useRef } from "react";
 import QRCode from "qrcode";
 
-interface AdminCheckinQrProps {
+interface CheckinQrProps {
   code: string;
   size?: number;
 }
 
-/** Admin-only QR badge for printing at registration. Encodes the plain check-in code. */
-export function AdminCheckinQr({ code, size = 180 }: AdminCheckinQrProps) {
+/** QR badge encoding the plain check-in code for fast door check-in. */
+export function CheckinQr({ code, size = 180 }: CheckinQrProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -30,3 +30,6 @@ export function AdminCheckinQr({ code, size = 180 }: AdminCheckinQrProps) {
     />
   );
 }
+
+/** @deprecated Use CheckinQr */
+export const AdminCheckinQr = CheckinQr;

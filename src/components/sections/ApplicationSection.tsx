@@ -147,6 +147,39 @@ function validate(form: ApplicationForm): Errors {
   return e;
 }
 
+const VALIDATION_FIELD_ORDER: (keyof ApplicationForm)[] = [
+  "fullName",
+  "phone",
+  "gender",
+  "institution",
+  "github",
+  "linkedin",
+  "resumeFile",
+  "dietary",
+  "firstHackathon",
+  "hackathonCount",
+  "csCareer",
+  "motivation",
+  "pastProject",
+  "interests",
+  "community",
+];
+
+function scrollToFirstError(errs: Errors) {
+  const firstKey = VALIDATION_FIELD_ORDER.find((key) => errs[key]);
+  if (!firstKey) return;
+
+  window.setTimeout(() => {
+    const el =
+      document.getElementById(firstKey) ??
+      document.getElementById(`${firstKey}-label`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (el instanceof HTMLElement && typeof el.focus === "function") {
+      el.focus({ preventScroll: true });
+    }
+  }, 50);
+}
+
 function toApplicationPayload(form: ApplicationForm): ApplicationForm {
   return {
     fullName: form.fullName,
@@ -559,7 +592,8 @@ export default function ApplicationSection() {
   const { user: clerkUser } = useUser();
   const [form, setForm] = useState<ApplicationForm>(EMPTY_FORM);
   const [errors, setErrors] = useState<Errors>({});
-  const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showValidationAlert, setShowValidationAlert] = useState(false);
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
   const [isApplicationFilled, setIsApplicationFilled] = useState(false);
@@ -571,7 +605,7 @@ export default function ApplicationSection() {
     value: ApplicationForm[K]
   ) {
     setForm((f) => ({ ...f, [key]: value }));
-    if (submitAttempted && errors[key as string]) {
+    if (showValidationAlert && errors[key as string]) {
       setErrors((e) => {
         const next = { ...e };
         delete next[key as string];
@@ -635,32 +669,25 @@ export default function ApplicationSection() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSubmitAttempted(true);
     const errs = validate(form);
     setErrors(errs);
-    // scrolling works sometimes need more time to fix this
-    // if (Object.keys(errs).length > 0) {
-    //   const firstKey = Object.keys(errs)[0];
-    //   requestAnimationFrame(() => {
-    //     document.getElementById(firstKey)?.scrollIntoView({
-    //       behavior: "smooth",
-    //       block: "center",
-    //     });
-    //   });
-    //   return;
-    // }
+
     if (Object.keys(errs).length > 0) {
-      setSubmitAttempted(false);
-      return;}
+      setShowValidationAlert(true);
+      scrollToFirstError(errs);
+      return;
+    }
+
+    setShowValidationAlert(false);
+    setIsSubmitting(true);
 
     const applicationFormPayload = toApplicationPayload(form);
     try {
       const data = await saveApplicationV2(applicationFormPayload);
       setApplication(data.application);
       toast.success("Application submitted! We'll be in touch soon.");
-      setForm(toFormValuesV2(data.application) || EMPTY_FORM); //reset form
+      setForm(toFormValuesV2(data.application) || EMPTY_FORM);
       setErrors({});
-      setSubmitAttempted(false);
       navigate("/apply/submitted");
     } catch (error) {
       if (error instanceof ApiError) {
@@ -670,6 +697,8 @@ export default function ApplicationSection() {
           "There was an error submitting your application. Please try again."
         );
       }
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -771,6 +800,30 @@ export default function ApplicationSection() {
             />
           </div>
         </div>
+
+        {showValidationAlert && Object.keys(errors).length > 0 && (
+          <div
+            role="alert"
+            className="sticky top-[73px] z-40 mb-8 flex gap-3 px-5 py-4 rounded-xl font-sans text-sm"
+            style={{
+              background: "rgba(196,91,91,0.15)",
+              border: "1px solid rgba(196,91,91,0.4)",
+              color: "#F4B4B4",
+            }}
+          >
+            <AlertCircle size={18} className="shrink-0 mt-0.5" />
+            <div className="flex flex-col gap-2">
+              <p className="font-semibold" style={{ color: BRAND.cream }}>
+                Please fix the following before you submit:
+              </p>
+              <ul className="list-disc pl-5 space-y-1">
+                {Object.values(errors).map((message) => (
+                  <li key={message}>{message}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
 
         <form
           onSubmit={handleSubmit}
@@ -1093,9 +1146,9 @@ export default function ApplicationSection() {
                     color: BRAND.navyDeep,
                     boxShadow: "0 8px 30px rgba(221,168,83,0.28)",
                   }}
-                  disabled={submitAttempted}
+                  disabled={isSubmitting}
                 >
-                  {submitAttempted ? "Submitting..." : application ? "Update application" : "Submit application"}
+                  {isSubmitting ? "Submitting..." : application ? "Update application" : "Submit application"}
                 </button>
 
                 <p
@@ -1105,20 +1158,6 @@ export default function ApplicationSection() {
                   We'll email you a confirmation once you submit.
                 </p>
               </>
-            )}
-
-            {submitAttempted && Object.keys(errors).length > 0 && (
-              <div
-                className="flex items-center gap-2 px-4 py-3 rounded-lg font-sans text-sm"
-                style={{
-                  background: "rgba(196,91,91,0.12)",
-                  border: "1px solid rgba(196,91,91,0.3)",
-                  color: "#E88",
-                }}
-              >
-                <AlertCircle size={15} className="shrink-0" />
-                Fill in the required fields first.
-              </div>
             )}
           </div>
         </form>

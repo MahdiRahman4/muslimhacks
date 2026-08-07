@@ -11,7 +11,7 @@ import {
   submitApplicationReview,
 } from "@/lib/api";
 import type { Application, ApplicationParticipant, ApplicationReview, ApplicationStatus } from "@/types/application";
-import { AdminCheckinQr } from "@/components/admin/AdminCheckinQr";
+import { AdminCheckinQr } from "@/components/CheckinQr";
 
 type ReviewStatus = "pending" | "approved" | "rejected";
 

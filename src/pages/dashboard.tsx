@@ -6,6 +6,7 @@ import {
   XCircle,
   ChevronRight,
   PenLine,
+  QrCode,
 } from "lucide-react";
 import {
   BRAND,
@@ -16,12 +17,13 @@ import {
 } from "../components/Shared";
 import muslimHacksLogo from "../assets/muslimhacks-logo-white.svg";
 import Footer from "@/components/ui/footer";
-import { ApiError, fetchUserSummary } from "@/lib/api";
+import { ApiError, fetchMyParticipant, fetchUserSummary } from "@/lib/api";
 import { toast } from "sonner";
-import { UserSummaryResponse } from "@/types/application";
+import { MyParticipant, UserSummaryResponse } from "@/types/application";
 import { useEffect, useState } from "react";
 import { SignedIn, UserButton } from "@clerk/clerk-react";
 import Profile from "@/components/ui/profile";
+import { CheckinQr } from "@/components/CheckinQr";
 
 type AppStatus = "not_started" | "draft" | "pending" | "approved" | "rejected";
 
@@ -67,7 +69,7 @@ const STATUS_CONFIG: Record<
   approved: {
     label: "Approved",
     description:
-      "Alhamdulillah — you've been accepted to MuslimHacks 2026! Check your email for next steps.",
+      "Alhamdulillah — you've been accepted to MuslimHacks 2026! Use your check-in QR below when you arrive.",
     icon: <CheckCircle2 size={20} />,
     color: "#5FA877",
     bg: "rgba(95,168,119,0.1)",
@@ -203,6 +205,73 @@ function StatCard({
   );
 }
 
+function ParticipantCheckinCard({ participant }: { participant: MyParticipant }) {
+  const checkedIn = participant.checkin_status === "checked_in";
+  const code = participant.checkin_code.trim().toUpperCase();
+
+  return (
+    <div
+      className="rounded-2xl p-7 flex flex-col gap-5"
+      style={{
+        background: "rgba(95,168,119,0.08)",
+        border: "1px solid rgba(95,168,119,0.35)",
+        boxShadow: "0 24px 60px rgba(6,15,32,0.4)",
+      }}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className="p-2 rounded-lg shrink-0"
+          style={{ background: "rgba(95,168,119,0.15)", color: "#5FA877" }}
+        >
+          <QrCode size={22} />
+        </div>
+        <div className="flex flex-col gap-1">
+          <Eyebrow>Event check-in</Eyebrow>
+          <h2
+            className="font-display text-2xl font-bold"
+            style={{ color: BRAND.cream }}
+          >
+            Your QR code
+          </h2>
+          <p
+            className="font-intimate text-base leading-relaxed"
+            style={{ fontStyle: "italic", color: BRAND.creamMuted }}
+          >
+            Show this at registration for a fast check-in. It&apos;s also in your
+            approval email.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center gap-6">
+        <CheckinQr code={code} size={200} />
+        <div className="flex flex-col gap-2 text-center sm:text-left">
+          <p
+            className="font-sans text-xs uppercase tracking-[0.15em]"
+            style={{ color: BRAND.sand }}
+          >
+            Backup code
+          </p>
+          <p
+            className="font-mono text-2xl font-bold tracking-[0.14em]"
+            style={{ color: BRAND.gold }}
+          >
+            {code}
+          </p>
+          {checkedIn && (
+            <p
+              className="font-sans text-sm font-semibold"
+              style={{ color: "#5FA877" }}
+            >
+              You&apos;re checked in!
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -211,6 +280,7 @@ export default function Dashboard() {
     null
   );
   const [status, setStatus] = useState<AppStatus>("not_started");
+  const [participant, setParticipant] = useState<MyParticipant | null>(null);
   useEffect(() => {
     const load = async () => {
       try {
@@ -221,6 +291,15 @@ export default function Dashboard() {
         setStatus(
           apiStatus in STATUS_CONFIG ? (apiStatus as AppStatus) : "not_started"
         );
+
+        if (apiStatus === "approved") {
+          try {
+            const participantResponse = await fetchMyParticipant();
+            setParticipant(participantResponse.participant);
+          } catch {
+            // Dashboard still works if participant record isn't ready yet
+          }
+        }
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
           toast.error("User summary not found.");
@@ -427,6 +506,10 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        {status === "approved" && participant && (
+          <ParticipantCheckinCard participant={participant} />
+        )}
 
         {/* Arabic closing */}
         <div className="flex flex-col items-center gap-1 py-4">

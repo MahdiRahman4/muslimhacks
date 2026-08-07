@@ -5,9 +5,10 @@ import {
   firstName,
   sendResendEmail,
 } from "./shared";
+import { checkinQrDataUrl } from "./qr";
 
 /**
- * Sent when an admin approves an application. Includes check-in code.
+ * Sent when an admin approves an application. Includes check-in code + QR.
  * Never throws — failures are logged so email can't block the review.
  */
 export async function sendApplicationApprovedEmail(
@@ -17,6 +18,15 @@ export async function sendApplicationApprovedEmail(
   checkinCode: string,
 ): Promise<void> {
   const name = firstName(fullName);
+  const code = checkinCode.trim().toUpperCase();
+  let qrImgHtml = "";
+  try {
+    const qrDataUrl = await checkinQrDataUrl(code);
+    qrImgHtml = `<p style="margin: 16px 0;"><img src="${qrDataUrl}" alt="Check-in QR code" width="240" height="240" style="display: block; border-radius: 8px;" /></p>`;
+  } catch (error) {
+    console.error("Failed to generate check-in QR for email:", error);
+  }
+
   const subject = "MuslimHacks 2026 — You're in!";
   const text = [
     `Assalamu alaikum ${name},`,
@@ -29,11 +39,10 @@ export async function sendApplicationApprovedEmail(
     "• In person — free to attend",
     "",
     "Your check-in code (show this at registration):",
-    checkinCode,
+    code,
     "",
-    "Save this code. You'll need it when you arrive.",
-    "",
-    "View your dashboard: https://muslimhacks.ca/dashboard",
+    "Your approval email also includes a QR code — scan it at the door for fast check-in.",
+    "You can also open your dashboard anytime: https://muslimhacks.ca/dashboard",
     "",
     `Questions? Reply to this email or contact us at ${DEFAULT_REPLY_TO}`,
     "",
@@ -53,15 +62,18 @@ export async function sendApplicationApprovedEmail(
     <li>Concordia University, Downtown Campus, Montréal, Quebec</li>
     <li>In person — free to attend</li>
   </ul>
-  <p><strong>Your check-in code</strong> (show this at registration):</p>
+  <p><strong>Your check-in QR code</strong> — show this at registration for a fast check-in:</p>
+  ${qrImgHtml}
+  <p><strong>Or use this code:</strong></p>
   <p style="font-family: monospace; font-size: 22px; letter-spacing: 0.12em; font-weight: bold; color: #b8860b;">
-    ${escapeHtml(checkinCode)}
+    ${escapeHtml(code)}
   </p>
-  <p style="color: #666; font-size: 14px;">Save this code. You'll need it when you arrive.</p>
+  <p style="color: #666; font-size: 14px;">Save this QR or code on your phone. You'll need it when you arrive.</p>
   <p>
     <a href="https://muslimhacks.ca/dashboard" style="color: #b8860b; font-weight: bold;">
       View your dashboard
     </a>
+    — your QR is always there too.
   </p>
   <p style="color: #666; font-size: 14px;">
     Questions? Reply to this email or contact

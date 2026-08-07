@@ -50,6 +50,15 @@ function generateCheckinCode(): string {
   return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
 }
 
+export async function getParticipantByUserId(
+  env: Env,
+  userId: string,
+): Promise<ParticipantRow | null> {
+  return env.DB.prepare("SELECT * FROM participants WHERE user_id = ? LIMIT 1")
+    .bind(userId)
+    .first<ParticipantRow>();
+}
+
 export async function ensureParticipantForApprovedApplication(
   env: Env,
   applicationId: string,

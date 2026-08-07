@@ -7,6 +7,7 @@ import type {
   ApplicationReview,
   ApplicationParticipant,
   AuthUser,
+  MyParticipantResponse,
   UserSummaryResponse,
 } from "@/types/application";
 
@@ -79,6 +80,10 @@ export async function fetchUserSummary() {
 
 export async function fetchMyApplication() {
   return apiFetch<{ application: Application }>("/api/applications/me");
+}
+
+export async function fetchMyParticipant() {
+  return apiFetch<MyParticipantResponse>("/api/participants/me");
 }
 
 /** Fetch the applicant's stored resume as a File (for update form autofill). */
