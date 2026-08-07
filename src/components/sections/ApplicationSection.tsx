@@ -113,10 +113,16 @@ function validate(form: ApplicationForm): Errors {
   if (!form.fullName.trim()) e.fullName = "Full name is required.";
   if (!form.phone) e.phone = "Phone number is required.";
   else {
-    const digits = form.phone.replace(/[^\d+]/g, "");
-    const digitCount = digits.replace(/\D/g, "").length;
-    if (digitCount < 7) e.phone = "Phone number is too short.";
-    else if (digitCount > 15) e.phone = "Phone number is too long.";
+    const digitCount = form.phone.replace(/\D/g, "").length;
+    if (digitCount === 0) {
+      e.phone = "Enter a valid phone number — use numbers only.";
+    } else if (/[a-zA-Z]/.test(form.phone)) {
+      e.phone = "Phone numbers can't contain letters.";
+    } else if (digitCount < 7) {
+      e.phone = "Phone number is too short.";
+    } else if (digitCount > 15) {
+      e.phone = "Phone number is too long.";
+    }
   }
   if (!form.gender.trim()) e.gender = "Select Male or Female.";
   else if (form.gender !== "male" && form.gender !== "female") {
