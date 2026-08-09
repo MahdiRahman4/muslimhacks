@@ -59,7 +59,7 @@ const SignUpPage = () => (
 
     <div className="relative z-10 w-full max-w-md flex flex-col gap-6">
       <SignUp
-        forceRedirectUrl="/apply"
+        forceRedirectUrl="/post-auth"
         signInUrl="/signin"
         // First + last name must be Required in Clerk Dashboard
         // (User & authentication → Email, phone, username → Name)

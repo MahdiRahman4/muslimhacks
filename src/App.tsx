@@ -18,6 +18,7 @@ import EventOpsDashboardPage from "./pages/admin/EventOpsDashboardPage";
 import Dashboard from "./pages/dashboard";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
+import PostAuthRedirect from "./pages/PostAuthRedirect";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +55,14 @@ const App = () => {
                   <Route
                     path="/user-dashboard"
                     element={<Navigate to="/dashboard" replace />}
+                  />
+                  <Route
+                    path="/post-auth"
+                    element={
+                      <RequireAuth>
+                        <PostAuthRedirect />
+                      </RequireAuth>
+                    }
                   />
                   <Route
                     path="/dashboard"

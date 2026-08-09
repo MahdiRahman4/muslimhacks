@@ -5,7 +5,7 @@ import { BRAND, GLOBAL_CSS } from "../components/Shared";
 const SignInPage = () => {
   const location = useLocation();
   const redirectTo =
-    (location.state as { from?: string } | null)?.from ?? "/apply";
+    (location.state as { from?: string } | null)?.from ?? "/post-auth";
 
   return (
   <div

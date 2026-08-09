@@ -100,7 +100,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
           ))}
           {displayApplyDialog && (
             <SignedOut>
-              <SignUpButton mode="modal">
+              <SignUpButton mode="modal" fallbackRedirectUrl="/post-auth">
                 <GoldButton
                   className="w-full sm:w-auto sm:self-start"
                   isNavButton={false}
@@ -126,22 +126,24 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               )}
             </SignedIn>
           )}
-          {(isAdmin && applicationButtonLabel === "Apply now") && (<SignedIn>
-            <GoldButton
-              as={Link}
-              to="/apply"
-              className="w-full sm:w-auto sm:self-start"
-              isNavButton={true}
-              displayApplyDialog={displayApplyDialog}
-            >
-              {applicationButtonLabel}
-            </GoldButton>
-          </SignedIn>)}
+          {isAdmin && applicationButtonLabel === "Apply now" && (
+            <SignedIn>
+              <GoldButton
+                as={Link}
+                to="/apply"
+                className="w-full sm:w-auto sm:self-start"
+                isNavButton={true}
+                displayApplyDialog={displayApplyDialog}
+              >
+                {applicationButtonLabel}
+              </GoldButton>
+            </SignedIn>
+          )}
         </div>
 
         <div className="hidden md:flex items-center gap-3 ml-4">
           <SignedOut>
-            <SignInButton mode="modal">
+            <SignInButton mode="modal" fallbackRedirectUrl="/post-auth">
               <button className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream flex items-center gap-2">
                 <LogIn size={15} />
                 <span>Sign in</span>
@@ -153,7 +155,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
 
         <div className="md:hidden flex items-center gap-2">
           <SignedOut>
-            <SignInButton mode="modal">
+            <SignInButton mode="modal" fallbackRedirectUrl="/post-auth">
               <GoldButton
                 className="w-full sm:w-auto sm:self-start"
                 isNavButton={false}
@@ -165,11 +167,10 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
           </SignedOut>
 
           <SignedIn>
-            <Profile/>
+            <Profile />
           </SignedIn>
         </div>
       </div>
-
     </nav>
   );
 };
