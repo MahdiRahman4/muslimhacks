@@ -20,6 +20,8 @@ import Footer from "@/components/sections/Footer";
 import OpeningSectionV2 from "@/components/sections/OpeningSectionV2";
 import QuestionSectionV2 from "@/components/sections/QuestionSectionV2";
 import StorySectionV2 from "@/components/sections/StorySectionV2";
+import VisionFunnelSection from "@/components/sections/VisionFunnelSection";
+import BenefitsSection from "@/components/sections/BenefitsSection";
 import VisionSectionV2 from "@/components/sections/VisionSectionV2";
 import SponsorsSectionV2 from "@/components/sections/SponsorsSectionV2";
 import FAQSectionV2 from "@/components/sections/FAQSectionV2";
@@ -46,6 +48,8 @@ const Index = () => {
         displayApplyDialog={displayApplyDialog}
         displayInviteDialog={displayInviteDialog}
       />
+      <VisionFunnelSection />
+      <BenefitsSection />
       {/* <QuestionSection /> */}
       <QuestionSectionV2 />
       {/* <StorySection /> */}

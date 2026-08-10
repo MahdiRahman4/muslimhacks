@@ -1,22 +1,15 @@
+import { ChevronDown } from "lucide-react";
 import { BRAND, GoldText, Eyebrow } from "../Shared";
-import GoldButton from "../ui/goldButton";
-import { Link } from "react-router-dom";
+import SubscribeDialog from "@/components/SubscribeDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSubscribe } from "@/hooks/useSubscribe";
-import SubscribeDialog from "@/components/SubscribeDialog";
-import { SignedIn, SignedOut, SignUpButton } from "@clerk/clerk-react";
-import {
-  getApplicationButtonLabel,
-  useApplicationButtonState,
-} from "@/contexts/ApplicationButtonContext";
-import { useAuth } from "@/hooks/useAuth";
+import { ApplyFunnelCta } from "@/components/ApplyFunnelCta";
 
 export default function OpeningSectionV2({
   displayInviteDialog,
   displayApplyDialog,
 }) {
-  const { isAdmin } = useAuth();
   const heroPhotoUrl =
     "https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1600&q=80";
 
@@ -32,8 +25,6 @@ export default function OpeningSectionV2({
     handleConfirm,
     handleGoBack,
   } = useSubscribe();
-  const { hasApplication } = useApplicationButtonState();
-  const applicationButtonLabel = getApplicationButtonLabel(hasApplication);
 
   return (
     <section
@@ -99,7 +90,7 @@ export default function OpeningSectionV2({
               className="font-intimate text-2xl leading-snug animate-fade-in-up"
               style={{
                 fontStyle: "normal",
-                color: BRAND.creamMuted,
+                color: BRAND.cream,
                 textShadow: "0 2px 10px rgba(0,0,0,0.5)",
               }}
             >
@@ -107,7 +98,19 @@ export default function OpeningSectionV2({
             </p>
 
             <p
-              className="font-intimate text-lg animate-fade-in-up"
+              className="font-intimate text-xl leading-relaxed animate-fade-in-up"
+              style={{
+                fontStyle: "normal",
+                color: BRAND.creamMuted,
+                textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+              }}
+            >
+              We are building Quebec&apos;s Muslim tech network, starting with
+              this hackathon.
+            </p>
+
+            <p
+              className="font-intimate text-lg leading-relaxed animate-fade-in-up"
               style={{
                 fontStyle: "normal",
                 textShadow: "0 2px 10px rgba(0,0,0,0.5)",
@@ -167,36 +170,10 @@ export default function OpeningSectionV2({
               </div>
             )}
 
-            {/* Apply now button */}
+            {/* Apply funnel — visible immediately */}
             {displayApplyDialog && (
-              <div className="flex flex-col gap-4 mt-2 animate-fade-in-up">
-                <SignedOut>
-                  <SignUpButton mode="modal" fallbackRedirectUrl="/post-auth">
-                    <GoldButton className="w-full sm:w-auto sm:self-start">
-                      {applicationButtonLabel}
-                    </GoldButton>
-                  </SignUpButton>
-                </SignedOut>
-                <SignedIn>
-                  {!isAdmin && (
-                    <GoldButton
-                      as={Link}
-                      to="/apply"
-                      className="w-full sm:w-auto sm:self-start"
-                    >
-                      {applicationButtonLabel}
-                    </GoldButton>
-                  )}
-                  {isAdmin && (
-                    <GoldButton
-                      as={Link}
-                      to="/admin/applications"
-                      className="w-full sm:w-auto sm:self-start"
-                    >
-                      Go to Applications
-                    </GoldButton>
-                  )}
-                </SignedIn>
+              <div className="mt-2 animate-fade-in-up">
+                <ApplyFunnelCta variant="hero" />
               </div>
             )}
           </div>
@@ -209,6 +186,29 @@ export default function OpeningSectionV2({
           background: `linear-gradient(to bottom, transparent, ${BRAND.navy})`,
         }}
       />
+
+      {/* Scroll cue — centered so it reads as the next step */}
+      <div className="absolute bottom-10 left-0 right-0 z-20 flex justify-center px-6 animate-fade-in-up">
+        <a
+          href="#our-vision"
+          className="inline-flex items-center gap-3 px-6 py-3 rounded-full font-sans text-sm sm:text-base uppercase tracking-[0.28em] font-semibold whitespace-nowrap transition-all duration-200 hover:brightness-110"
+          style={{
+            color: BRAND.cream,
+            background: "rgba(6,15,32,0.55)",
+            border: "1px solid rgba(221,168,83,0.35)",
+            backdropFilter: "blur(8px)",
+            textShadow: "0 2px 10px rgba(0,0,0,0.5)",
+          }}
+        >
+          {/* trailing letter-space would push the label off optical center */}
+          <span className="-mr-[0.28em]">Read our vision</span>
+          <ChevronDown
+            size={18}
+            className="animate-bounce"
+            style={{ color: BRAND.gold }}
+          />
+        </a>
+      </div>
     </section>
   );
 }
