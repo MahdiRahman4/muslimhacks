@@ -171,7 +171,7 @@ export default function OpeningSectionV2({
             {displayApplyDialog && (
               <div className="flex flex-col gap-4 mt-2 animate-fade-in-up">
                 <SignedOut>
-                  <SignUpButton mode="modal" fallbackRedirectUrl="/post-auth">
+                  <SignUpButton mode="modal" forceRedirectUrl="/post-auth">
                     <GoldButton className="w-full sm:w-auto sm:self-start">
                       {applicationButtonLabel}
                     </GoldButton>

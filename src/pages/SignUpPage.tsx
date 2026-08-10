@@ -58,8 +58,16 @@ const SignUpPage = () => (
     </div>
 
     <div className="relative z-10 w-full max-w-md flex flex-col gap-6">
+      <p
+        className="text-center font-sans text-sm leading-relaxed px-2"
+        style={{ color: BRAND.creamMuted }}
+      >
+        Creating an account is step 1. You&apos;ll go straight to the application
+        form next.
+      </p>
       <SignUp
         forceRedirectUrl="/post-auth"
+        fallbackRedirectUrl="/post-auth"
         signInUrl="/signin"
         // First + last name must be Required in Clerk Dashboard
         // (User & authentication → Email, phone, username → Name)
