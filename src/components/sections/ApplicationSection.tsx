@@ -45,7 +45,6 @@ const EMPTY_FORM: ApplicationForm = {
 // Required fields for progress calculation
 const REQUIRED_FIELDS: (keyof ApplicationForm)[] = [
   "fullName",
-  "phone",
   "gender",
   "institution",
   "dietary",
@@ -111,8 +110,7 @@ function calcProgress(form: ApplicationForm): number {
 function validate(form: ApplicationForm): Errors {
   const e: Errors = {};
   if (!form.fullName.trim()) e.fullName = "Full name is required.";
-  if (!form.phone) e.phone = "Phone number is required.";
-  else {
+  if (form.phone) {
     const digitCount = form.phone.replace(/\D/g, "").length;
     if (digitCount === 0) {
       e.phone = "Enter a valid phone number. Use numbers only.";
@@ -855,7 +853,7 @@ export default function ApplicationSection() {
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="phone" required>
+                <FieldLabel htmlFor="phone">
                   Phone Number
                 </FieldLabel>
                 <TextInput
@@ -869,6 +867,7 @@ export default function ApplicationSection() {
                   readOnly={readOnly}
                   error={errors.phone}
                 />
+                <HelperText>Optional.</HelperText>
                 <FieldError message={errors.phone} />
               </Field>
             </div>
