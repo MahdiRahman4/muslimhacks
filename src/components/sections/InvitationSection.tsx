@@ -149,7 +149,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
               }`}
           >
             <SignedOut>
-              <SignUpButton mode="modal" forceRedirectUrl="/post-auth">
+              <SignUpButton mode="modal" fallbackRedirectUrl="/post-auth">
                 <GoldButton className="w-full sm:w-auto">
                   {applicationButtonLabel}
                 </GoldButton>
