@@ -98,18 +98,6 @@ export default function OpeningSectionV2({
             </p>
 
             <p
-              className="font-intimate text-xl leading-relaxed animate-fade-in-up"
-              style={{
-                fontStyle: "normal",
-                color: BRAND.creamMuted,
-                textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-              }}
-            >
-              We are building Quebec&apos;s Muslim tech network, starting with
-              this hackathon.
-            </p>
-
-            <p
               className="font-intimate text-lg leading-relaxed animate-fade-in-up"
               style={{
                 fontStyle: "normal",

@@ -27,7 +27,7 @@ export default function SponsorsSectionV2() {
           People who help make this{" "}
           <GoldText>happen</GoldText>
         </h2>
-        <p className="font-intimate text-xl max-w-xl mx-auto" style={{ fontStyle: "italic", color: BRAND.creamMuted }}>
+        <p className="font-intimate text-xl max-w-xl mx-auto" style={{ fontStyle: "normal", color: BRAND.creamMuted }}>
           Sponsoring MuslimHacks supports students building for their communities,
           and funds raised go to charity through Islamic Relief Canada.
         </p>

@@ -63,7 +63,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         aria-expanded={open}
         style={{ color: BRAND.cream }}
       >
-        <span className="font-intimate text-lg leading-snug" style={{ fontStyle: "italic" }}>
+        <span className="font-intimate text-lg leading-snug" style={{ fontStyle: "normal" }}>
           {q}
         </span>
         <span

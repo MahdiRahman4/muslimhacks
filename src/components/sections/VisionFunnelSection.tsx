@@ -51,7 +51,7 @@ export default function VisionFunnelSection() {
           >
             <p
               className="font-intimate text-xl leading-relaxed"
-              style={{ color: BRAND.creamMuted }}
+              style={{ fontStyle: "normal", color: BRAND.creamMuted }}
             >
               Before we started MuslimHacks, we saw a clear problem in Quebec:
               plenty of talented Muslims in tech, but not enough of a connected
@@ -61,7 +61,7 @@ export default function VisionFunnelSection() {
             </p>
             <p
               className="font-intimate text-xl leading-relaxed"
-              style={{ color: BRAND.creamMuted }}
+              style={{ fontStyle: "normal", color: BRAND.creamMuted }}
             >
               We want people to realize there is a whole Muslim industry out
               there, and that we do not always need to rely on non-Muslim
@@ -79,7 +79,7 @@ export default function VisionFunnelSection() {
               <Eyebrow>What makes us different</Eyebrow>
               <p
                 className="font-intimate text-lg leading-relaxed"
-                style={{ color: BRAND.creamMuted }}
+                style={{ fontStyle: "normal", color: BRAND.creamMuted }}
               >
                 Other Muslim hackathons often started inside ecosystems that
                 were already built for them. Their goal was usually to bring
@@ -88,7 +88,7 @@ export default function VisionFunnelSection() {
               </p>
               <p
                 className="font-intimate text-lg leading-relaxed"
-                style={{ color: BRAND.creamMuted }}
+                style={{ fontStyle: "normal", color: BRAND.creamMuted }}
               >
                 Quebec is not the same. We are building from scratch and trying
                 to lay the foundations of the network we envision here, in shaa

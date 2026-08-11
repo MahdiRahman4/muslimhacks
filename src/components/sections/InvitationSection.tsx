@@ -88,7 +88,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
             <br />
             <span className="text-gradient-sunset">with us?</span>
           </h2>
-          <p className="font-intimate text-2xl md:text-3xl text-cream/80 max-w-md mx-auto leading-relaxed">
+          <p className="font-intimate text-2xl md:text-3xl text-cream/80 max-w-md mx-auto leading-relaxed" style={{ fontStyle: "normal" }}>
             Come for the weekend. Meet people. Try to ship something useful.
           </p>
         </div>

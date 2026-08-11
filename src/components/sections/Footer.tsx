@@ -34,7 +34,7 @@ const Footer = () => {
             <p className="font-display text-2xl md:text-3xl text-gradient-sunset mb-3">
               MuslimHacks
             </p>
-            <p className="font-intimate text-base md:text-lg text-cream/60 leading-relaxed">
+            <p className="font-intimate text-base md:text-lg text-cream/60 leading-relaxed" style={{ fontStyle: "normal" }}>
               Quebec's largest Muslim charity hackathon. One weekend to build something useful.
             </p>
             <p className="font-sans text-sm text-cream/40 mt-4">
@@ -93,7 +93,7 @@ const Footer = () => {
             <p className="font-display text-lg md:text-xl text-cream/90">
               Islamic Relief Canada
             </p>
-            <p className="font-intimate text-base text-cream/50 mt-1">
+            <p className="font-intimate text-base text-cream/50 mt-1" style={{ fontStyle: "normal" }}>
               Funds raised go to charity through IR Canada.
             </p>
           </div>
