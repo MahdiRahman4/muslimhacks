@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle, LogOut } from "lucide-react";
+import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle, LogOut, Clock } from "lucide-react";
 import NotFound from "../../pages/NotFound";
 import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
 import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
@@ -786,13 +786,14 @@ export default function ApplicationSection() {
               Build <GoldText>with us</GoldText>
             </h1>
             <p
-              className="font-intimate text-xl leading-relaxed"
+              className="font-intimate text-xl leading-relaxed flex items-center gap-2"
               style={{
-                fontStyle: "italic",
+                fontStyle: "normal",
                 color: BRAND.creamMuted,
               }}
             >
-              This should take about 10 minutes.
+              <Clock size={20} style={{ color: BRAND.gold }} />
+              This should take about 5 minutes.
             </p>
           </div>
           <div className="h-full w-auto">
@@ -936,7 +937,7 @@ export default function ApplicationSection() {
                   readOnly={readOnly}
                   error={errors.linkedin}
                 />
-                <HelperText>Optional but recommended for recruiters.</HelperText>
+                <HelperText>Optional but recommended for recruiters</HelperText>
                 <FieldError message={errors.linkedin} />
               </Field>
 

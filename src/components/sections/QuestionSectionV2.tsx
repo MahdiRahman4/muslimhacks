@@ -83,7 +83,7 @@ export default function QuestionSectionV2 () {
                   ? "opacity-100 translate-x-0"
                   : "opacity-0 -translate-x-12"
               }`}
-              style={{ fontStyle: "italic", color: BRAND.creamMuted }}
+              style={{ fontStyle: "normal", color: BRAND.creamMuted }}
             >
               Most of us already write code for school or work. MuslimHacks is
               about putting that same energy toward something that helps people,

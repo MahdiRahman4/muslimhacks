@@ -126,9 +126,6 @@ export default function BenefitsSection() {
               There is no fee to attend. Everything on this list is part of the
               weekend.
             </p>
-            <div className="pt-2">
-              <ApplyFunnelCta align="start" />
-            </div>
           </div>
 
           {/* Right: the list */}
@@ -149,6 +146,10 @@ export default function BenefitsSection() {
                 />
               ))}
             </ul>
+            {/* CTA sits after the full list so the ask comes once the value is read */}
+            <div className="pt-8">
+              <ApplyFunnelCta align="start" />
+            </div>
           </div>
         </div>
       </div>

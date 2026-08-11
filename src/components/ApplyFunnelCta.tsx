@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { SignedIn, SignedOut, SignUpButton } from "@clerk/clerk-react";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import GoldButton from "@/components/ui/goldButton";
 import { BRAND } from "@/components/Shared";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,11 +31,9 @@ export function ApplyFunnelCta({
   return (
     <div className={`flex flex-col gap-3 ${alignClass} ${className}`}>
       <SignedOut>
-        <SignUpButton mode="modal" fallbackRedirectUrl="/post-auth">
-          <GoldButton className="w-full sm:w-auto">
-            {label}
-          </GoldButton>
-        </SignUpButton>
+        <GoldButton as={Link} to="/signup" className="w-full sm:w-auto">
+          {label}
+        </GoldButton>
       </SignedOut>
       <SignedIn>
         {!isAdmin && (
@@ -51,10 +49,10 @@ export function ApplyFunnelCta({
       </SignedIn>
       {helperText && (
         <p
-          className="font-intimate text-lg leading-relaxed max-w-md"
+          className="font-intimate text-xs sm:text-sm leading-relaxed max-w-md whitespace-pre-line text-center md:text-left self-center md:self-start"
           style={{
-            fontStyle: "normal",
-            color: BRAND.creamMuted,
+            fontStyle: "italic",
+            color: BRAND.sand,
             textShadow:
               variant === "hero" ? "0 2px 10px rgba(0,0,0,0.5)" : undefined,
           }}

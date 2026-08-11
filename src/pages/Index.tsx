@@ -19,7 +19,6 @@ import Footer from "@/components/sections/Footer";
 // new components
 import OpeningSectionV2 from "@/components/sections/OpeningSectionV2";
 import QuestionSectionV2 from "@/components/sections/QuestionSectionV2";
-import StorySectionV2 from "@/components/sections/StorySectionV2";
 import VisionFunnelSection from "@/components/sections/VisionFunnelSection";
 import BenefitsSection from "@/components/sections/BenefitsSection";
 import VisionSectionV2 from "@/components/sections/VisionSectionV2";
@@ -52,8 +51,6 @@ const Index = () => {
       <BenefitsSection />
       {/* <QuestionSection /> */}
       <QuestionSectionV2 />
-      {/* <StorySection /> */}
-      <StorySectionV2 />
       {/* <VisionSection /> */}
       <VisionSectionV2 />
 

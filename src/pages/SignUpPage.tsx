@@ -58,6 +58,25 @@ const SignUpPage = () => (
     </div>
 
     <div className="relative z-10 w-full max-w-md flex flex-col gap-6">
+      <div className="flex flex-col gap-2 text-center">
+        <h1
+          className="font-display font-bold"
+          style={{
+            fontSize: "clamp(1.75rem, 4vw, 2.5rem)",
+            color: BRAND.cream,
+          }}
+        >
+          Create your account to apply
+        </h1>
+        <p
+          className="font-sans text-sm leading-relaxed"
+          style={{ color: BRAND.creamMuted }}
+        >
+          You&apos;ll need a quick account to start your MuslimHacks
+          application, and it takes you straight to the form. Already have one?
+          Use &ldquo;Sign in&rdquo; below.
+        </p>
+      </div>
       <SignUp
         forceRedirectUrl="/post-auth"
         signInUrl="/signin"

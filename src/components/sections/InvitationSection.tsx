@@ -3,10 +3,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSubscribe } from "@/hooks/useSubscribe";
 import SubscribeDialog from "@/components/SubscribeDialog";
+import CountdownTimer from "@/components/CountdownTimer";
 import GoldButton from "../ui/goldButton";
 import { Link } from "react-router-dom";
-import { StarPattern } from "../Shared";
-import { SignedIn, SignedOut, SignUpButton } from "@clerk/clerk-react";
+import { BRAND, StarPattern } from "../Shared";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import {
   getApplicationButtonLabel,
   useApplicationButtonState,
@@ -88,7 +89,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
             <br />
             <span className="text-gradient-sunset">with us?</span>
           </h2>
-          <p className="font-intimate text-2xl md:text-3xl text-cream/80 max-w-md mx-auto leading-relaxed">
+          <p className="font-intimate text-2xl md:text-3xl text-cream/80 max-w-md mx-auto leading-relaxed" style={{ fontStyle: "normal" }}>
             Come for the weekend. Meet people. Try to ship something useful.
           </p>
         </div>
@@ -143,17 +144,16 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
         {displayApplyDialog && (
           <div
             ref={applyRef}
-            className={`mb-16 transition-all duration-1000 delay-200 ${applyVisible
+            className={`mb-16 flex flex-col items-center gap-6 transition-all duration-1000 delay-200 ${applyVisible
                 ? "opacity-100 translate-y-0"
                 : "opacity-0 translate-y-8"
               }`}
           >
+            <CountdownTimer align="center" />
             <SignedOut>
-              <SignUpButton mode="modal" fallbackRedirectUrl="/post-auth">
-                <GoldButton className="w-full sm:w-auto">
-                  {applicationButtonLabel}
-                </GoldButton>
-              </SignUpButton>
+              <GoldButton as={Link} to="/signup" className="w-full sm:w-auto">
+                {applicationButtonLabel}
+              </GoldButton>
             </SignedOut>
             <SignedIn>
               {(!isAdmin) && (
@@ -176,6 +176,16 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
                 </GoldButton>
               )}
             </SignedIn>
+            <SignedOut>
+              <p
+                className="font-intimate text-xs sm:text-sm"
+                style={{ fontStyle: "italic", color: BRAND.sand }}
+              >
+                Apply → we review your application →
+                <br />
+                you get an email with the decision.
+              </p>
+            </SignedOut>
           </div>
         )}
 
