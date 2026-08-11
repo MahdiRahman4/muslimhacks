@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import {
   SignedIn,
   SignedOut,
-  SignInButton,
-  SignUpButton,
   UserButton,
 } from "@clerk/clerk-react";
 import { cn } from "@/lib/utils";
@@ -100,15 +98,15 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
           ))}
           {displayApplyDialog && (
             <SignedOut>
-              <SignUpButton mode="modal" fallbackRedirectUrl="/post-auth">
-                <GoldButton
-                  className="w-full sm:w-auto sm:self-start"
-                  isNavButton={false}
-                  displayApplyDialog={displayApplyDialog}
-                >
-                  Apply Now
-                </GoldButton>
-              </SignUpButton>
+              <GoldButton
+                as={Link}
+                to="/signup"
+                className="w-full sm:w-auto sm:self-start"
+                isNavButton={false}
+                displayApplyDialog={displayApplyDialog}
+              >
+                Apply Now
+              </GoldButton>
             </SignedOut>
           )}
           {displayApplyDialog && (
@@ -143,27 +141,28 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
 
         <div className="hidden md:flex items-center gap-3 ml-4">
           <SignedOut>
-            <SignInButton mode="modal" fallbackRedirectUrl="/post-auth">
-              <button className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream flex items-center gap-2">
-                <LogIn size={15} />
-                <span>Sign in</span>
-              </button>
-            </SignInButton>
+            <Link
+              to="/signin"
+              className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream flex items-center gap-2"
+            >
+              <LogIn size={15} />
+              <span>Sign in</span>
+            </Link>
           </SignedOut>
           <Profile />
         </div>
 
         <div className="md:hidden flex items-center gap-2">
           <SignedOut>
-            <SignInButton mode="modal" fallbackRedirectUrl="/post-auth">
-              <GoldButton
-                className="w-full sm:w-auto sm:self-start"
-                isNavButton={false}
-                displayApplyDialog={displayApplyDialog}
-              >
-                Sign in
-              </GoldButton>
-            </SignInButton>
+            <GoldButton
+              as={Link}
+              to="/signin"
+              className="w-full sm:w-auto sm:self-start"
+              isNavButton={false}
+              displayApplyDialog={displayApplyDialog}
+            >
+              Sign in
+            </GoldButton>
           </SignedOut>
 
           <SignedIn>

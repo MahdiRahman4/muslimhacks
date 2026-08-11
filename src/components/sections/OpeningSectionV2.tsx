@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSubscribe } from "@/hooks/useSubscribe";
 import { ApplyFunnelCta } from "@/components/ApplyFunnelCta";
+import CountdownTimer from "@/components/CountdownTimer";
 
 export default function OpeningSectionV2({
   displayInviteDialog,
@@ -160,8 +161,16 @@ export default function OpeningSectionV2({
 
             {/* Apply funnel — visible immediately */}
             {displayApplyDialog && (
-              <div className="mt-2 animate-fade-in-up">
-                <ApplyFunnelCta variant="hero" />
+              <div className="mt-2 flex flex-col gap-8 animate-fade-in-up">
+                <CountdownTimer
+                  variant="hero"
+                  align="center"
+                  className="md:items-start"
+                />
+                <ApplyFunnelCta
+                  variant="hero"
+                  helperText={"Apply → we review your application →\nyou get an email with the decision."}
+                />
               </div>
             )}
           </div>
