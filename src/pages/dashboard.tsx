@@ -24,6 +24,7 @@ import { useEffect, useState } from "react";
 import { SignedIn, UserButton } from "@clerk/clerk-react";
 import Profile from "@/components/ui/profile";
 import { CheckinQr } from "@/components/CheckinQr";
+import CountdownTimer from "@/components/CountdownTimer";
 
 type AppStatus = "not_started" | "draft" | "pending" | "approved" | "rejected";
 
@@ -42,7 +43,7 @@ const STATUS_CONFIG: Record<
   not_started: {
     label: "Not started",
     description:
-      "You haven't started your application yet. Applications close soon — begin when you're ready.",
+      "You haven't started your application yet. Applications close soon. Begin when you're ready.",
     icon: <FileText size={20} />,
     color: BRAND.sand,
     bg: "rgba(201,187,168,0.08)",
@@ -404,7 +405,22 @@ export default function Dashboard() {
             value="24 hrs"
             sub="In-person · Montréal"
           />
-          <StatCard label="Deadline" value="TBA" sub="Applications open" />
+          <StatCard
+            label="Deadline"
+            value="Aug. 27th 11:59 PM"
+            sub="Applications open"
+          />
+        </div>
+
+        {/* Live countdown to the application deadline */}
+        <div
+          className="rounded-2xl px-6 py-5 flex flex-col gap-1"
+          style={{
+            background: "rgba(245,238,227,0.04)",
+            border: "1px solid rgba(221,168,83,0.12)",
+          }}
+        >
+          <CountdownTimer align="start" />
         </div>
 
         {/* Status card */}
