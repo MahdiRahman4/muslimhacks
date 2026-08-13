@@ -89,11 +89,22 @@ async function uploadResume(
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 120);
   const key = `resumes/${userId}/${Date.now()}-${safeName}`;
 
-  await env.RESUMES.put(key, file.stream(), {
-    httpMetadata: {
-      contentType: file.type || "application/pdf",
-    },
-  });
+  try {
+    await env.RESUMES.put(key, file.stream(), {
+      httpMetadata: {
+        contentType: file.type || "application/pdf",
+      },
+    });
+  } catch (error) {
+    // Usually the upload stream dying on a weak mobile connection. Naming the
+    // resume matters because the applicant can act on it: retry, or submit
+    // without one.
+    console.error("[resume] upload failed", userId, file.size, error);
+    return {
+      error:
+        "Your resume could not be uploaded. Check your connection and try again, or submit without one for now.",
+    };
+  }
 
   return { key, url: key };
 }
