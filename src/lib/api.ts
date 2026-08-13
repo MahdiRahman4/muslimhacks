@@ -18,6 +18,12 @@ const apiBaseUrl = rawApiBaseUrl.endsWith("/")
 
 export const SUBSCRIBE_ENDPOINT = `${apiBaseUrl}/api/subscribe`;
 
+/**
+ * Uploads share this budget with plain requests, so keep it generous enough for
+ * a 5MB resume on a phone connection.
+ */
+const REQUEST_TIMEOUT_MS = 45_000;
+
 export class ApiError extends Error {
   status: number;
 
@@ -25,6 +31,46 @@ export class ApiError extends Error {
     super(message);
     this.status = status;
     this.name = "ApiError";
+  }
+}
+
+/**
+ * Status 0 marks a request that never reached the API — a blocked domain,
+ * captive portal, or dead connection — so callers can say so plainly instead
+ * of blaming the submission.
+ */
+export class NetworkError extends ApiError {
+  constructor(message: string) {
+    super(0, message);
+    this.name = "NetworkError";
+  }
+}
+
+export const NETWORK_ERROR_MESSAGE =
+  "We couldn't reach the MuslimHacks server. Check your connection, or try another network or browser.";
+
+/**
+ * Without this a stalled request leaves the UI on a spinner forever, which is
+ * indistinguishable from a hang to the applicant.
+ */
+async function fetchWithTimeout(
+  input: string,
+  init: RequestInit = {},
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new NetworkError(
+        "That took too long to respond. Check your connection and try again.",
+      );
+    }
+    throw new NetworkError(NETWORK_ERROR_MESSAGE);
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -56,7 +102,7 @@ export async function apiFetch<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetchWithTimeout(`${apiBaseUrl}${path}`, {
     ...options,
     headers,
   });
@@ -89,7 +135,7 @@ export async function fetchMyParticipant() {
 /** Fetch the applicant's stored resume as a File (for update form autofill). */
 export async function fetchMyResumeFile(): Promise<File | null> {
   const token = await getAuthTokenAsync();
-  const response = await fetch(`${apiBaseUrl}/api/applications/me/resume`, {
+  const response = await fetchWithTimeout(`${apiBaseUrl}/api/applications/me/resume`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 

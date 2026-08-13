@@ -8,6 +8,7 @@ import { clerkAppearance } from "@/lib/clerkTheme";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { RequireAdmin, RequireAuth } from "@/components/auth/RequireAuth";
 import { AuthTokenBridge } from "@/components/auth/AuthTokenBridge";
+import { InAppBrowserNotice } from "@/components/InAppBrowserNotice";
 import { ApplicationButtonProvider } from "@/contexts/ApplicationButtonContext";
 import Index from "./pages/Index";
 import ApplicationSection from "./components/sections/ApplicationSection";
@@ -47,6 +48,7 @@ const App = () => {
             <Sonner position="top-right" />
             <GoogleReCaptchaProvider reCaptchaKey={recaptchaSiteKey}>
               <BrowserRouter>
+                <InAppBrowserNotice />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/signin" element={<SignInPage />} />

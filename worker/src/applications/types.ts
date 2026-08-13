@@ -30,6 +30,7 @@ export interface ApplicationRow {
   interests: string | null;
   community: string | null;
   status: ApplicationStatus;
+  confirmation_email_sent_at: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -87,6 +88,7 @@ export interface ApplicationResponse {
   interests: string | null;
   community: string | null;
   status: ApplicationStatus;
+  confirmation_email_sent_at: number | null;
   created_at: number;
   updated_at: number;
 }
