@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle, LogOut, Clock, ChevronDown } from "lucide-react";
 import NotFound from "../../pages/NotFound";
-import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
+import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS, LoadingScreen } from "../Shared";
 import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
 import Footer from "../ui/footer";
 import { toast } from "sonner";
@@ -771,11 +771,7 @@ export default function ApplicationSection() {
   ]);
 
   if (loading) {
-    return (
-      <div className="p-8 text-center text-muted-foreground">
-        Loading application...
-      </div>
-    );
+    return <LoadingScreen message="Loading application..." />;
   }
 
   return (
