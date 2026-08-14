@@ -3,6 +3,7 @@ import { handleAdminApplicationRoutes } from "./applications";
 import { handleAdminEventOpsRoutes } from "./event-ops";
 import { handleAdminReportRoutes } from "./reports";
 import { handleAdminParticipantRoutes } from "./participants";
+import { handleAdminUserRoutes } from "./users";
 
 type JsonResponder = (body: unknown, status?: number) => Response;
 
@@ -24,6 +25,11 @@ export async function handleAdminRoutes(
   const participantRoute = await handleAdminParticipantRoutes(request, env, respond);
   if (participantRoute) {
     return participantRoute;
+  }
+
+  const userRoute = await handleAdminUserRoutes(request, env, respond);
+  if (userRoute) {
+    return userRoute;
   }
 
   const applicationRoute = await handleAdminApplicationRoutes(request, env, respond);

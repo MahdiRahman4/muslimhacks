@@ -1,27 +1,35 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Search, Download, ChevronLeft, ChevronRight,
-  ChevronUp, ChevronDown, ChevronsUpDown, ExternalLink, SlidersHorizontal, LogOut,
+  ChevronUp, ChevronDown, ChevronsUpDown, SlidersHorizontal,
 } from "lucide-react";
 import { BRAND, GoldText, Eyebrow, GLOBAL_CSS } from "@/components/Shared";
 import muslimHacksLogo from "@/assets/muslimhacks-logo-white.svg";
-import { downloadApplicationsCsv, fetchAdminApplications } from "@/lib/api";
-import { useAuth } from "@/hooks/useAuth";
-import type { AdminApplicationSummary, ApplicationStatus } from "@/types/application";
+import {
+  downloadApplicationsCsv,
+  fetchAdminApplications,
+  fetchAdminUsersWithoutApplication,
+} from "@/lib/api";
+import type {
+  AdminApplicationSummary,
+  AdminUserWithoutApplication,
+  ApplicationStatus,
+} from "@/types/application";
 import Profile from "@/components/ui/profile";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-type SortKey = "name" | "email" | "gender" | "status" | "updated";
+type ListView = "applications" | "not_applied";
+type SortKey = "full_name" | "email" | "gender" | "status" | "created_at";
 type SortDir = "asc" | "desc";
 
-const PAGE_SIZE = 8;
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+const DEFAULT_PAGE_SIZE = 25;
+
 const GENDER_OPTIONS = [
   { value: "male", label: "Male" },
   { value: "female", label: "Female" },
 ];
 
-// ─── Status badge ─────────────────────────────────────────────────────────────
 const STATUS_STYLES: Record<ApplicationStatus, { label: string; color: string; bg: string; border: string }> = {
   draft: { label: "Draft", color: BRAND.goldSoft, bg: "rgba(221,168,83,0.1)", border: "rgba(221,168,83,0.3)" },
   pending: { label: "Pending", color: BRAND.purpleLight, bg: "rgba(155,124,176,0.12)", border: "rgba(155,124,176,0.35)" },
@@ -41,20 +49,11 @@ function StatusBadge({ status }: { status: ApplicationStatus }) {
   );
 }
 
-// ─── Sort icon ────────────────────────────────────────────────────────────────
 function SortIcon({ col, sortKey, sortDir }: { col: SortKey; sortKey: SortKey; sortDir: SortDir }) {
   if (col !== sortKey) return <ChevronsUpDown size={13} style={{ color: "rgba(201,187,168,0.3)" }} />;
   return sortDir === "asc"
     ? <ChevronUp size={13} style={{ color: BRAND.gold }} />
     : <ChevronDown size={13} style={{ color: BRAND.gold }} />;
-}
-
-function compareApplications(a: AdminApplicationSummary, b: AdminApplicationSummary, key: SortKey): number {
-  if (key === "updated") return a.updated_at - b.updated_at;
-  const field = key === "name" ? "full_name" : key;
-  const av = (a[field as keyof AdminApplicationSummary] as string | null) ?? "";
-  const bv = (b[field as keyof AdminApplicationSummary] as string | null) ?? "";
-  return av.localeCompare(bv);
 }
 
 const STATUS_TABS: { key: ApplicationStatus | "all"; label: string }[] = [
@@ -65,28 +64,37 @@ const STATUS_TABS: { key: ApplicationStatus | "all"; label: string }[] = [
   { key: "rejected", label: "Rejected" },
 ];
 
-// ─── Admin page ───────────────────────────────────────────────────────────────
-const AdminApplicationsPage = () => {
-  const { logout } = useAuth();
+const selectStyle = {
+  background: "rgba(245,238,227,0.06)",
+  border: "1px solid rgba(221,168,83,0.18)",
+  outline: "none",
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23C9BBA8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+  backgroundRepeat: "no-repeat",
+  backgroundPosition: "right 12px center",
+} as const;
 
+const AdminApplicationsPage = () => {
+  const [view, setView] = useState<ListView>("applications");
   const [applications, setApplications] = useState<AdminApplicationSummary[]>([]);
+  const [signups, setSignups] = useState<AdminUserWithoutApplication[]>([]);
   const [total, setTotal] = useState(0);
   const [counts, setCounts] = useState<Record<string, number>>({});
+  const [notAppliedCount, setNotAppliedCount] = useState(0);
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<(typeof PAGE_SIZE_OPTIONS)[number]>(DEFAULT_PAGE_SIZE);
 
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "all">("all");
   const [genderFilter, setGenderFilter] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
 
-  const [sortKey, setSortKey] = useState<SortKey>("updated");
+  const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Debounce free-text search before it hits the API.
   useEffect(() => {
     const handle = setTimeout(() => {
       setSearch(searchInput);
@@ -100,21 +108,40 @@ const AdminApplicationsPage = () => {
     setLoading(true);
     setError(null);
 
-    fetchAdminApplications({
-      status: statusFilter === "all" ? undefined : statusFilter,
-      gender: genderFilter || undefined,
-      search: search || undefined,
-      limit: PAGE_SIZE,
-      offset: (page - 1) * PAGE_SIZE,
-    })
-      .then((data) => {
-        if (cancelled) return;
-        setApplications(data.applications);
-        setTotal(data.pagination.total);
-      })
+    const offset = (page - 1) * pageSize;
+
+    const request =
+      view === "not_applied"
+        ? fetchAdminUsersWithoutApplication({
+            search: search || undefined,
+            limit: pageSize,
+            offset,
+            sortOrder: sortDir,
+          }).then((data) => {
+            if (cancelled) return;
+            setSignups(data.users);
+            setApplications([]);
+            setTotal(data.pagination.total);
+          })
+        : fetchAdminApplications({
+            status: statusFilter === "all" ? undefined : statusFilter,
+            gender: genderFilter || undefined,
+            search: search || undefined,
+            limit: pageSize,
+            offset,
+            sortBy: sortKey,
+            sortOrder: sortDir,
+          }).then((data) => {
+            if (cancelled) return;
+            setApplications(data.applications);
+            setSignups([]);
+            setTotal(data.pagination.total);
+          });
+
+    request
       .catch((err) => {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : "Failed to load applications");
+        setError(err instanceof Error ? err.message : "Failed to load list");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -123,30 +150,33 @@ const AdminApplicationsPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [statusFilter, genderFilter, search, page]);
+  }, [view, statusFilter, genderFilter, search, page, pageSize, sortKey, sortDir]);
 
-  // Status tab / stat pill counts reflect totals across all applications, not the active filters.
   useEffect(() => {
     let cancelled = false;
     const statuses: ApplicationStatus[] = ["draft", "pending", "approved", "rejected"];
 
-    Promise.all(
-      statuses.map((s) =>
-        fetchAdminApplications({ status: s, limit: 1 }).then((data) => [s, data.pagination.total] as const),
+    Promise.all([
+      Promise.all(
+        statuses.map((s) =>
+          fetchAdminApplications({ status: s, limit: 1 }).then((data) => [s, data.pagination.total] as const),
+        ),
       ),
-    )
-      .then((results) => {
+      fetchAdminUsersWithoutApplication({ limit: 1 }).then((data) => data.pagination.total),
+    ])
+      .then(([statusCounts, unsigned]) => {
         if (cancelled) return;
         const next: Record<string, number> = {};
         let all = 0;
-        for (const [key, value] of results) {
+        for (const [key, value] of statusCounts) {
           next[key] = value;
           all += value;
         }
         next.all = all;
         setCounts(next);
+        setNotAppliedCount(unsigned);
       })
-      .catch(() => { });
+      .catch(() => {});
 
     return () => {
       cancelled = true;
@@ -154,23 +184,16 @@ const AdminApplicationsPage = () => {
   }, []);
 
   function toggleSort(col: SortKey) {
-    if (sortKey === col) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
-    else {
+    if (sortKey === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
       setSortKey(col);
-      setSortDir("asc");
+      setSortDir(col === "created_at" ? "desc" : "asc");
     }
+    setPage(1);
   }
 
-  const sortedApplications = useMemo(() => {
-    const rows = [...applications];
-    rows.sort((a, b) => {
-      const cmp = compareApplications(a, b, sortKey);
-      return sortDir === "asc" ? cmp : -cmp;
-    });
-    return rows;
-  }, [applications, sortKey, sortDir]);
-
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const handleExportCsv = async () => {
     setExporting(true);
@@ -208,7 +231,6 @@ const AdminApplicationsPage = () => {
     >
       <style>{GLOBAL_CSS}</style>
 
-      {/* ── Header ─────────────────────────────────────────────────── */}
       <header
         className="sticky top-0 z-50 border-b"
         style={{ background: "rgba(6,15,32,0.95)", backdropFilter: "blur(14px)", borderColor: "rgba(221,168,83,0.1)" }}
@@ -225,38 +247,23 @@ const AdminApplicationsPage = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              className="flex items-center gap-2 px-3.5 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 focus-visible:ring-2 disabled:opacity-50"
-              style={{ background: "rgba(245,238,227,0.06)", border: "1px solid rgba(221,168,83,0.18)", color: BRAND.cream }}
-              onClick={() => void handleExportCsv()}
-              disabled={exporting}
-            >
-              <Download size={13} style={{ color: BRAND.gold }} />
-              {exporting ? "Exporting..." : "Export CSV"}
-            </button>
-            {/* <Link
-              to="/admin/event-ops"
-              className="flex items-center gap-2 px-3.5 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 focus-visible:ring-2"
-              style={{ background: "rgba(245,238,227,0.06)", border: "1px solid rgba(221,168,83,0.18)", color: BRAND.cream }}
-            >
-              Event Ops
-            </Link> */}
-            {/* <Link
-              to="/apply"
-              className="flex items-center gap-2 px-3.5 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 focus-visible:ring-2"
-              style={{ background: "rgba(245,238,227,0.06)", border: "1px solid rgba(221,168,83,0.18)", color: BRAND.cream }}
-            >
-              <ExternalLink size={13} style={{ color: BRAND.purpleLight }} />
-              Applicant view
-            </Link> */}
+            {view === "applications" && (
+              <button
+                className="flex items-center gap-2 px-3.5 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 focus-visible:ring-2 disabled:opacity-50"
+                style={{ background: "rgba(245,238,227,0.06)", border: "1px solid rgba(221,168,83,0.18)", color: BRAND.cream }}
+                onClick={() => void handleExportCsv()}
+                disabled={exporting}
+              >
+                <Download size={13} style={{ color: BRAND.gold }} />
+                {exporting ? "Exporting..." : "Export CSV"}
+              </button>
+            )}
             <Profile />
           </div>
         </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-6 py-10 flex flex-col gap-8">
-
-        {/* ── Page title ─────────────────────────────────────────────── */}
         <div className="flex flex-col gap-1">
           <Eyebrow>Admin</Eyebrow>
           <h1
@@ -266,17 +273,17 @@ const AdminApplicationsPage = () => {
             Applications <GoldText>2026</GoldText>
           </h1>
           <p className="font-intimate text-base" style={{ fontStyle: "italic", color: BRAND.creamMuted }}>
-            Review and manage hackathon registrations.
+            Review applications, and see who signed up but never applied.
           </p>
         </div>
 
-        {/* ── Stat pills ─────────────────────────────────────────────── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
-            { label: "Total", value: counts.all ?? 0 },
+            { label: "Applied", value: counts.all ?? 0 },
             { label: "Pending", value: counts.pending ?? 0 },
             { label: "Approved", value: counts.approved ?? 0 },
             { label: "Rejected", value: counts.rejected ?? 0 },
+            { label: "Signed up, no app", value: notAppliedCount },
           ].map((s) => (
             <div
               key={s.label}
@@ -289,21 +296,25 @@ const AdminApplicationsPage = () => {
           ))}
         </div>
 
-        {/* ── Filters ────────────────────────────────────────────────── */}
         <div
           className="rounded-2xl p-5 flex flex-col gap-5"
           style={{ background: "rgba(245,238,227,0.03)", border: "1px solid rgba(221,168,83,0.1)" }}
         >
-          {/* Status tabs */}
           <div className="flex items-center gap-2 flex-wrap">
             <SlidersHorizontal size={14} style={{ color: BRAND.sand }} className="shrink-0" />
             {STATUS_TABS.map((t) => {
-              const active = statusFilter === t.key;
+              const active = view === "applications" && statusFilter === t.key;
               const st = t.key !== "all" ? STATUS_STYLES[t.key as ApplicationStatus] : null;
               return (
                 <button
                   key={t.key}
-                  onClick={() => { setStatusFilter(t.key); setPage(1); }}
+                  onClick={() => {
+                    setView("applications");
+                    setStatusFilter(t.key);
+                    setPage(1);
+                    setSortKey("created_at");
+                    setSortDir("desc");
+                  }}
                   className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-sans text-xs font-medium transition-all duration-200 focus-visible:ring-2 whitespace-nowrap"
                   style={active ? {
                     background: st ? st.bg : "rgba(221,168,83,0.12)",
@@ -316,24 +327,43 @@ const AdminApplicationsPage = () => {
                   }}
                 >
                   {t.label}
-                  <span
-                    className="font-sans text-xs tabular-nums"
-                    style={{ opacity: 0.7 }}
-                  >
+                  <span className="font-sans text-xs tabular-nums" style={{ opacity: 0.7 }}>
                     {counts[t.key] ?? 0}
                   </span>
                 </button>
               );
             })}
+            <button
+              onClick={() => {
+                setView("not_applied");
+                setPage(1);
+                setSortKey("created_at");
+                setSortDir("desc");
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-sans text-xs font-medium transition-all duration-200 focus-visible:ring-2 whitespace-nowrap"
+              style={view === "not_applied" ? {
+                background: "rgba(221,168,83,0.12)",
+                border: "1px solid rgba(221,168,83,0.4)",
+                color: BRAND.gold,
+              } : {
+                background: "rgba(245,238,227,0.04)",
+                border: "1px solid rgba(245,238,227,0.08)",
+                color: BRAND.sand,
+              }}
+            >
+              Signed up, no app
+              <span className="font-sans text-xs tabular-nums" style={{ opacity: 0.7 }}>
+                {notAppliedCount}
+              </span>
+            </button>
           </div>
 
-          {/* Search + gender */}
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: BRAND.sand }} />
               <input
                 type="search"
-                placeholder="Search by name or email…"
+                placeholder={view === "not_applied" ? "Search by email…" : "Search by name or email…"}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 className="w-full pl-9 pr-4 py-2.5 font-sans text-sm rounded-lg focus-visible:ring-2 focus-visible:ring-offset-1"
@@ -341,27 +371,43 @@ const AdminApplicationsPage = () => {
               />
             </div>
 
+            {view === "applications" && (
+              <select
+                value={genderFilter || "all"}
+                onChange={(e) => { setGenderFilter(e.target.value === "all" ? "" : e.target.value); setPage(1); }}
+                className="px-4 py-2.5 font-sans text-sm rounded-lg focus-visible:ring-2 appearance-none"
+                style={{
+                  ...selectStyle,
+                  color: genderFilter ? BRAND.cream : BRAND.sand,
+                  minWidth: "140px",
+                }}
+              >
+                <option value="all" style={{ background: BRAND.navy }}>All genders</option>
+                {GENDER_OPTIONS.map((g) => (
+                  <option key={g.value} value={g.value} style={{ background: BRAND.navy }}>
+                    {g.label}
+                  </option>
+                ))}
+              </select>
+            )}
+
             <select
-              value={genderFilter || "all"}
-              onChange={(e) => { setGenderFilter(e.target.value === "all" ? "" : e.target.value); setPage(1); }}
+              value={`${sortKey}:${sortDir}`}
+              onChange={(e) => {
+                const [key, dir] = e.target.value.split(":") as [SortKey, SortDir];
+                setSortKey(key);
+                setSortDir(dir);
+                setPage(1);
+              }}
               className="px-4 py-2.5 font-sans text-sm rounded-lg focus-visible:ring-2 appearance-none"
               style={{
-                background: "rgba(245,238,227,0.06)",
-                border: "1px solid rgba(221,168,83,0.18)",
-                color: genderFilter ? BRAND.cream : BRAND.sand,
-                outline: "none",
-                minWidth: "140px",
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23C9BBA8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 12px center",
+                ...selectStyle,
+                color: BRAND.cream,
+                minWidth: "160px",
               }}
             >
-              <option value="all" style={{ background: BRAND.navy }}>All genders</option>
-              {GENDER_OPTIONS.map((g) => (
-                <option key={g.value} value={g.value} style={{ background: BRAND.navy }}>
-                  {g.label}
-                </option>
-              ))}
+              <option value="created_at:desc" style={{ background: BRAND.navy }}>Newest first</option>
+              <option value="created_at:asc" style={{ background: BRAND.navy }}>Oldest first</option>
             </select>
           </div>
         </div>
@@ -375,113 +421,186 @@ const AdminApplicationsPage = () => {
           </div>
         )}
 
-        {/* ── Table ──────────────────────────────────────────────────── */}
         <div
           className="rounded-2xl overflow-hidden"
           style={{ border: "1px solid rgba(221,168,83,0.1)" }}
         >
-          {/* Table — single table so header and body columns are always aligned */}
           <div className="overflow-x-auto">
-            <table className="w-full table-fixed min-w-[880px]">
-              <colgroup>
-                <col style={{ width: "18%" }} />
-                <col style={{ width: "24%" }} />
-                <col style={{ width: "18%" }} />
-                <col style={{ width: "10%" }} />
-                <col style={{ width: "12%" }} />
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "5%" }} />
-              </colgroup>
-              <thead style={{ background: "rgba(75,46,99,0.2)", borderBottom: "1px solid rgba(221,168,83,0.1)" }}>
-                <tr>
-                  <TH col="name">Name</TH>
-                  <TH col="email">Email</TH>
-                  <th className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium" style={{ color: BRAND.sand }}>Program</th>
-                  <TH col="gender">Gender</TH>
-                  <TH col="status">Status</TH>
-                  <TH col="updated">Updated</TH>
-                  <th className="px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
+            {view === "not_applied" ? (
+              <table className="w-full table-fixed min-w-[560px]">
+                <colgroup>
+                  <col style={{ width: "55%" }} />
+                  <col style={{ width: "45%" }} />
+                </colgroup>
+                <thead style={{ background: "rgba(75,46,99,0.2)", borderBottom: "1px solid rgba(221,168,83,0.1)" }}>
                   <tr>
-                    <td colSpan={7} className="px-6 py-16 text-center">
-                      <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
-                        Loading applications…
-                      </p>
-                    </td>
+                    <th className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium" style={{ color: BRAND.sand }}>
+                      Email
+                    </th>
+                    <TH col="created_at">Signed up</TH>
                   </tr>
-                ) : sortedApplications.length === 0 ? (
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={2} className="px-6 py-16 text-center">
+                        <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
+                          Loading sign-ups…
+                        </p>
+                      </td>
+                    </tr>
+                  ) : signups.length === 0 ? (
+                    <tr>
+                      <td colSpan={2} className="px-6 py-16 text-center">
+                        <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
+                          Everyone who signed up has also applied.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : signups.map((row, i) => (
+                    <tr
+                      key={row.id}
+                      style={{
+                        borderBottom: i < signups.length - 1 ? "1px solid rgba(221,168,83,0.07)" : "none",
+                      }}
+                    >
+                      <td className="px-4 py-3.5 overflow-hidden">
+                        <span className="font-sans text-sm block truncate" style={{ color: BRAND.cream }}>{row.email}</span>
+                      </td>
+                      <td className="px-4 py-3.5 overflow-hidden">
+                        <span className="font-sans text-xs tabular-nums block truncate" style={{ color: BRAND.sand }}>
+                          {new Date(row.created_at).toLocaleString()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <table className="w-full table-fixed min-w-[880px]">
+                <colgroup>
+                  <col style={{ width: "18%" }} />
+                  <col style={{ width: "24%" }} />
+                  <col style={{ width: "18%" }} />
+                  <col style={{ width: "10%" }} />
+                  <col style={{ width: "12%" }} />
+                  <col style={{ width: "13%" }} />
+                  <col style={{ width: "5%" }} />
+                </colgroup>
+                <thead style={{ background: "rgba(75,46,99,0.2)", borderBottom: "1px solid rgba(221,168,83,0.1)" }}>
                   <tr>
-                    <td colSpan={7} className="px-6 py-16 text-center">
-                      <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
-                        No applications match your filters.
-                      </p>
-                    </td>
+                    <TH col="full_name">Name</TH>
+                    <TH col="email">Email</TH>
+                    <th className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium" style={{ color: BRAND.sand }}>Program</th>
+                    <TH col="gender">Gender</TH>
+                    <TH col="status">Status</TH>
+                    <TH col="created_at">Submitted</TH>
+                    <th className="px-4 py-3" />
                   </tr>
-                ) : sortedApplications.map((row, i) => (
-                  <tr
-                    key={row.id}
-                    className="group transition-colors duration-150"
-                    style={{
-                      borderBottom: i < sortedApplications.length - 1 ? "1px solid rgba(221,168,83,0.07)" : "none",
-                      background: "transparent",
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,238,227,0.03)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                  >
-                    <td className="px-4 py-3.5 overflow-hidden">
-                      <Link
-                        to={`/admin/applications/${row.id}`}
-                        className="font-sans text-sm font-medium block truncate hover:underline"
-                        style={{ color: BRAND.cream }}
-                      >
-                        {row.full_name}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3.5 overflow-hidden">
-                      <span className="font-sans text-sm block truncate" style={{ color: BRAND.creamMuted }}>{row.email}</span>
-                    </td>
-                    <td className="px-4 py-3.5 overflow-hidden">
-                      <span className="font-sans text-sm block truncate" style={{ color: BRAND.sand }}>{row.program || "—"}</span>
-                    </td>
-                    <td className="px-4 py-3.5 overflow-hidden">
-                      <span className="font-sans text-sm block truncate" style={{ color: BRAND.creamMuted }}>
-                        {row.gender || "—"}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <StatusBadge status={row.status} />
-                    </td>
-                    <td className="px-4 py-3.5 overflow-hidden">
-                      <span className="font-sans text-xs tabular-nums block truncate" style={{ color: BRAND.sand }}>
-                        {new Date(row.updated_at).toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-right">
-                      <Link
-                        to={`/admin/applications/${row.id}`}
-                        className="font-sans text-xs hover:opacity-80 transition-opacity focus-visible:ring-2 rounded px-2 py-1"
-                        style={{ color: BRAND.purpleLight }}
-                      >
-                        View
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-16 text-center">
+                        <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
+                          Loading applications…
+                        </p>
+                      </td>
+                    </tr>
+                  ) : applications.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-16 text-center">
+                        <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
+                          No applications match your filters.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : applications.map((row, i) => (
+                    <tr
+                      key={row.id}
+                      className="group transition-colors duration-150"
+                      style={{
+                        borderBottom: i < applications.length - 1 ? "1px solid rgba(221,168,83,0.07)" : "none",
+                        background: "transparent",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,238,227,0.03)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                      <td className="px-4 py-3.5 overflow-hidden">
+                        <Link
+                          to={`/admin/applications/${row.id}`}
+                          className="font-sans text-sm font-medium block truncate hover:underline"
+                          style={{ color: BRAND.cream }}
+                        >
+                          {row.full_name}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3.5 overflow-hidden">
+                        <span className="font-sans text-sm block truncate" style={{ color: BRAND.creamMuted }}>{row.email}</span>
+                      </td>
+                      <td className="px-4 py-3.5 overflow-hidden">
+                        <span className="font-sans text-sm block truncate" style={{ color: BRAND.sand }}>{row.program || "—"}</span>
+                      </td>
+                      <td className="px-4 py-3.5 overflow-hidden">
+                        <span className="font-sans text-sm block truncate" style={{ color: BRAND.creamMuted }}>
+                          {row.gender || "—"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <StatusBadge status={row.status} />
+                      </td>
+                      <td className="px-4 py-3.5 overflow-hidden">
+                        <span className="font-sans text-xs tabular-nums block truncate" style={{ color: BRAND.sand }}>
+                          {new Date(row.created_at).toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-right">
+                        <Link
+                          to={`/admin/applications/${row.id}`}
+                          className="font-sans text-xs hover:opacity-80 transition-opacity focus-visible:ring-2 rounded px-2 py-1"
+                          style={{ color: BRAND.purpleLight }}
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
 
-          {/* Pagination */}
           <div
             className="px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t"
             style={{ borderColor: "rgba(221,168,83,0.08)", background: "rgba(6,15,32,0.3)" }}
           >
-            <p className="font-sans text-xs whitespace-nowrap" style={{ color: BRAND.sand }}>
-              Showing {total === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} of {total}
-            </p>
+            <div className="flex items-center gap-3 flex-wrap">
+              <p className="font-sans text-xs whitespace-nowrap" style={{ color: BRAND.sand }}>
+                Showing {total === 0 ? 0 : (page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} of {total}
+              </p>
+              <label className="flex items-center gap-2 font-sans text-xs" style={{ color: BRAND.sand }}>
+                Per page
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value) as (typeof PAGE_SIZE_OPTIONS)[number]);
+                    setPage(1);
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg font-sans text-xs appearance-none focus-visible:ring-2"
+                  style={{
+                    ...selectStyle,
+                    color: BRAND.cream,
+                    paddingRight: "1.75rem",
+                  }}
+                >
+                  {PAGE_SIZE_OPTIONS.map((size) => (
+                    <option key={size} value={size} style={{ background: BRAND.navy }}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}

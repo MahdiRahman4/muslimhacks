@@ -1,6 +1,7 @@
 import { getAuthTokenAsync } from "./auth-token";
 import type {
   AdminApplicationSummary,
+  AdminUserWithoutApplication,
   Application,
   ApplicationForm,
   ApplicationFormValues,
@@ -285,6 +286,8 @@ export async function fetchAdminApplications(params: {
   search?: string;
   limit?: number;
   offset?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }) {
   const query = new URLSearchParams();
   if (params.status) query.set("status", params.status);
@@ -292,12 +295,33 @@ export async function fetchAdminApplications(params: {
   if (params.search) query.set("search", params.search);
   if (params.limit != null) query.set("limit", String(params.limit));
   if (params.offset != null) query.set("offset", String(params.offset));
+  if (params.sortBy) query.set("sort_by", params.sortBy);
+  if (params.sortOrder) query.set("sort_order", params.sortOrder);
 
   const suffix = query.toString() ? `?${query.toString()}` : "";
   return apiFetch<{
     applications: AdminApplicationSummary[];
     pagination: { limit: number; offset: number; total: number };
   }>(`/api/admin/applications${suffix}`);
+}
+
+export async function fetchAdminUsersWithoutApplication(params: {
+  search?: string;
+  limit?: number;
+  offset?: number;
+  sortOrder?: "asc" | "desc";
+}) {
+  const query = new URLSearchParams();
+  if (params.search) query.set("search", params.search);
+  if (params.limit != null) query.set("limit", String(params.limit));
+  if (params.offset != null) query.set("offset", String(params.offset));
+  if (params.sortOrder) query.set("sort_order", params.sortOrder);
+
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  return apiFetch<{
+    users: AdminUserWithoutApplication[];
+    pagination: { limit: number; offset: number; total: number };
+  }>(`/api/admin/users/not-applied${suffix}`);
 }
 
 /** Download registration answers as CSV (respects current admin filters). */

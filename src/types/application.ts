@@ -61,6 +61,13 @@ export interface Application {
   updated_at: number;
 }
 
+export interface AdminUserWithoutApplication {
+  id: string;
+  email: string;
+  role: string;
+  created_at: number;
+}
+
 export interface ApplicationReview {
   id: string;
   application_id: string;

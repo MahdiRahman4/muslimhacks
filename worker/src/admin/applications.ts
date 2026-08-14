@@ -37,8 +37,20 @@ interface ApplicationWithEmail extends ApplicationRow {
   reviewed_at: number | null;
 }
 
-const DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 100;
+
+const APPLICATION_SORT_COLUMNS = {
+  created_at: "a.created_at",
+  updated_at: "a.updated_at",
+  full_name: "a.full_name",
+  email: "u.email",
+  gender: "a.gender",
+  status: "a.status",
+} as const;
+
+type ApplicationSortBy = keyof typeof APPLICATION_SORT_COLUMNS;
+type SortOrder = "asc" | "desc";
 const MAX_NOTES = 5000;
 const REVIEW_STATUSES: ReviewStatus[] = ["pending", "approved", "rejected"];
 
@@ -112,6 +124,30 @@ function parsePagination(url: URL): { limit: number; offset: number } | { error:
   }
 
   return { limit, offset };
+}
+
+function parseListSort(
+  url: URL,
+): { sortBy: ApplicationSortBy; sortOrder: SortOrder } | { error: string } {
+  const sortByRaw = url.searchParams.get("sort_by") ?? "created_at";
+  const sortOrderRaw = url.searchParams.get("sort_order") ?? "desc";
+
+  if (!(sortByRaw in APPLICATION_SORT_COLUMNS)) {
+    return {
+      error: `sort_by must be one of ${Object.keys(APPLICATION_SORT_COLUMNS).join(", ")}`,
+    };
+  }
+  if (sortOrderRaw !== "asc" && sortOrderRaw !== "desc") {
+    return { error: "sort_order must be asc or desc" };
+  }
+
+  return { sortBy: sortByRaw as ApplicationSortBy, sortOrder: sortOrderRaw };
+}
+
+function buildOrderBy(sortBy: ApplicationSortBy, sortOrder: SortOrder): string {
+  const column = APPLICATION_SORT_COLUMNS[sortBy];
+  const direction = sortOrder === "asc" ? "ASC" : "DESC";
+  return `${column} ${direction}, a.created_at DESC`;
 }
 
 function parseListFilters(url: URL): { error: string } | ListFilters {
@@ -193,7 +229,13 @@ async function handleListApplications(
     return respond({ error: filters.error }, 400);
   }
 
+  const sort = parseListSort(url);
+  if ("error" in sort) {
+    return respond({ error: sort.error }, 400);
+  }
+
   const { where, binds } = buildListQuery(filters);
+  const orderBy = buildOrderBy(sort.sortBy, sort.sortOrder);
 
   const countRow = await env.DB.prepare(
     `SELECT COUNT(*) AS total
@@ -209,7 +251,7 @@ async function handleListApplications(
      FROM applications a
      JOIN users u ON u.id = a.user_id
      ${where}
-     ORDER BY a.updated_at DESC
+     ORDER BY ${orderBy}
      LIMIT ? OFFSET ?`,
   )
     .bind(...binds, pagination.limit, pagination.offset)
@@ -221,6 +263,10 @@ async function handleListApplications(
       limit: pagination.limit,
       offset: pagination.offset,
       total: countRow?.total ?? 0,
+    },
+    sort: {
+      sort_by: sort.sortBy,
+      sort_order: sort.sortOrder,
     },
   });
 }
@@ -529,7 +575,7 @@ async function handleExportApplications(
      FROM applications a
      JOIN users u ON u.id = a.user_id
      ${where}
-     ORDER BY a.updated_at DESC`,
+     ORDER BY a.created_at DESC`,
   )
     .bind(...binds)
     .all<ApplicationWithEmail>();
