@@ -2,6 +2,17 @@ name = "muslimhacks-api"
 main = "src/index.ts"
 compatibility_date = "2025-02-04"
 
+# workers.dev is blocked by some school, corporate, and carrier networks, which
+# silently breaks the apply form. Kept enabled as a fallback while the site
+# moves to the api.muslimhacks.ca custom domain.
+workers_dev = true
+
+# Retains errors so a failure can be diagnosed after the fact, instead of only
+# while someone happens to be running `wrangler tail`.
+[observability]
+enabled = true
+head_sampling_rate = 1
+
 [vars]
 CORS_ORIGIN = "https://muslimhacks.ca,https://www.muslimhacks.ca,https://muslimhacks.vercel.app,http://localhost:8080,http://localhost:8081"
 JWT_SECRET = "uCQ0bap7PpPId0n2xh0HGEzkn74zRxQ4jox7LwJqfJr"

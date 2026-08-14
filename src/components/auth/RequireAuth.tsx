@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { SignedIn, SignedOut, useAuth as useClerkAuth } from "@clerk/clerk-react";
 import { useAuth } from "@/hooks/useAuth";
+import { LoadingScreen } from "@/components/Shared";
 
 interface RequireAuthProps {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
   const location = useLocation();
 
   if (!isLoaded) {
-    return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
+    return <LoadingScreen />;
   }
 
   return (
@@ -33,7 +34,7 @@ export function RequireAdmin({ children }: RequireAdminProps) {
   const location = useLocation();
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground">Loading...</div>;
+    return <LoadingScreen />;
   }
 
   return (

@@ -1,6 +1,7 @@
 import { getAuthTokenAsync } from "./auth-token";
 import type {
   AdminApplicationSummary,
+  AdminUserWithoutApplication,
   Application,
   ApplicationForm,
   ApplicationFormValues,
@@ -18,6 +19,12 @@ const apiBaseUrl = rawApiBaseUrl.endsWith("/")
 
 export const SUBSCRIBE_ENDPOINT = `${apiBaseUrl}/api/subscribe`;
 
+/**
+ * Uploads share this budget with plain requests, so keep it generous enough for
+ * a 5MB resume on a phone connection.
+ */
+const REQUEST_TIMEOUT_MS = 45_000;
+
 export class ApiError extends Error {
   status: number;
 
@@ -25,6 +32,46 @@ export class ApiError extends Error {
     super(message);
     this.status = status;
     this.name = "ApiError";
+  }
+}
+
+/**
+ * Status 0 marks a request that never reached the API — a blocked domain,
+ * captive portal, or dead connection — so callers can say so plainly instead
+ * of blaming the submission.
+ */
+export class NetworkError extends ApiError {
+  constructor(message: string) {
+    super(0, message);
+    this.name = "NetworkError";
+  }
+}
+
+export const NETWORK_ERROR_MESSAGE =
+  "We couldn't reach the MuslimHacks server. Check your connection, or try another network or browser.";
+
+/**
+ * Without this a stalled request leaves the UI on a spinner forever, which is
+ * indistinguishable from a hang to the applicant.
+ */
+async function fetchWithTimeout(
+  input: string,
+  init: RequestInit = {},
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new NetworkError(
+        "That took too long to respond. Check your connection and try again.",
+      );
+    }
+    throw new NetworkError(NETWORK_ERROR_MESSAGE);
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
@@ -56,7 +103,7 @@ export async function apiFetch<T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+  const response = await fetchWithTimeout(`${apiBaseUrl}${path}`, {
     ...options,
     headers,
   });
@@ -89,7 +136,7 @@ export async function fetchMyParticipant() {
 /** Fetch the applicant's stored resume as a File (for update form autofill). */
 export async function fetchMyResumeFile(): Promise<File | null> {
   const token = await getAuthTokenAsync();
-  const response = await fetch(`${apiBaseUrl}/api/applications/me/resume`, {
+  const response = await fetchWithTimeout(`${apiBaseUrl}/api/applications/me/resume`, {
     headers: token ? { Authorization: `Bearer ${token}` } : {},
   });
 
@@ -239,6 +286,8 @@ export async function fetchAdminApplications(params: {
   search?: string;
   limit?: number;
   offset?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 }) {
   const query = new URLSearchParams();
   if (params.status) query.set("status", params.status);
@@ -246,12 +295,33 @@ export async function fetchAdminApplications(params: {
   if (params.search) query.set("search", params.search);
   if (params.limit != null) query.set("limit", String(params.limit));
   if (params.offset != null) query.set("offset", String(params.offset));
+  if (params.sortBy) query.set("sort_by", params.sortBy);
+  if (params.sortOrder) query.set("sort_order", params.sortOrder);
 
   const suffix = query.toString() ? `?${query.toString()}` : "";
   return apiFetch<{
     applications: AdminApplicationSummary[];
     pagination: { limit: number; offset: number; total: number };
   }>(`/api/admin/applications${suffix}`);
+}
+
+export async function fetchAdminUsersWithoutApplication(params: {
+  search?: string;
+  limit?: number;
+  offset?: number;
+  sortOrder?: "asc" | "desc";
+}) {
+  const query = new URLSearchParams();
+  if (params.search) query.set("search", params.search);
+  if (params.limit != null) query.set("limit", String(params.limit));
+  if (params.offset != null) query.set("offset", String(params.offset));
+  if (params.sortOrder) query.set("sort_order", params.sortOrder);
+
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  return apiFetch<{
+    users: AdminUserWithoutApplication[];
+    pagination: { limit: number; offset: number; total: number };
+  }>(`/api/admin/users/not-applied${suffix}`);
 }
 
 /** Download registration answers as CSV (respects current admin filters). */

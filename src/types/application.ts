@@ -54,10 +54,18 @@ export interface Application {
   interests: string | null;
   community: string | null;
   status: ApplicationStatus;
+  confirmation_email_sent_at?: number | null;
   reviewed_by?: string | null;
   reviewed_at?: number | null;
   created_at: number;
   updated_at: number;
+}
+
+export interface AdminUserWithoutApplication {
+  id: string;
+  email: string;
+  role: string;
+  created_at: number;
 }
 
 export interface ApplicationReview {

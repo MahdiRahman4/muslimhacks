@@ -7,14 +7,15 @@ import {
 } from "./shared";
 
 /**
- * Sends application confirmation via Resend.
- * Never throws — failures are logged so email can't block registration.
+ * Sends application confirmation via Resend. Resolves to whether it was
+ * accepted. Never throws — failures are logged so email can't block
+ * registration.
  */
 export async function sendApplicationConfirmationEmail(
   env: Env,
   to: string,
   fullName: string,
-): Promise<void> {
+): Promise<boolean> {
   const name = firstName(fullName);
   const subject = "MuslimHacks 2026 — Application received";
   const text = [
@@ -53,7 +54,7 @@ export async function sendApplicationConfirmationEmail(
 </body>
 </html>`.trim();
 
-  await sendResendEmail(env, {
+  return sendResendEmail(env, {
     to,
     subject,
     text,

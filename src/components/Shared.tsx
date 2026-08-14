@@ -1,4 +1,5 @@
 import { Bounce, ToastOptions } from "react-toastify";
+import muslimHacksLogo from "@/assets/muslimhacks-logo-white.svg";
 
 // Shared brand tokens, primitives, and layout components used across all pages.
 export const BRAND = {
@@ -90,6 +91,38 @@ export function Eyebrow({
     >
       {children}
     </p>
+  );
+}
+
+export function LoadingScreen({
+  message = "Getting things ready...",
+}: {
+  message?: string;
+}) {
+  return (
+    <div
+      className="min-h-screen flex flex-col items-center justify-center gap-6 relative overflow-hidden"
+      style={{
+        background: `linear-gradient(160deg, ${BRAND.purpleDeep} 0%, ${BRAND.navy} 60%, ${BRAND.navyDeep} 100%)`,
+      }}
+    >
+      <StarPattern opacity={0.06} />
+      <img
+        src={muslimHacksLogo}
+        alt="MuslimHacks"
+        className="relative h-10 w-auto opacity-90"
+      />
+      <span
+        className="relative w-8 h-8 rounded-full border-2 animate-spin"
+        style={{
+          borderColor: "rgba(221,168,83,0.25)",
+          borderTopColor: BRAND.gold,
+        }}
+      />
+      <p className="relative font-sans text-sm tracking-wide" style={{ color: BRAND.sand }}>
+        {message}
+      </p>
+    </div>
   );
 }
 

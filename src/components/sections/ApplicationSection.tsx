@@ -1,8 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle, LogOut, Clock } from "lucide-react";
+import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle, LogOut, Clock, ChevronDown } from "lucide-react";
 import NotFound from "../../pages/NotFound";
-import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
+import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS, LoadingScreen } from "../Shared";
 import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
 import Footer from "../ui/footer";
 import { toast } from "sonner";
@@ -51,9 +51,6 @@ const REQUIRED_FIELDS: (keyof ApplicationForm)[] = [
   "firstHackathon",
   "csCareer",
   "motivation",
-  "pastProject",
-  "interests",
-  "community",
 ];
 
 function isValidGithubUrl(value: string): boolean {
@@ -144,10 +141,6 @@ function validate(form: ApplicationForm): Errors {
   }
   if (form.csCareer === null) e.csCareer = "Select yes or no.";
   if (!form.motivation.trim()) e.motivation = "This field is required.";
-  if (!form.pastProject.trim())
-    e.pastProject = "This field is required.";
-  if (!form.interests.trim()) e.interests = "This field is required.";
-  if (!form.community.trim()) e.community = "This field is required.";
   return e;
 }
 
@@ -552,36 +545,81 @@ function FormSection({
   number,
   title,
   children,
+  collapsible,
+  defaultOpen = true,
+  forceOpen,
 }: {
   number: string;
   title: string;
   children: React.ReactNode;
+  collapsible?: boolean;
+  defaultOpen?: boolean;
+  forceOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const isOpen = collapsible ? open || forceOpen : true;
+
+  const header = (
+    <>
+      <span
+        className="font-display text-4xl font-bold tabular-nums"
+        style={{
+          background: `linear-gradient(135deg, ${BRAND.goldSoft} 0%, ${BRAND.gold} 100%)`,
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}
+      >
+        {number}
+      </span>
+      <h2
+        className="font-display font-bold"
+        style={{
+          fontSize: "clamp(1.5rem, 3vw, 2rem)",
+          color: BRAND.cream,
+        }}
+      >
+        {title}
+      </h2>
+      {collapsible && (
+        <ChevronDown
+          size={22}
+          className="ml-auto shrink-0"
+          style={{
+            color: BRAND.gold,
+            transition: "transform 0.25s ease",
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
+      )}
+    </>
+  );
+
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex items-baseline gap-4">
-        <span
-          className="font-display text-4xl font-bold tabular-nums"
-          style={{
-            background: `linear-gradient(135deg, ${BRAND.goldSoft} 0%, ${BRAND.gold} 100%)`,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
+      {collapsible ? (
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={isOpen}
+          className="flex items-baseline gap-4 w-full text-left focus-visible:ring-2 focus-visible:ring-offset-2 rounded-sm"
         >
-          {number}
-        </span>
-        <h2
-          className="font-display font-bold"
-          style={{
-            fontSize: "clamp(1.5rem, 3vw, 2rem)",
-            color: BRAND.cream,
-          }}
-        >
-          {title}
-        </h2>
+          {header}
+        </button>
+      ) : (
+        <div className="flex items-baseline gap-4">{header}</div>
+      )}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: isOpen ? "1fr" : "0fr",
+          transition: collapsible ? "grid-template-rows 0.3s ease" : undefined,
+        }}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-6">{children}</div>
+        </div>
       </div>
-      <div className="flex flex-col gap-6">{children}</div>
     </div>
   );
 }
@@ -713,12 +751,27 @@ export default function ApplicationSection() {
     />
   );
 
+  const hasError = (fields: (keyof ApplicationForm)[]) =>
+    showValidationAlert && fields.some((f) => errors[f as string]);
+  const section1HasError = hasError([
+    "fullName",
+    "phone",
+    "gender",
+    "institution",
+    "github",
+    "linkedin",
+    "resumeFile",
+  ]);
+  const section2HasError = hasError(["dietary", "accessibility"]);
+  const section3HasError = hasError([
+    "firstHackathon",
+    "hackathonCount",
+    "csCareer",
+    "motivation",
+  ]);
+
   if (loading) {
-    return (
-      <div className="p-8 text-center text-muted-foreground">
-        Loading application...
-      </div>
-    );
+    return <LoadingScreen message="Loading application..." />;
   }
 
   return (
@@ -836,7 +889,12 @@ export default function ApplicationSection() {
           className="flex flex-col gap-14"
         >
           {/* ── Section 1 ──────────────────────────────────────────── */}
-          <FormSection number="01" title="About you">
+          <FormSection
+            number="01"
+            title="About you"
+            collapsible
+            forceOpen={section1HasError}
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field>
                 <FieldLabel htmlFor="fullName" required>
@@ -974,7 +1032,12 @@ export default function ApplicationSection() {
           {divider}
 
           {/* ── Section 2 ──────────────────────────────────────────── */}
-          <FormSection number="02" title="A few details">
+          <FormSection
+            number="02"
+            title="A few details"
+            collapsible
+            forceOpen={section2HasError}
+          >
             <Field>
               <FieldLabel htmlFor="dietary" required>
                 Dietary restrictions & allergies
@@ -1011,7 +1074,12 @@ export default function ApplicationSection() {
           {divider}
 
           {/* ── Section 3 ──────────────────────────────────────────── */}
-          <FormSection number="03" title="Tell us about you">
+          <FormSection
+            number="03"
+            title="Tell us about you"
+            collapsible
+            forceOpen={section3HasError}
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field>
                 <div id="firstHackathon-label">
@@ -1087,9 +1155,19 @@ export default function ApplicationSection() {
               />
               <FieldError message={errors.motivation} />
             </Field>
+          </FormSection>
 
+          {divider}
+
+          {/* ── Section 4 ──────────────────────────────────────────── */}
+          <FormSection
+            number="04"
+            title="Optional Questions"
+            collapsible
+            defaultOpen={false}
+          >
             <Field>
-              <FieldLabel htmlFor="pastProject" required>
+              <FieldLabel htmlFor="pastProject">
                 Tell us about something you're proud of accomplishing. What was
                 it, and why is it meaningful to you?
               </FieldLabel>
@@ -1106,7 +1184,7 @@ export default function ApplicationSection() {
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="interests" required>
+              <FieldLabel htmlFor="interests">
                 If you had the opportunity to build something that benefits the
                 Ummah, what would you build, and why?
               </FieldLabel>
@@ -1123,7 +1201,7 @@ export default function ApplicationSection() {
             </Field>
 
             <Field>
-              <FieldLabel htmlFor="community" required>
+              <FieldLabel htmlFor="community">
                 Have you volunteered or contributed to your community? Tell us
                 about it.
               </FieldLabel>

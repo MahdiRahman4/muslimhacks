@@ -45,48 +45,68 @@ async function resolveClerkIdentity(
   };
 }
 
+type UserRow = { id: string; email: string; role: Role };
+
+function selectUser(env: Env, column: "clerk_id" | "email", value: string) {
+  return env.DB.prepare(`SELECT id, email, role FROM users WHERE ${column} = ? LIMIT 1`)
+    .bind(value)
+    .first<UserRow>();
+}
+
+/**
+ * A single page load fires several authenticated requests at once, so someone
+ * signing in for the first time races against themselves here. Every write is
+ * written to tolerate a concurrent winner: a UNIQUE violation would escape as
+ * an unhandled exception, and Cloudflare's default 500 carries no CORS
+ * headers, which the browser reports to the user as a network failure rather
+ * than a server error.
+ */
 export async function ensureUserForClerk(
   env: Env,
   identity: ClerkIdentity,
 ): Promise<AuthUser> {
-  const byClerk = await env.DB.prepare(
-    "SELECT id, email, role FROM users WHERE clerk_id = ? LIMIT 1",
-  )
-    .bind(identity.clerkId)
-    .first<{ id: string; email: string; role: Role }>();
-
+  const byClerk = await selectUser(env, "clerk_id", identity.clerkId);
   if (byClerk) {
     return { ...byClerk, full_name: identity.fullName };
   }
 
-  const byEmail = await env.DB.prepare(
-    "SELECT id, email, role FROM users WHERE email = ? LIMIT 1",
-  )
-    .bind(identity.email)
-    .first<{ id: string; email: string; role: Role }>();
-
+  const byEmail = await selectUser(env, "email", identity.email);
   if (byEmail) {
-    await env.DB.prepare("UPDATE users SET clerk_id = ? WHERE id = ?")
+    // Skips the row if a concurrent request already linked it.
+    await env.DB.prepare(
+      "UPDATE users SET clerk_id = ? WHERE id = ? AND clerk_id IS NULL",
+    )
       .bind(identity.clerkId, byEmail.id)
       .run();
     return { ...byEmail, full_name: identity.fullName };
   }
 
-  const id = crypto.randomUUID();
-  const createdAt = Date.now();
-
   await env.DB.prepare(
-    "INSERT INTO users (id, clerk_id, email, password_hash, role, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+    `INSERT INTO users (id, clerk_id, email, password_hash, role, created_at)
+     VALUES (?, ?, ?, ?, ?, ?)
+     ON CONFLICT DO NOTHING`,
   )
-    .bind(id, identity.clerkId, identity.email, "", "applicant", createdAt)
+    .bind(
+      crypto.randomUUID(),
+      identity.clerkId,
+      identity.email,
+      "",
+      "applicant",
+      Date.now(),
+    )
     .run();
 
-  return {
-    id,
-    email: identity.email,
-    role: "applicant",
-    full_name: identity.fullName,
-  };
+  // Re-read rather than trusting the insert: it is skipped when a concurrent
+  // request created the row first.
+  const settled =
+    (await selectUser(env, "clerk_id", identity.clerkId)) ??
+    (await selectUser(env, "email", identity.email));
+
+  if (!settled) {
+    throw new Error(`could not resolve user row for clerk id ${identity.clerkId}`);
+  }
+
+  return { ...settled, full_name: identity.fullName };
 }
 
 export async function authenticateClerk(
@@ -125,7 +145,9 @@ export async function authenticateClerk(
       return null;
     }
 
-    return ensureUserForClerk(env, identity);
+    // Awaited so a rejection lands in the catch below instead of escaping as
+    // an unhandled 500.
+    return await ensureUserForClerk(env, identity);
   } catch (error) {
     console.error("[clerk auth] token verification threw", error);
     logTokenDiagnostics(token);

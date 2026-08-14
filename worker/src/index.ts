@@ -106,6 +106,25 @@ export default {
       return jsonResponse({ ok: true, db: dbOk }, 200, origin, requestOrigin);
     }
 
-    return dispatch(request, env, origin, requestOrigin);
+    try {
+      return await dispatch(request, env, origin, requestOrigin);
+    } catch (error) {
+      // An escaping error gets Cloudflare's own 500, which carries no CORS
+      // headers, so the browser hides it from the page as a network failure
+      // and the user is told to check their connection. Answering here keeps
+      // the real status readable and puts the cause in the logs.
+      console.error(
+        "[unhandled]",
+        request.method,
+        url.pathname,
+        error instanceof Error ? error.stack || error.message : error,
+      );
+      return jsonResponse(
+        { error: "Something went wrong on our end. Please try again." },
+        500,
+        origin,
+        requestOrigin,
+      );
+    }
   },
 };

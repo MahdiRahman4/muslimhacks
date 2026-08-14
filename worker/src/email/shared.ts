@@ -23,6 +23,7 @@ export interface ResendAttachment {
   content_type?: string;
 }
 
+/** Resolves to whether Resend accepted the message. Never throws. */
 export async function sendResendEmail(
   env: Env,
   options: {
@@ -33,10 +34,10 @@ export async function sendResendEmail(
     logLabel: string;
     attachments?: ResendAttachment[];
   },
-): Promise<void> {
+): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.warn(`[email] RESEND_API_KEY missing — skip ${options.logLabel}`);
-    return;
+    return false;
   }
 
   const fromAddress = env.EMAIL_FROM || DEFAULT_FROM;
@@ -63,11 +64,13 @@ export async function sendResendEmail(
     if (!response.ok) {
       const body = await response.text();
       console.error(`[email] Resend error (${options.logLabel})`, response.status, body);
-      return;
+      return false;
     }
 
     console.log(`[email] ${options.logLabel} sent to`, options.to);
+    return true;
   } catch (error) {
     console.error(`[email] failed to send ${options.logLabel}`, error);
+    return false;
   }
 }

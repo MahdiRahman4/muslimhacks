@@ -54,6 +54,7 @@ function toResponse(row: ApplicationRow): ApplicationResponse {
     interests: row.interests,
     community: row.community,
     status: row.status,
+    confirmation_email_sent_at: row.confirmation_email_sent_at ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -88,11 +89,22 @@ async function uploadResume(
   const safeName = file.name.replace(/[^a-zA-Z0-9._-]+/g, "_").slice(0, 120);
   const key = `resumes/${userId}/${Date.now()}-${safeName}`;
 
-  await env.RESUMES.put(key, file.stream(), {
-    httpMetadata: {
-      contentType: file.type || "application/pdf",
-    },
-  });
+  try {
+    await env.RESUMES.put(key, file.stream(), {
+      httpMetadata: {
+        contentType: file.type || "application/pdf",
+      },
+    });
+  } catch (error) {
+    // Usually the upload stream dying on a weak mobile connection. Naming the
+    // resume matters because the applicant can act on it: retry, or submit
+    // without one.
+    console.error("[resume] upload failed", userId, file.size, error);
+    return {
+      error:
+        "Your resume could not be uploaded. Check your connection and try again, or submit without one for now.",
+    };
+  }
 
   return { key, url: key };
 }
@@ -250,6 +262,43 @@ async function persistApplication(
   return getApplicationByUserId(env, userId);
 }
 
+/**
+ * Only stamps the row once Resend accepts the message, so an outage or a
+ * bounce is retried the next time the applicant saves rather than leaving
+ * them with the "check your email" screen and no email.
+ *
+ * Runs after the application is already persisted, so it swallows every
+ * failure: a broken receipt must never turn a saved application into an error
+ * the applicant would try to submit again.
+ */
+async function sendConfirmationIfPending(
+  env: Env,
+  user: AuthUser,
+  saved: ApplicationRow,
+): Promise<void> {
+  if (saved.confirmation_email_sent_at) {
+    return;
+  }
+
+  try {
+    const sent = await sendApplicationConfirmationEmail(env, user.email, saved.full_name);
+    if (!sent) {
+      console.error(
+        "[email] confirmation not sent, will retry on next save",
+        saved.id,
+        user.email,
+      );
+      return;
+    }
+
+    await env.DB.prepare("UPDATE applications SET confirmation_email_sent_at = ? WHERE id = ?")
+      .bind(Date.now(), saved.id)
+      .run();
+  } catch (error) {
+    console.error("[email] confirmation bookkeeping failed", saved.id, error);
+  }
+}
+
 async function handleMultipartUpsert(
   request: Request,
   env: Env,
@@ -305,9 +354,7 @@ async function handleMultipartUpsert(
     return respond({ error: "Failed to save application" }, 500);
   }
 
-  if (!existing) {
-    await sendApplicationConfirmationEmail(env, user.email, saved.full_name);
-  }
+  await sendConfirmationIfPending(env, user, saved);
 
   return respond({ application: toResponse(saved) }, existing ? 200 : 201);
 }
@@ -394,10 +441,7 @@ async function handleJsonUpsert(
     return respond({ error: "Failed to save application" }, 500);
   }
 
-  // Confirmation only on first create (not draft updates)
-  if (!existing) {
-    await sendApplicationConfirmationEmail(env, user.email, saved.full_name);
-  }
+  await sendConfirmationIfPending(env, user, saved);
 
   return respond({ application: toResponse(saved) }, existing ? 200 : 201);
 }
