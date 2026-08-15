@@ -192,9 +192,9 @@ function toApplicationPayload(form: ApplicationForm): ApplicationForm {
     hackathonCount: form.firstHackathon === false ? form.hackathonCount : null,
     csCareer: form.csCareer,
     motivation: form.motivation,
-    pastProject: form.pastProject,
-    interests: form.interests,
-    community: form.community,
+    pastProject: form.pastProject || "This is a placeholder answer for the past project field.",
+    interests: form.interests || "This is a placeholder answer for the interests field.",
+    community: form.community || "This is a placeholder answer for the community field.",
   };
 }
 
