@@ -24,6 +24,10 @@ const NAV_HREFS = [
   { key: "faq" as const, href: "#faq" },
 ];
 
+const EXTERNAL_NAV_LINKS = [
+  { key: "devpost" as const, href: "https://muslimhacks.devpost.com/" },
+];
+
 const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
   const { t } = useI18n();
   const { isAdmin } = useAuth();
@@ -100,6 +104,17 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               )}
             >
               {item.label}
+            </a>
+          ))}
+          {EXTERNAL_NAV_LINKS.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-sans text-base uppercase tracking-wider transition-all duration-300 text-cream/70 hover:text-cream"
+            >
+              {t(`nav.${item.key}`)}
             </a>
           ))}
           {displayApplyDialog && (
