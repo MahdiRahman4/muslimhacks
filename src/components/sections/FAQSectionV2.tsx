@@ -8,47 +8,13 @@ import {
 import { BRAND, StarPattern, GoldText, Eyebrow } from "../Shared";
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import { useI18n } from "@/i18n/LanguageProvider";
 
 
 interface Faqs {
   question: string;
   answer: string;
 }
-
-const FAQ_ITEMS : Faqs[] = [
-  {
-    question: "Do I need to be Muslim to participate?",
-    answer: "Nope. The event is rooted in Islamic values of service and charity, but anyone who wants to build something useful is welcome."
-  },
-  {
-    question: "Do I need a team?",
-    answer: "You can come solo or with up to 4 people. If you show up alone, we'll help you find a team on the first evening."
-  },
-  {
-    question: "Will you offer travel reimbursements?",
-    answer: "Not this year, unfortunately. We know travel can be tough, and we hope to support it more as the event grows."
-  },
-  {
-    question: "Is the event in-person or virtual?",
-    answer: "In person, in Quebec. We want people in the same room, not just on a Zoom call."
-  },
-  {
-    question: "What's the cost?",
-    answer: "It's free. We still fundraise for charity through Islamic Relief Canada."
-  },
-  {
-    question: "Will there be prayer spaces and halal food?",
-    answer: "Yes. We'll have prayer space, and there's a masjid nearby. All food is halal, and we can work with dietary restrictions."
-  },
-  {
-    question: "What if I'm a beginner?",
-    answer: "You're good. Bring what you know. There will be mentors and workshops, and plenty of people still figuring things out too."
-  },
-  {
-    question: "How are projects judged?",
-    answer: "We look at impact, how well it's built, creativity, and the pitch. Mostly though: does this actually help someone?"
-  },
-];
 
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
@@ -83,6 +49,17 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function FAQSection() {
+  const { t } = useI18n();
+  const faqItems: Faqs[] = [
+    { question: t("faq.q1"), answer: t("faq.a1") },
+    { question: t("faq.q2"), answer: t("faq.a2") },
+    { question: t("faq.q3"), answer: t("faq.a3") },
+    { question: t("faq.q4"), answer: t("faq.a4") },
+    { question: t("faq.q5"), answer: t("faq.a5") },
+    { question: t("faq.q6"), answer: t("faq.a6") },
+    { question: t("faq.q7"), answer: t("faq.a7") },
+    { question: t("faq.q8"), answer: t("faq.a8") },
+  ];
   const [headerRef, headerVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
   const [faqRef, faqVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.1 });
 
@@ -95,15 +72,15 @@ export default function FAQSection() {
         {/* <StarPattern opacity={0.045} /> */}
         <div className="relative max-w-3xl mx-auto flex flex-col gap-12">
           <div className="flex flex-col gap-4">
-            <Eyebrow>FAQ</Eyebrow>
+            <Eyebrow>{t("faq.eyebrow")}</Eyebrow>
             <h2
               className="font-display font-bold"
               style={{ fontSize: "clamp(2rem, 4.5vw, 3.25rem)", color: BRAND.cream }}
             >
-              Common <GoldText>questions</GoldText>
+              {t("faq.headingBefore")}<GoldText>{t("faq.headingGold")}</GoldText>
             </h2>
             <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>
-              Still have questions?{" "}
+              {t("faq.stillHave")}{" "}
               <a
                 href="mailto:info@muslimhacks.ca"
                 className="underline underline-offset-2 hover:opacity-80 focus-visible:ring-1 rounded"
@@ -114,7 +91,7 @@ export default function FAQSection() {
             </p>
           </div>
           <div className="flex flex-col">
-            {FAQ_ITEMS.map((item, i) => (
+            {faqItems.map((item, i) => (
               <FaqItem key={i} q={item.question} a={item.answer} />
             ))}
           </div>

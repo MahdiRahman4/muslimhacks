@@ -1,8 +1,13 @@
 import { SignUp } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 import { BRAND, StarPattern, GLOBAL_CSS } from "../components/Shared";
+import { useI18n } from "@/i18n/LanguageProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
-const SignUpPage = () => (
+const SignUpPage = () => {
+  const { t } = useI18n();
+
+  return (
   <div
     className="min-h-screen font-sans flex flex-col items-center justify-center relative px-4 py-12"
     style={{
@@ -58,6 +63,9 @@ const SignUpPage = () => (
     </div>
 
     <div className="relative z-10 w-full max-w-md flex flex-col gap-6">
+      <div className="flex justify-center">
+        <LanguageSwitcher />
+      </div>
       <div className="flex flex-col gap-2 text-center">
         <h1
           className="font-display font-bold"
@@ -66,15 +74,13 @@ const SignUpPage = () => (
             color: BRAND.cream,
           }}
         >
-          Create your account to apply
+          {t("auth.signupTitle")}
         </h1>
         <p
           className="font-sans text-sm leading-relaxed"
           style={{ color: BRAND.creamMuted }}
         >
-          You&apos;ll need a quick account to start your MuslimHacks
-          application, and it takes you straight to the form. Already have one?
-          Use &ldquo;Sign in&rdquo; below.
+          {t("auth.signupBody")}
         </p>
       </div>
       <SignUp
@@ -88,11 +94,12 @@ const SignUpPage = () => (
           to="/"
           className="hover:opacity-70 transition-opacity underline underline-offset-4"
         >
-          ← Back to home
+          {t("auth.backHome")}
         </Link>
       </p>
     </div>
   </div>
-);
+  );
+};
 
 export default SignUpPage;

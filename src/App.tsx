@@ -10,6 +10,7 @@ import { RequireAdmin, RequireAuth } from "@/components/auth/RequireAuth";
 import { AuthTokenBridge } from "@/components/auth/AuthTokenBridge";
 import { InAppBrowserNotice } from "@/components/InAppBrowserNotice";
 import { ApplicationButtonProvider } from "@/contexts/ApplicationButtonContext";
+import { LanguageProvider } from "@/i18n/LanguageProvider";
 import Index from "./pages/Index";
 import ApplicationSection from "./components/sections/ApplicationSection";
 import ApplicationSubmittedSection from "./components/sections/ApplicationSubmittedSection";
@@ -40,7 +41,8 @@ const App = () => {
 
   return (
     <ClerkProvider publishableKey={clerkPublishableKey} appearance={clerkAppearance}>
-      <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <QueryClientProvider client={queryClient}>
         <AuthTokenBridge />
         <ApplicationButtonProvider>
           <TooltipProvider>
@@ -120,7 +122,8 @@ const App = () => {
             </GoogleReCaptchaProvider>
           </TooltipProvider>
         </ApplicationButtonProvider>
-      </QueryClientProvider>
+        </QueryClientProvider>
+      </LanguageProvider>
     </ClerkProvider>
   );
 };

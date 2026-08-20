@@ -1,7 +1,9 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { BRAND, Eyebrow, GoldText } from "../Shared";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 export default function VisionFunnelSection() {
+  const { t } = useI18n();
   const [headerRef, headerVisible] = useScrollReveal<HTMLDivElement>({
     threshold: 0.2,
   });
@@ -29,7 +31,7 @@ export default function VisionFunnelSection() {
                 : "opacity-0 translate-y-8"
             }`}
           >
-            <Eyebrow>Our vision</Eyebrow>
+            <Eyebrow>{t("vision.eyebrow")}</Eyebrow>
             <h2
               className="font-display font-bold leading-tight"
               style={{
@@ -37,7 +39,7 @@ export default function VisionFunnelSection() {
                 color: BRAND.cream,
               }}
             >
-              What is <GoldText>MuslimHacks</GoldText>?
+              {t("vision.headingBefore")}<GoldText>MuslimHacks</GoldText>{t("vision.headingAfter")}
             </h2>
           </div>
 
@@ -53,20 +55,13 @@ export default function VisionFunnelSection() {
               className="font-intimate text-xl leading-relaxed"
               style={{ fontStyle: "normal", color: BRAND.creamMuted }}
             >
-              Before we started MuslimHacks, we saw a clear problem in Quebec:
-              plenty of talented Muslims in tech, but not enough of a connected
-              network. Our mission is to build that over the next few years,
-              starting by connecting students to Muslim businesses and
-              professionals.
+              {t("vision.p1")}
             </p>
             <p
               className="font-intimate text-xl leading-relaxed"
               style={{ fontStyle: "normal", color: BRAND.creamMuted }}
             >
-              We want people to realize there is a whole Muslim industry out
-              there, and that we do not always need to rely on non-Muslim
-              networks to grow. That is the idea we want to foster, in shaa
-              Allah.
+              {t("vision.p2")}
             </p>
 
             <div
@@ -76,24 +71,18 @@ export default function VisionFunnelSection() {
                 border: "1px solid rgba(221,168,83,0.18)",
               }}
             >
-              <Eyebrow>What makes us different</Eyebrow>
+              <Eyebrow>{t("vision.different")}</Eyebrow>
               <p
                 className="font-intimate text-lg leading-relaxed"
                 style={{ fontStyle: "normal", color: BRAND.creamMuted }}
               >
-                Other Muslim hackathons often started inside ecosystems that
-                were already built for them. Their goal was usually to bring
-                more Muslims into networks that were already flourishing, by the
-                mercy of Allah.
+                {t("vision.p3")}
               </p>
               <p
                 className="font-intimate text-lg leading-relaxed"
                 style={{ fontStyle: "normal", color: BRAND.creamMuted }}
               >
-                Quebec is not the same. We are building from scratch and trying
-                to lay the foundations of the network we envision here, in shaa
-                Allah. One weekend will not solve everything, but we hope
-                MuslimHacks becomes a stepping stone toward that goal.
+                {t("vision.p4")}
               </p>
             </div>
           </div>
@@ -111,7 +100,7 @@ export default function VisionFunnelSection() {
               className="font-sans text-xs uppercase tracking-[0.3em] font-medium hover:opacity-70 transition-opacity"
               style={{ color: BRAND.sand }}
             >
-              See what you get ↓
+              {t("vision.seeBenefits")}
             </a>
           </div>
         </div>

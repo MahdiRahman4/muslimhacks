@@ -2,6 +2,7 @@ import { useScrollReveal, useParallax } from '@/hooks/useScrollReveal';
 import IslamicPattern, { IslamicPatternAlt } from '@/components/IslamicPattern';
 import { BRAND, StarPattern, GoldText, Eyebrow } from "../Shared";
 import ValueCard from '../ui/valueCard';
+import { useI18n } from "@/i18n/LanguageProvider";
 
 // ─── Community photo strip ────────────────────────────────────────────────────
 const STRIP_PHOTOS = [
@@ -115,6 +116,7 @@ function Marquee() {
 }
 
 export default function VisionSectionV2 () {
+  const { t } = useI18n();
   const [parallaxRef, parallaxOffset] = useParallax(0.15);
   const [titleRef, titleVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.2 });
   const [detailsRef, detailsVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.15 });
@@ -131,29 +133,29 @@ export default function VisionSectionV2 () {
           {/* <StarPattern opacity={0.07} /> */}
           <div className="relative max-w-6xl mx-auto flex flex-col gap-12">
             <div className="text-center flex flex-col gap-3">
-              <Eyebrow>What matters to us</Eyebrow>
+              <Eyebrow>{t("values.eyebrow")}</Eyebrow>
               <h2
                 className="font-display font-bold"
                 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: BRAND.cream }}
               >
-                Build with <GoldText>purpose</GoldText>
+                {t("values.headingBefore")}<GoldText>{t("values.headingGold")}</GoldText>
               </h2>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               <ValueCard
-                eyebrow="The people"
-                title="Show up together"
-                body="Muslims and friends of the community, designers, organizers, and people still learning to code. If you care about the work, you belong here."
+                eyebrow={t("values.peopleEyebrow")}
+                title={t("values.peopleTitle")}
+                body={t("values.peopleBody")}
               />
               <ValueCard
-                eyebrow="The work"
-                title="Solve real problems"
-                body="You've got 24 hours. Pick something that actually affects Muslim communities, like access to resources, education, or local needs, and try to ship something useful."
+                eyebrow={t("values.workEyebrow")}
+                title={t("values.workTitle")}
+                body={t("values.workBody")}
               />
               <ValueCard
-                eyebrow="The point"
-                title="Leave something behind"
-                body="We're hoping some of these projects keep going after the weekend. Open-source tools, charity platforms, small apps people can keep using."
+                eyebrow={t("values.pointEyebrow")}
+                title={t("values.pointTitle")}
+                body={t("values.pointBody")}
               />
             </div>
           </div>
@@ -163,9 +165,9 @@ export default function VisionSectionV2 () {
         <div className="py-12" style={{ background: BRAND.navyDeep }}>
           <div className="max-w-6xl mx-auto px-0 md:px-6 flex flex-col gap-6">
             <div className="px-6 md:px-0 flex flex-col gap-2">
-              <Eyebrow>Past weekends</Eyebrow>
+              <Eyebrow>{t("values.pastEyebrow")}</Eyebrow>
               <p className="font-intimate text-xl" style={{ fontStyle: "italic", color: BRAND.creamMuted }}>
-                Late nights, sticky notes, and people who stayed to help.
+                {t("values.pastCaption")}
               </p>
             </div>
             <PhotoStrip />

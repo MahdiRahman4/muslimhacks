@@ -13,8 +13,10 @@ import {
   useApplicationButtonState,
 } from "@/contexts/ApplicationButtonContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
+  const { t } = useI18n();
   const { isAdmin } = useAuth();
 
   const {
@@ -43,7 +45,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
     threshold: 0.3,
   });
   const { hasApplication } = useApplicationButtonState();
-  const applicationButtonLabel = getApplicationButtonLabel(hasApplication);
+  const applicationButtonLabel = getApplicationButtonLabel(hasApplication, t);
 
   return (
     <section
@@ -82,15 +84,15 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
             }`}
         >
           <p className="font-sans text-base uppercase tracking-[0.3em] text-amber mb-6">
-            Applications are open
+            {t("invite.open")}
           </p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream leading-tight mb-8">
-            Want to build
+            {t("invite.headingLine1")}
             <br />
-            <span className="text-gradient-sunset">with us?</span>
+            <span className="text-gradient-sunset">{t("invite.headingLine2")}</span>
           </h2>
           <p className="font-intimate text-2xl md:text-3xl text-cream/80 max-w-md mx-auto leading-relaxed" style={{ fontStyle: "normal" }}>
-            Come for the weekend. Meet people. Try to ship something useful.
+            {t("invite.body")}
           </p>
         </div>
 
@@ -120,11 +122,11 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
                 disabled={isSubmitting}
                 className="bg-gradient-to-r from-amber to-rose hover:from-amber-glow hover:to-rose text-plum-deep font-medium px-8 transition-all duration-300"
               >
-                {isSubmitting ? "Sending..." : "Notify me"}
+                {isSubmitting ? t("hero.sending") : t("hero.notifyMe")}
               </Button>
             </form>
             <p className="text-base md:text-lg text-cream/50 mt-4">
-              We respect your inbox. Updates only, no spam.
+              {t("invite.noSpam")}
             </p>
 
             <SubscribeDialog
@@ -172,18 +174,16 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
                   to="/admin/applications"
                   className="w-full sm:w-auto"
                 >
-                  Go to Applications
+                  {t("nav.goToApplications")}
                 </GoldButton>
               )}
             </SignedIn>
             <SignedOut>
               <p
-                className="font-intimate text-xs sm:text-sm"
+                className="font-intimate text-xs sm:text-sm whitespace-pre-line"
                 style={{ fontStyle: "italic", color: BRAND.sand }}
               >
-                Apply → we review your application →
-                <br />
-                you get an email with the decision.
+                {t("hero.helper")}
               </p>
             </SignedOut>
           </div>
@@ -202,7 +202,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
               بارك الله فيكم
             </p>
             <p className="font-intimate text-xl text-cream/40">
-              May Allah bless you
+              {t("invite.bless")}
             </p>
           </div>
 
@@ -212,10 +212,10 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
               MuslimHacks
             </p>
             <p className="font-sans text-base md:text-lg text-cream/40">
-              Quebec's largest Muslim charity hackathon
+              {t("invite.tagline")}
             </p>
             <p className="font-sans text-sm text-cream/30 mt-4">
-              In partnership with Islamic Relief Canada
+              {t("invite.partner")}
             </p>
           </div>
         </div>

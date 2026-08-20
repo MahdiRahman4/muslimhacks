@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   SignedIn,
   SignedOut,
-  UserButton,
 } from "@clerk/clerk-react";
 import { cn } from "@/lib/utils";
 import GoldButton from "./ui/goldButton";
@@ -15,21 +14,28 @@ import {
   useApplicationButtonState,
 } from "@/contexts/ApplicationButtonContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useI18n } from "@/i18n/LanguageProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
-const navItems = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "Sponsors", href: "#sponsors" },
-  { label: "FAQ", href: "#faq" },
+const NAV_HREFS = [
+  { key: "home" as const, href: "#home" },
+  { key: "about" as const, href: "#about" },
+  { key: "sponsors" as const, href: "#sponsors" },
+  { key: "faq" as const, href: "#faq" },
 ];
 
 const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
+  const { t } = useI18n();
   const { isAdmin } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { hasApplication } = useApplicationButtonState();
-  const applicationButtonLabel = getApplicationButtonLabel(hasApplication);
+  const applicationButtonLabel = getApplicationButtonLabel(hasApplication, t);
+
+  const navItems = NAV_HREFS.map((item) => ({
+    ...item,
+    label: t(`nav.${item.key}`),
+  }));
 
   useEffect(() => {
     const handleScroll = () => {
@@ -105,7 +111,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
                 isNavButton={false}
                 displayApplyDialog={displayApplyDialog}
               >
-                Apply Now
+                {t("nav.applyNow")}
               </GoldButton>
             </SignedOut>
           )}
@@ -124,7 +130,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               )}
             </SignedIn>
           )}
-          {isAdmin && applicationButtonLabel === "Apply now" && (
+          {isAdmin && !hasApplication && (
             <SignedIn>
               <GoldButton
                 as={Link}
@@ -140,19 +146,21 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
         </div>
 
         <div className="hidden md:flex items-center gap-3 ml-4">
+          <LanguageSwitcher />
           <SignedOut>
             <Link
               to="/signin"
               className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream flex items-center gap-2"
             >
               <LogIn size={15} />
-              <span>Sign in</span>
+              <span>{t("nav.signIn")}</span>
             </Link>
           </SignedOut>
           <Profile />
         </div>
 
         <div className="md:hidden flex items-center gap-2">
+          <LanguageSwitcher compact />
           <SignedOut>
             <GoldButton
               as={Link}
@@ -161,7 +169,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               isNavButton={false}
               displayApplyDialog={displayApplyDialog}
             >
-              Sign in
+              {t("nav.signIn")}
             </GoldButton>
           </SignedOut>
 

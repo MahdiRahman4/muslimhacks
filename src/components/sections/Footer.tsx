@@ -1,22 +1,27 @@
-const footerLinks = [
-  { label: 'Home', href: '#home' },
-  { label: 'About', href: '#about' },
-  { label: 'Sponsors', href: '#sponsors' },
-  { label: 'FAQ', href: '#faq' },
-  { label: 'Register', href: '#register' },
-];
-
-const contactEmails = [
-  { label: 'General inquiries', email: 'info@muslimhacks.ca' },
-  { label: 'Sponsorship', email: 'sponsors@muslimhacksoutreach.ca' },
-];
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 const Footer = () => {
+  const { t } = useI18n();
+
+  const footerLinks = [
+    { label: t("nav.home"), href: "#home" },
+    { label: t("nav.about"), href: "#about" },
+    { label: t("nav.sponsors"), href: "#sponsors" },
+    { label: t("nav.faq"), href: "#faq" },
+    { label: t("footer.register"), href: "#register" },
+  ];
+
+  const contactEmails = [
+    { label: t("footer.general"), email: "info@muslimhacks.ca" },
+    { label: t("footer.sponsorship"), email: "sponsors@muslimhacksoutreach.ca" },
+  ];
+
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    if (href.startsWith('#')) {
+    if (href.startsWith("#")) {
       e.preventDefault();
       const element = document.querySelector(href);
-      element?.scrollIntoView({ behavior: 'smooth' });
+      element?.scrollIntoView({ behavior: "smooth" });
     }
   };
 
@@ -24,7 +29,7 @@ const Footer = () => {
     <footer
       className="relative border-t border-cream/10"
       style={{
-        background: 'linear-gradient(180deg, hsl(240 50% 6%) 0%, hsl(235 45% 8%) 100%)',
+        background: "linear-gradient(180deg, hsl(240 50% 6%) 0%, hsl(235 45% 8%) 100%)",
       }}
     >
       <div className="max-w-6xl mx-auto px-6 md:px-12 py-16 md:py-20">
@@ -35,17 +40,17 @@ const Footer = () => {
               MuslimHacks
             </p>
             <p className="font-intimate text-base md:text-lg text-cream/60 leading-relaxed" style={{ fontStyle: "normal" }}>
-              Quebec's largest Muslim charity hackathon. One weekend to build something useful.
+              {t("footer.blurb")}
             </p>
             <p className="font-sans text-sm text-cream/40 mt-4">
-              September 2026 · Concordia University, Downtown Campus, Montreal, Quebec
+              {t("footer.dateLocation")}
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
             <h3 className="font-sans text-sm uppercase tracking-[0.2em] text-amber mb-4">
-              Quick links
+              {t("footer.quickLinks")}
             </h3>
             <ul className="space-y-2">
               {footerLinks.map((item) => (
@@ -53,7 +58,7 @@ const Footer = () => {
                   <a
                     href={item.href}
                     onClick={(e) => handleClick(e, item.href)}
-                    className="font-sans text-base md:text-lg text-cream/70 hover:text-cream transition-colors" style={{ fontSize: '0.875rem' }}
+                    className="font-sans text-base md:text-lg text-cream/70 hover:text-cream transition-colors" style={{ fontSize: "0.875rem" }}
                   >
                     {item.label}
                   </a>
@@ -65,7 +70,7 @@ const Footer = () => {
           {/* Contact */}
           <div>
             <h3 className="font-sans text-sm uppercase tracking-[0.2em] text-amber mb-4">
-              Contact
+              {t("footer.contact")}
             </h3>
             <ul className="space-y-3">
               {contactEmails.map((item) => (
@@ -75,7 +80,7 @@ const Footer = () => {
                   </span>
                   <a
                     href={`mailto:${item.email}`}
-                    style={{ fontSize: '0.875rem' }}
+                    style={{ fontSize: "0.875rem" }}
                     className="font-sans text-base md:text-lg text-cream/80 hover:text-amber transition-colors"
                   >
                     {item.email}
@@ -88,13 +93,13 @@ const Footer = () => {
           {/* Partnership */}
           <div>
             <h3 className="font-sans text-sm uppercase tracking-[0.2em] text-amber mb-4">
-              Partner
+              {t("footer.partner")}
             </h3>
             <p className="font-display text-lg md:text-xl text-cream/90">
               Islamic Relief Canada
             </p>
             <p className="font-intimate text-base text-cream/50 mt-1" style={{ fontStyle: "normal" }}>
-              Funds raised go to charity through IR Canada.
+              {t("footer.funds")}
             </p>
           </div>
         </div>
@@ -102,10 +107,11 @@ const Footer = () => {
         {/* Bottom bar */}
         <div className="mt-16 pt-8 border-t border-cream/10 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-sans text-sm text-cream/40">
-            © {new Date().getFullYear()} MuslimHacks. All rights reserved.
+            {t("footer.rights", { year: new Date().getFullYear() })}
           </p>
+          <LanguageSwitcher />
           <p className="font-sans text-sm text-cream/40">
-            Made in Montreal
+            {t("footer.madeIn")}
           </p>
         </div>
       </div>

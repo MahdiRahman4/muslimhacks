@@ -1,8 +1,11 @@
 import { SignIn } from "@clerk/clerk-react";
 import { Link, useLocation } from "react-router-dom";
 import { BRAND, GLOBAL_CSS } from "../components/Shared";
+import { useI18n } from "@/i18n/LanguageProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const SignInPage = () => {
+  const { t } = useI18n();
   const location = useLocation();
   const redirectTo =
     (location.state as { from?: string } | null)?.from ?? "/post-auth";
@@ -63,13 +66,16 @@ const SignInPage = () => {
     </div>
 
     <div className="relative z-10 w-full max-w-md flex flex-col gap-6">
+      <div className="flex justify-center">
+        <LanguageSwitcher />
+      </div>
       <SignIn forceRedirectUrl={redirectTo} signUpUrl="/signup" />
       <p className="text-center font-sans text-xs" style={{ color: BRAND.sand }}>
         <Link
           to="/"
           className="hover:opacity-70 transition-opacity underline underline-offset-4"
         >
-          ← Back to home
+          {t("auth.backHome")}
         </Link>
       </p>
     </div>

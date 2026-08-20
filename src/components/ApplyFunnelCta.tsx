@@ -7,6 +7,7 @@ import {
   getApplicationButtonLabel,
   useApplicationButtonState,
 } from "@/contexts/ApplicationButtonContext";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 interface ApplyFunnelCtaProps {
   variant?: "hero" | "section";
@@ -21,9 +22,10 @@ export function ApplyFunnelCta({
   align = "start",
   className = "",
 }: ApplyFunnelCtaProps) {
+  const { t } = useI18n();
   const { isAdmin } = useAuth();
   const { hasApplication } = useApplicationButtonState();
-  const label = getApplicationButtonLabel(hasApplication);
+  const label = getApplicationButtonLabel(hasApplication, t);
 
   const alignClass =
     align === "center" ? "items-center text-center" : "items-start text-left";
@@ -43,7 +45,7 @@ export function ApplyFunnelCta({
         )}
         {isAdmin && (
           <GoldButton as={Link} to="/admin/applications" className="w-full sm:w-auto">
-            Go to Applications
+            {t("nav.goToApplications")}
           </GoldButton>
         )}
       </SignedIn>

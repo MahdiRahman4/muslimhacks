@@ -8,8 +8,11 @@ import {
   StarPattern,
 } from "@/components/Shared";
 import Footer from "@/components/ui/footer";
+import { useI18n } from "@/i18n/LanguageProvider";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const NotFound = () => {
+  const { t } = useI18n();
   const location = useLocation();
 
   useEffect(() => {
@@ -58,7 +61,7 @@ const NotFound = () => {
         <div className="max-w-lg w-full flex flex-col items-center text-center gap-10">
           {/* Eyebrow + heading */}
           <div className="flex flex-col gap-4">
-            <Eyebrow>404 — Page not found</Eyebrow>
+            <Eyebrow>{t("notFound.eyebrow")}</Eyebrow>
             <h1
               className="font-display font-black leading-tight"
               style={{
@@ -67,7 +70,7 @@ const NotFound = () => {
                 color: BRAND.cream,
               }}
             >
-              Lost on the <GoldText>path</GoldText>
+              {t("notFound.headingBefore")}<GoldText>{t("notFound.headingGold")}</GoldText>
             </h1>
           </div>
 
@@ -90,18 +93,19 @@ const NotFound = () => {
               className="font-intimate text-lg"
               style={{ fontStyle: "italic", color: BRAND.creamMuted }}
             >
-              "Did He not find you unguided then guided you?"
+              {t("notFound.quote")}
             </p>
             <p
               className="font-sans text-xs uppercase tracking-[0.22em]"
               style={{ color: BRAND.sand }}
             >
-              — Ad-Duhaa 93:7
+              {t("notFound.source")}
             </p>
           </div>
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <LanguageSwitcher />
             <Link
               to="/"
               className="w-full sm:w-auto px-8 py-4 rounded-full font-sans text-sm font-semibold uppercase tracking-[0.18em] text-center transition-all duration-200 hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
@@ -112,7 +116,7 @@ const NotFound = () => {
                   "0 0 18px rgba(221,168,83,0.3), 0 4px 16px rgba(221,168,83,0.18)",
               }}
             >
-              Back to home
+              {t("notFound.back")}
             </Link>
           </div>
         </div>

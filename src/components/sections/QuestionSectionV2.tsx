@@ -1,7 +1,9 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { BRAND, Eyebrow, GoldText } from "../Shared";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 export default function QuestionSectionV2 () {
+  const { t } = useI18n();
   const [titleRef, titleVisible] = useScrollReveal<HTMLHeadingElement>({
     threshold: 0.2,
   });
@@ -22,7 +24,7 @@ export default function QuestionSectionV2 () {
           }}
         >
           <div className="max-w-3xl mx-auto flex flex-col items-center text-center gap-8">
-            <Eyebrow>Why we do this</Eyebrow>
+            <Eyebrow>{t("about.eyebrow")}</Eyebrow>
             <h2
               ref={titleRef}
               className={`font-display font-bold leading-tight ${
@@ -35,7 +37,7 @@ export default function QuestionSectionV2 () {
                 color: BRAND.cream,
               }}
             >
-              What if your code could be <GoldText>sadaqah?</GoldText>
+              {t("about.headingBefore")}<GoldText>{t("about.headingGold")}</GoldText>
             </h2>
 
             <div
@@ -65,13 +67,13 @@ export default function QuestionSectionV2 () {
                   className="font-intimate text-xl"
                   style={{ fontStyle: "italic", color: BRAND.cream }}
                 >
-                  "The best of people are those most beneficial to others."
+                  {t("about.hadith")}
                 </p>
                 <p
                   className="font-sans text-xs uppercase tracking-[0.22em]"
                   style={{ color: BRAND.sand }}
                 >
-                  — Jami' at-Tirmidhi
+                  {t("about.hadithSource")}
                 </p>
               </div>
             </div>
@@ -85,9 +87,7 @@ export default function QuestionSectionV2 () {
               }`}
               style={{ fontStyle: "normal", color: BRAND.creamMuted }}
             >
-              Most of us already write code for school or work. MuslimHacks is
-              about putting that same energy toward something that helps people,
-              with a real intention behind it.
+              {t("about.body")}
             </p>
           </div>
         </div>

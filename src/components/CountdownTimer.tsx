@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BRAND } from "@/components/Shared";
+import { useI18n } from "@/i18n/LanguageProvider";
 
 // Application deadline: August 27, 2026, 11:59:59 PM EDT (UTC-4)
 export const APPLICATION_DEADLINE = new Date("2026-08-27T23:59:59-04:00");
@@ -41,6 +42,7 @@ export default function CountdownTimer({
   align = "start",
   className = "",
 }: CountdownTimerProps) {
+  const { t } = useI18n();
   const [timeLeft, setTimeLeft] = useState(() => getTimeLeft(deadline));
 
   useEffect(() => {
@@ -58,16 +60,16 @@ export default function CountdownTimer({
         className={`font-sans text-sm uppercase tracking-[0.28em] font-semibold ${className}`}
         style={{ color: BRAND.gold, textShadow }}
       >
-        Applications are closed
+        {t("countdown.closed")}
       </p>
     );
   }
 
   const units = [
-    { label: "Days", value: timeLeft.days },
-    { label: "Hours", value: timeLeft.hours },
-    { label: "Mins", value: timeLeft.minutes },
-    { label: "Secs", value: timeLeft.seconds },
+    { label: t("countdown.days"), value: timeLeft.days },
+    { label: t("countdown.hours"), value: timeLeft.hours },
+    { label: t("countdown.mins"), value: timeLeft.minutes },
+    { label: t("countdown.secs"), value: timeLeft.seconds },
   ];
 
   return (
@@ -76,12 +78,12 @@ export default function CountdownTimer({
         className="font-sans text-xs uppercase tracking-[0.28em] font-medium"
         style={{ color: BRAND.sand, textShadow }}
       >
-        Applications close in
+        {t("countdown.label")}
       </p>
       <div
         className="flex gap-2 sm:gap-3"
         role="timer"
-        aria-label="Time left to apply"
+        aria-label={t("countdown.aria")}
       >
         {units.map((unit) => (
           <div
