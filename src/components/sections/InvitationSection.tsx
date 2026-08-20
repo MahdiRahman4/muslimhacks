@@ -1,4 +1,5 @@
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSubscribe } from "@/hooks/useSubscribe";
@@ -15,6 +16,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 
 const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
+  const { t } = useTranslation();
   const { isAdmin } = useAuth();
 
   const {
@@ -82,15 +84,15 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
             }`}
         >
           <p className="font-sans text-base uppercase tracking-[0.3em] text-amber mb-6">
-            Applications are open
+            {t("invitation.applicationsOpen")}
           </p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream leading-tight mb-8">
-            Want to build
+            {t("invitation.titleLine1")}
             <br />
-            <span className="text-gradient-sunset">with us?</span>
+            <span className="text-gradient-sunset">{t("invitation.titleLine2")}</span>
           </h2>
           <p className="font-intimate text-2xl md:text-3xl text-cream/80 max-w-md mx-auto leading-relaxed" style={{ fontStyle: "normal" }}>
-            Come for the weekend. Meet people. Try to ship something useful.
+            {t("invitation.subtitle")}
           </p>
         </div>
 
@@ -109,7 +111,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
             >
               <Input
                 type="email"
-                placeholder="your@email.com"
+                placeholder={t("invitation.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="flex-1 bg-cream/10 border-cream/20 text-cream placeholder:text-cream/40 focus:border-amber/50 focus:ring-amber/30"
@@ -120,11 +122,11 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
                 disabled={isSubmitting}
                 className="bg-gradient-to-r from-amber to-rose hover:from-amber-glow hover:to-rose text-plum-deep font-medium px-8 transition-all duration-300"
               >
-                {isSubmitting ? "Sending..." : "Notify me"}
+                {isSubmitting ? t("invitation.sending") : t("invitation.notifyMe")}
               </Button>
             </form>
             <p className="text-base md:text-lg text-cream/50 mt-4">
-              We respect your inbox. Updates only, no spam.
+              {t("invitation.privacyNote")}
             </p>
 
             <SubscribeDialog
@@ -152,7 +154,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
             <CountdownTimer align="center" />
             <SignedOut>
               <GoldButton as={Link} to="/signup" className="w-full sm:w-auto">
-                {applicationButtonLabel}
+                {t(applicationButtonLabel)}
               </GoldButton>
             </SignedOut>
             <SignedIn>
@@ -163,7 +165,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
                   to="/apply"
                   className="w-full sm:w-auto"
                 >
-                  {applicationButtonLabel}
+                  {t(applicationButtonLabel)}
                 </GoldButton>
               )}
               {(isAdmin) && (
@@ -172,18 +174,16 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
                   to="/admin/applications"
                   className="w-full sm:w-auto"
                 >
-                  Go to Applications
+                  {t("applyCta.goToApplications")}
                 </GoldButton>
               )}
             </SignedIn>
             <SignedOut>
               <p
-                className="font-intimate text-xs sm:text-sm"
+                className="font-intimate text-xs sm:text-sm whitespace-pre-line"
                 style={{ fontStyle: "italic", color: BRAND.sand }}
               >
-                Apply → we review your application →
-                <br />
-                you get an email with the decision.
+                {t("invitation.applyHelper")}
               </p>
             </SignedOut>
           </div>
@@ -202,20 +202,20 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
               بارك الله فيكم
             </p>
             <p className="font-intimate text-xl text-cream/40">
-              May Allah bless you
+              {t("invitation.blessing")}
             </p>
           </div>
 
           {/* Footer */}
           <div className="pt-12 border-t border-cream/10">
             <p className="font-display text-2xl text-gradient-sunset mb-2">
-              MuslimHacks
+              {t("invitation.brand")}
             </p>
             <p className="font-sans text-base md:text-lg text-cream/40">
-              Quebec's largest Muslim charity hackathon
+              {t("invitation.tagline")}
             </p>
             <p className="font-sans text-sm text-cream/30 mt-4">
-              In partnership with Islamic Relief Canada
+              {t("invitation.partnership")}
             </p>
           </div>
         </div>

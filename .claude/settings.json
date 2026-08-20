@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/en/translation.json','utf8'\\)\\); JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/fr/translation.json','utf8'\\)\\); console.log\\('OK'\\)\")",
+      "Bash(npm run *)",
+      "Bash(echo \"EXIT_CODE=$?\")",
+      "Bash(pkill -f \"vite\")",
+      "Bash(chromium-cli --help)",
+      "Bash(npx --yes playwright --version)",
+      "Bash(npx --yes playwright install chromium)",
+      "Bash(node \"C:\\\\Users\\\\sshafi22\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-sshafi22-Desktop-muslimhacks\\\\02c70476-a893-486e-acd0-a1b9f3498316\\\\scratchpad\\\\i18n-check.mjs\")",
+      "Bash(npm init *)",
+      "Bash(lsof -ti:8080 -sTCP:LISTEN)",
+      "Bash(xargs -r kill)",
+      "Bash(taskkill //F //IM node.exe //FI \"WINDOWTITLE eq vite*\")",
+      "Bash(curl -sf http://localhost:8080)",
+      "PowerShell($conn = Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue; if \\($conn\\) { $conn.OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }; \"killed\" } else { \"not found\" })"
+    ]
+  }
+}

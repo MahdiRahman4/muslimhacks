@@ -74,5 +74,5 @@ export function useApplicationButtonState() {
 }
 
 export function getApplicationButtonLabel(hasApplication: boolean) {
-  return hasApplication ? "Update application" : "Apply now";
+  return hasApplication ? "applyCta.updateApplication" : "applyCta.applyNow";
 }

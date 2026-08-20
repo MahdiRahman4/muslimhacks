@@ -1,28 +1,16 @@
 import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import NotFound from "../../pages/NotFound";
 import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS } from "../Shared";
 import Footer from "../ui/footer";
 
-const STEPS = [
-  {
-    n: "1",
-    title: "We review every application",
-    body: "Our team reads each one carefully, in shaa Allah. This takes a little time.",
-  },
-  {
-    n: "2",
-    title: "We'll email you a decision",
-    body: "Watch your inbox over the coming weeks. You can edit your answers until applications close.",
-  },
-  {
-    n: "3",
-    title: "If you're accepted",
-    body: "We'll share your offer and the next steps to confirm your spot at MuslimHacks.",
-  },
-];
-
 export default function ApplicationSubmittedSection() {
+  const { t } = useTranslation();
+  const steps = t("applySubmitted.steps", { returnObjects: true }) as {
+    title: string;
+    body: string;
+  }[];
   return (
     <div
       className="min-h-screen font-sans relative"
@@ -86,7 +74,7 @@ export default function ApplicationSubmittedSection() {
 
         {/* Eyebrow + headline */}
         <div className="flex flex-col gap-4">
-          <Eyebrow>Application Received</Eyebrow>
+          <Eyebrow>{t("applySubmitted.eyebrow")}</Eyebrow>
           <h1
             className="font-display font-black leading-tight"
             style={{
@@ -95,15 +83,15 @@ export default function ApplicationSubmittedSection() {
               color: BRAND.cream,
             }}
           >
-            <GoldText>Jazakum Allahu</GoldText>
+            <GoldText>{t("applySubmitted.titleLine1")}</GoldText>
             <br />
-            khayran
+            {t("applySubmitted.titleLine2")}
           </h1>
           <p
             className="font-intimate text-xl leading-relaxed"
             style={{ fontStyle: "italic", color: BRAND.creamMuted }}
           >
-            Your application is in — we're grateful you want to build with us.
+            {t("applySubmitted.subtitle")}
           </p>
         </div>
 
@@ -112,8 +100,7 @@ export default function ApplicationSubmittedSection() {
           className="font-sans text-sm leading-relaxed max-w-sm"
           style={{ color: BRAND.sand }}
         >
-          We've sent a confirmation to your email. If you don't see it, check your spam
-          folder.
+          {t("applySubmitted.confirmationNote")}
         </p>
 
         {/* What happens next */}
@@ -122,11 +109,11 @@ export default function ApplicationSubmittedSection() {
             className="font-sans text-xs uppercase tracking-[0.28em] font-medium mb-2"
             style={{ color: BRAND.gold }}
           >
-            What happens next
+            {t("applySubmitted.nextEyebrow")}
           </p>
-          {STEPS.map((s) => (
+          {steps.map((s, i) => (
             <div
-              key={s.n}
+              key={s.title}
               className="flex items-start gap-5 text-left px-6 py-5 rounded-xl"
               style={{
                 background: "rgba(245,238,227,0.04)",
@@ -143,7 +130,7 @@ export default function ApplicationSubmittedSection() {
                   backgroundClip: "text",
                 }}
               >
-                {s.n}
+                {i + 1}
               </span>
               <div className="flex flex-col gap-1">
                 <p
@@ -176,7 +163,7 @@ export default function ApplicationSubmittedSection() {
             className="font-intimate text-lg"
             style={{ fontStyle: "italic", color: BRAND.creamMuted }}
           >
-            May Allah bless you.
+            {t("applySubmitted.blessing")}
           </p>
         </div>
 
@@ -191,14 +178,14 @@ export default function ApplicationSubmittedSection() {
               boxShadow: "0 8px 30px rgba(221,168,83,0.25)",
             }}
           >
-            Back to MuslimHacks
+            {t("applySubmitted.backToMuslimHacks")}
           </Link>
           <a
             href="mailto:info@muslimhacks.ca"
             className="font-sans text-xs hover:opacity-80 transition-opacity focus-visible:ring-2 rounded"
             style={{ color: BRAND.purpleLight }}
           >
-            Have a question?{" "}
+            {t("applySubmitted.haveQuestion")}{" "}
             <span className="underline underline-offset-2">info@muslimhacks.ca</span>
           </a>
         </div>

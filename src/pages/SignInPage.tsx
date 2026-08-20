@@ -1,8 +1,10 @@
 import { SignIn } from "@clerk/clerk-react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { BRAND, GLOBAL_CSS } from "../components/Shared";
 
 const SignInPage = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const redirectTo =
     (location.state as { from?: string } | null)?.from ?? "/post-auth";
@@ -69,7 +71,7 @@ const SignInPage = () => {
           to="/"
           className="hover:opacity-70 transition-opacity underline underline-offset-4"
         >
-          ← Back to home
+          {t("signIn.backHome")}
         </Link>
       </p>
     </div>

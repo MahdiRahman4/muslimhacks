@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import QRCode from "qrcode";
+import { useTranslation } from "react-i18next";
 
 interface CheckinQrProps {
   code: string;
@@ -8,6 +9,7 @@ interface CheckinQrProps {
 
 /** QR badge encoding the plain check-in code for fast door check-in. */
 export function CheckinQr({ code, size = 180 }: CheckinQrProps) {
+  const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -26,7 +28,7 @@ export function CheckinQr({ code, size = 180 }: CheckinQrProps) {
       ref={canvasRef}
       className="rounded-lg border bg-white p-2"
       style={{ borderColor: "rgba(221,168,83,0.25)" }}
-      aria-label={`Check-in QR for ${code}`}
+      aria-label={t("checkin.qrAriaLabel", { code })}
     />
   );
 }

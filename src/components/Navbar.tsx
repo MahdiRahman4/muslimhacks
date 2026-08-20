@@ -5,6 +5,7 @@ import {
   SignedOut,
   UserButton,
 } from "@clerk/clerk-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import GoldButton from "./ui/goldButton";
 import muslimHacksLogo from "../assets/muslimhacks-logo-white.svg";
@@ -15,21 +16,27 @@ import {
   useApplicationButtonState,
 } from "@/contexts/ApplicationButtonContext";
 import { useAuth } from "@/hooks/useAuth";
+import { BRAND } from "@/components/Shared";
 
 const navItems = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "Sponsors", href: "#sponsors" },
-  { label: "FAQ", href: "#faq" },
+  { key: "home", href: "#home" },
+  { key: "about", href: "#about" },
+  { key: "sponsors", href: "#sponsors" },
+  { key: "faq", href: "#faq" },
 ];
 
 const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
+  const { t, i18n } = useTranslation();
   const { isAdmin } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { hasApplication } = useApplicationButtonState();
   const applicationButtonLabel = getApplicationButtonLabel(hasApplication);
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === "fr" ? "en" : "fr");
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -93,7 +100,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
                   : "text-cream/70 hover:text-cream"
               )}
             >
-              {item.label}
+              {t(`nav.${item.key}`)}
             </a>
           ))}
           {displayApplyDialog && (
@@ -105,7 +112,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
                 isNavButton={false}
                 displayApplyDialog={displayApplyDialog}
               >
-                Apply Now
+                {t("nav.applyNow")}
               </GoldButton>
             </SignedOut>
           )}
@@ -119,12 +126,12 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
                   isNavButton={true}
                   displayApplyDialog={displayApplyDialog}
                 >
-                  {applicationButtonLabel}
+                  {t(applicationButtonLabel)}
                 </GoldButton>
               )}
             </SignedIn>
           )}
-          {isAdmin && applicationButtonLabel === "Apply now" && (
+          {isAdmin && !hasApplication && (
             <SignedIn>
               <GoldButton
                 as={Link}
@@ -133,7 +140,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
                 isNavButton={true}
                 displayApplyDialog={displayApplyDialog}
               >
-                {applicationButtonLabel}
+                {t(applicationButtonLabel)}
               </GoldButton>
             </SignedIn>
           )}
@@ -146,13 +153,37 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               className="font-sans text-sm uppercase tracking-wider text-cream/80 hover:text-cream flex items-center gap-2"
             >
               <LogIn size={15} />
-              <span>Sign in</span>
+              <span>{t("nav.signIn")}</span>
             </Link>
           </SignedOut>
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            aria-label={t("nav.toggleLanguage")}
+            className="font-sans text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border transition-colors duration-200"
+            style={{
+              borderColor: "rgba(221,168,83,0.4)",
+              color: BRAND.gold,
+            }}
+          >
+            {i18n.language === "fr" ? "EN" : "FR"}
+          </button>
           <Profile />
         </div>
 
         <div className="md:hidden flex items-center gap-2">
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            aria-label={t("nav.toggleLanguage")}
+            className="font-sans text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border transition-colors duration-200"
+            style={{
+              borderColor: "rgba(221,168,83,0.4)",
+              color: BRAND.gold,
+            }}
+          >
+            {i18n.language === "fr" ? "EN" : "FR"}
+          </button>
           <SignedOut>
             <GoldButton
               as={Link}
@@ -161,7 +192,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               isNavButton={false}
               displayApplyDialog={displayApplyDialog}
             >
-              Sign in
+              {t("nav.signIn")}
             </GoldButton>
           </SignedOut>
 

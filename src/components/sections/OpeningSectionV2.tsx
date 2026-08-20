@@ -1,4 +1,5 @@
 import { ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { BRAND, GoldText, Eyebrow } from "../Shared";
 import SubscribeDialog from "@/components/SubscribeDialog";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ export default function OpeningSectionV2({
   displayInviteDialog,
   displayApplyDialog,
 }) {
+  const { t } = useTranslation();
   const heroPhotoUrl =
     "https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1600&q=80";
 
@@ -35,7 +37,7 @@ export default function OpeningSectionV2({
       <div className="absolute inset-0">
         <img
           src={heroPhotoUrl}
-          alt="Hackathon participants collaborating"
+          alt={t("hero.photoAlt")}
           className="w-full h-full object-cover"
           style={{ filter: "brightness(0.35) saturate(0.6)" }}
         />
@@ -72,7 +74,7 @@ export default function OpeningSectionV2({
         <div className="relative max-w-2xl">
           <div className="relative flex flex-col gap-6">
             <Eyebrow className="animate-fade-in-up">
-              Quebec's Largest Muslim Charity Hackathon
+              {t("hero.eyebrow")}
             </Eyebrow>
 
             <h1
@@ -82,9 +84,9 @@ export default function OpeningSectionV2({
                 letterSpacing: "-0.02em",
               }}
             >
-              <span style={{ color: BRAND.cream }}>Muslim</span>
+              <span style={{ color: BRAND.cream }}>{t("hero.titleMuslim")}</span>
               <br />
-              <GoldText>Hacks</GoldText>
+              <GoldText>{t("hero.titleHacks")}</GoldText>
             </h1>
 
             <p
@@ -95,7 +97,7 @@ export default function OpeningSectionV2({
                 textShadow: "0 2px 10px rgba(0,0,0,0.5)",
               }}
             >
-              24 hours. One weekend. Build something that actually helps people.
+              {t("hero.tagline")}
             </p>
 
             <p
@@ -105,10 +107,10 @@ export default function OpeningSectionV2({
                 textShadow: "0 2px 10px rgba(0,0,0,0.5)",
               }}
             >
-              <GoldText>September 2026</GoldText>
+              <GoldText>{t("hero.dateLabel")}</GoldText>
               <span style={{ color: BRAND.creamMuted }}>
                 {" "}
-                · Concordia University, Downtown Campus, Montréal, Quebec
+                · {t("hero.location")}
               </span>
             </p>
 
@@ -123,7 +125,7 @@ export default function OpeningSectionV2({
                     textShadow: "0 2px 10px rgba(0,0,0,0.5)",
                   }}
                 >
-                  Be the first to know when registration opens
+                  {t("hero.notifyHeading")}
                 </p>
                 <form
                   onSubmit={handleSubmit}
@@ -131,7 +133,7 @@ export default function OpeningSectionV2({
                 >
                   <Input
                     type="email"
-                    placeholder="your@email.com"
+                    placeholder={t("hero.emailPlaceholder")}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="flex-1 bg-cream/10 border-cream/30 text-cream placeholder:text-cream/50 focus:border-amber/50 focus:ring-amber/30 h-12 text-base"
@@ -142,7 +144,7 @@ export default function OpeningSectionV2({
                     disabled={isSubmitting}
                     className="bg-gradient-to-r from-amber to-rose hover:from-amber-glow hover:to-rose text-plum-deep font-semibold px-8 h-12 text-base transition-all duration-300"
                   >
-                    {isSubmitting ? "Sending..." : "Notify me"}
+                    {isSubmitting ? t("hero.sending") : t("hero.notifyMe")}
                   </Button>
                 </form>
 
@@ -169,7 +171,7 @@ export default function OpeningSectionV2({
                 />
                 <ApplyFunnelCta
                   variant="hero"
-                  helperText={"Apply → we review your application →\nyou get an email with the decision."}
+                  helperText={t("applyCta.applyFunnelHelper")}
                 />
               </div>
             )}
@@ -198,7 +200,7 @@ export default function OpeningSectionV2({
           }}
         >
           {/* trailing letter-space would push the label off optical center */}
-          <span className="-mr-[0.28em]">Read our vision</span>
+          <span className="-mr-[0.28em]">{t("hero.readVision")}</span>
           <ChevronDown
             size={18}
             className="animate-bounce"

@@ -5,36 +5,17 @@ import {
   Briefcase,
   TrendingUp,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { BRAND, Eyebrow, GoldText } from "../Shared";
 import { ApplyFunnelCta } from "@/components/ApplyFunnelCta";
 
-const BENEFITS = [
-  {
-    icon: UtensilsCrossed,
-    title: "Free food",
-    body: "Every meal is covered while you're here. Just show up and build.",
-  },
-  {
-    icon: GraduationCap,
-    title: "Mentorship from Muslim professionals",
-    body: "Industry mentors sit with you during the build and help you get unstuck.",
-  },
-  {
-    icon: Handshake,
-    title: "Networking with Muslim businesses",
-    body: "Meet founders and companies from the Muslim industry we're building here in Quebec.",
-  },
-  {
-    icon: Briefcase,
-    title: "Internship opportunities",
-    body: "Recruiters will be at the event in shaa Allah, so your project can turn into a job lead.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Investment in your project",
-    body: "If investors believe in what you built, the weekend doesn't have to be where it ends.",
-  },
+const BENEFIT_ICONS = [
+  UtensilsCrossed,
+  GraduationCap,
+  Handshake,
+  Briefcase,
+  TrendingUp,
 ];
 
 function BenefitRow({
@@ -84,6 +65,11 @@ function BenefitRow({
 }
 
 export default function BenefitsSection() {
+  const { t } = useTranslation();
+  const benefits = t("benefits.items", { returnObjects: true }) as {
+    title: string;
+    body: string;
+  }[];
   const [introRef, introVisible] = useScrollReveal<HTMLDivElement>({
     threshold: 0.2,
   });
@@ -109,7 +95,7 @@ export default function BenefitsSection() {
                 : "opacity-0 translate-y-8"
             }`}
           >
-            <Eyebrow>What you get</Eyebrow>
+            <Eyebrow>{t("benefits.eyebrow")}</Eyebrow>
             <h2
               className="font-display font-bold leading-tight"
               style={{
@@ -117,14 +103,13 @@ export default function BenefitsSection() {
                 color: BRAND.cream,
               }}
             >
-              It&apos;s free, and you leave with <GoldText>more</GoldText>
+              {t("benefits.titlePrefix")} <GoldText>{t("benefits.titleHighlight")}</GoldText>
             </h2>
             <p
               className="font-intimate text-xl leading-relaxed"
               style={{ fontStyle: "normal", color: BRAND.creamMuted }}
             >
-              There is no fee to attend. Everything on this list is part of the
-              weekend.
+              {t("benefits.intro")}
             </p>
           </div>
 
@@ -138,11 +123,13 @@ export default function BenefitsSection() {
             }`}
           >
             <ul className="flex flex-col">
-              {BENEFITS.map((benefit, index) => (
+              {benefits.map((benefit, index) => (
                 <BenefitRow
                   key={benefit.title}
-                  {...benefit}
-                  isLast={index === BENEFITS.length - 1}
+                  icon={BENEFIT_ICONS[index]}
+                  title={benefit.title}
+                  body={benefit.body}
+                  isLast={index === benefits.length - 1}
                 />
               ))}
             </ul>

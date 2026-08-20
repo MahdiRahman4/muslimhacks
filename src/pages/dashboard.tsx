@@ -8,6 +8,7 @@ import {
   PenLine,
   QrCode,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   BRAND,
   StarPattern,
@@ -28,58 +29,36 @@ import CountdownTimer from "@/components/CountdownTimer";
 
 type AppStatus = "not_started" | "draft" | "pending" | "approved" | "rejected";
 
-// ─── Status config ────────────────────────────────────────────────────────────
-const STATUS_CONFIG: Record<
+// ─── Status config (icon/color only — label & description come from translations) ──
+const STATUS_VISUALS: Record<
   AppStatus,
-  {
-    label: string;
-    description: string;
-    icon: React.ReactNode;
-    color: string;
-    bg: string;
-    border: string;
-  }
+  { icon: React.ReactNode; color: string; bg: string; border: string }
 > = {
   not_started: {
-    label: "Not started",
-    description:
-      "You haven't started your application yet. Applications close soon. Begin when you're ready.",
     icon: <FileText size={20} />,
     color: BRAND.sand,
     bg: "rgba(201,187,168,0.08)",
     border: "rgba(201,187,168,0.2)",
   },
   draft: {
-    label: "Draft",
-    description:
-      "Your application is saved as a draft. Complete and submit it before the deadline.",
     icon: <PenLine size={20} />,
     color: BRAND.goldSoft,
     bg: "rgba(231,192,120,0.08)",
     border: "rgba(221,168,83,0.3)",
   },
   pending: {
-    label: "Pending",
-    description:
-      "Your application has been submitted and is awaiting review. Jazakum Allahu khayran for your patience.",
     icon: <Clock size={20} />,
     color: BRAND.purpleLight,
     bg: "rgba(155,124,176,0.1)",
     border: "rgba(155,124,176,0.3)",
   },
   approved: {
-    label: "Approved",
-    description:
-      "Alhamdulillah — you've been accepted to MuslimHacks 2026! Use your check-in QR below when you arrive.",
     icon: <CheckCircle2 size={20} />,
     color: "#5FA877",
     bg: "rgba(95,168,119,0.1)",
     border: "rgba(95,168,119,0.35)",
   },
   rejected: {
-    label: "Not selected",
-    description:
-      "Unfortunately we weren't able to offer you a spot this year. We hope to see you again next time, in shaa Allah.",
     icon: <XCircle size={20} />,
     color: "#C47070",
     bg: "rgba(196,112,112,0.08)",
@@ -88,11 +67,7 @@ const STATUS_CONFIG: Record<
 };
 
 // ─── Timeline steps ───────────────────────────────────────────────────────────
-const TIMELINE: { key: AppStatus; label: string }[] = [
-  { key: "draft", label: "Draft saved" },
-  { key: "pending", label: "Submitted" },
-  { key: "approved", label: "Decision" },
-];
+const TIMELINE_KEYS: AppStatus[] = ["draft", "pending", "approved"];
 
 const TIMELINE_ORDER: AppStatus[] = [
   "not_started",
@@ -106,17 +81,18 @@ function timelineIndex(status: AppStatus) {
 }
 
 function Timeline({ status }: { status: AppStatus }) {
+  const { t } = useTranslation();
   const current = timelineIndex(status);
   return (
     <div className="flex items-start gap-0 w-full">
-      {TIMELINE.map((step, i) => {
-        const stepIndex = timelineIndex(step.key);
+      {TIMELINE_KEYS.map((key, i) => {
+        const stepIndex = timelineIndex(key);
         const done = current > stepIndex;
         const active = current === stepIndex;
-        const isLast = i === TIMELINE.length - 1;
+        const isLast = i === TIMELINE_KEYS.length - 1;
         return (
           <div
-            key={step.key}
+            key={key}
             className="flex-1 flex flex-col items-center gap-2"
           >
             <div className="flex items-center w-full">
@@ -158,7 +134,7 @@ function Timeline({ status }: { status: AppStatus }) {
               className="font-sans text-xs text-center leading-tight px-1"
               style={{ color: done || active ? BRAND.cream : BRAND.sand }}
             >
-              {step.label}
+              {t(`dashboard.timeline.${key}`)}
             </p>
           </div>
         );
@@ -207,6 +183,7 @@ function StatCard({
 }
 
 function ParticipantCheckinCard({ participant }: { participant: MyParticipant }) {
+  const { t } = useTranslation();
   const checkedIn = participant.checkin_status === "checked_in";
   const code = participant.checkin_code.trim().toUpperCase();
 
@@ -227,19 +204,18 @@ function ParticipantCheckinCard({ participant }: { participant: MyParticipant })
           <QrCode size={22} />
         </div>
         <div className="flex flex-col gap-1">
-          <Eyebrow>Event check-in</Eyebrow>
+          <Eyebrow>{t("dashboard.checkinCard.eyebrow")}</Eyebrow>
           <h2
             className="font-display text-2xl font-bold"
             style={{ color: BRAND.cream }}
           >
-            Your QR code
+            {t("dashboard.checkinCard.title")}
           </h2>
           <p
             className="font-intimate text-base leading-relaxed"
             style={{ fontStyle: "italic", color: BRAND.creamMuted }}
           >
-            Show this at registration for a fast check-in. It&apos;s also in your
-            approval email.
+            {t("dashboard.checkinCard.body")}
           </p>
         </div>
       </div>
@@ -251,7 +227,7 @@ function ParticipantCheckinCard({ participant }: { participant: MyParticipant })
             className="font-sans text-xs uppercase tracking-[0.15em]"
             style={{ color: BRAND.sand }}
           >
-            Backup code
+            {t("dashboard.checkinCard.backupCode")}
           </p>
           <p
             className="font-mono text-2xl font-bold tracking-[0.14em]"
@@ -264,7 +240,7 @@ function ParticipantCheckinCard({ participant }: { participant: MyParticipant })
               className="font-sans text-sm font-semibold"
               style={{ color: "#5FA877" }}
             >
-              You&apos;re checked in!
+              {t("dashboard.checkinCard.checkedIn")}
             </p>
           )}
         </div>
@@ -275,6 +251,7 @@ function ParticipantCheckinCard({ participant }: { participant: MyParticipant })
 
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 export default function Dashboard() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [userSummary, setUserSummary] = useState<UserSummaryResponse | null>(
@@ -290,7 +267,7 @@ export default function Dashboard() {
         setUserSummary(response);
         const apiStatus = response.summary.application_status;
         setStatus(
-          apiStatus in STATUS_CONFIG ? (apiStatus as AppStatus) : "not_started"
+          apiStatus in STATUS_VISUALS ? (apiStatus as AppStatus) : "not_started"
         );
 
         if (apiStatus === "approved") {
@@ -303,13 +280,13 @@ export default function Dashboard() {
         }
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) {
-          toast.error("User summary not found.");
+          toast.error(t("dashboard.toasts.summaryNotFound"));
           navigate("/");
         } else {
           toast.error(
             error instanceof ApiError
               ? error.message
-              : "Failed to load Dashboard"
+              : t("dashboard.toasts.loadFailed")
           );
         }
       } finally {
@@ -321,7 +298,7 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const cfg = STATUS_CONFIG[status];
+  const cfg = STATUS_VISUALS[status];
   const canEdit = status === "draft" || status === "pending";
   const hasStarted = status !== "not_started";
   const nameParts = (userSummary?.summary?.full_name ?? "").split(" ").filter(Boolean);
@@ -370,7 +347,7 @@ export default function Dashboard() {
       <main className="relative z-10 max-w-4xl mx-auto px-6 py-14 flex flex-col gap-10">
         {/* Greeting */}
         <div className="flex flex-col gap-2">
-          <Eyebrow>Dashboard</Eyebrow>
+          <Eyebrow>{t("dashboard.eyebrow")}</Eyebrow>
           <h1
             className="font-display font-black leading-tight"
             style={{
@@ -385,7 +362,7 @@ export default function Dashboard() {
               </>
             ) : (
               <>
-                Ahlan, <GoldText>friend</GoldText>
+                {t("dashboard.greetingAhlan")} <GoldText>{t("dashboard.greetingFriend")}</GoldText>
               </>
             )}
           </h1>
@@ -393,22 +370,26 @@ export default function Dashboard() {
             className="font-intimate text-lg"
             style={{ fontStyle: "italic", color: BRAND.creamMuted }}
           >
-            Here's where your MuslimHacks 2026 application stands.
+            {t("dashboard.subtitle")}
           </p>
         </div>
 
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <StatCard label="Event" value="Sep 2026" sub="Concordia University" />
           <StatCard
-            label="Duration"
-            value="24 hrs"
-            sub="In-person · Montréal"
+            label={t("dashboard.statEventLabel")}
+            value={t("dashboard.statEventValue")}
+            sub={t("dashboard.statEventSub")}
           />
           <StatCard
-            label="Deadline"
-            value="Aug. 27th 11:59 PM"
-            sub="Applications open"
+            label={t("dashboard.statDurationLabel")}
+            value={t("dashboard.statDurationValue")}
+            sub={t("dashboard.statDurationSub")}
+          />
+          <StatCard
+            label={t("dashboard.statDeadlineLabel")}
+            value={t("dashboard.statDeadlineValue")}
+            sub={t("dashboard.statDeadlineSub")}
           />
         </div>
 
@@ -434,12 +415,12 @@ export default function Dashboard() {
         >
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="flex flex-col gap-1">
-              <Eyebrow>Application status</Eyebrow>
+              <Eyebrow>{t("dashboard.statusEyebrow")}</Eyebrow>
               <h2
                 className="font-display text-2xl font-bold"
                 style={{ color: BRAND.cream }}
               >
-                MuslimHacks 2026
+                {t("dashboard.statusTitle")}
               </h2>
             </div>
 
@@ -454,7 +435,7 @@ export default function Dashboard() {
             >
               {cfg.icon}
               <span className="font-sans text-sm font-semibold">
-                {cfg.label}
+                {t(`dashboard.status.${status}.label`)}
               </span>
             </div>
           </div>
@@ -464,7 +445,7 @@ export default function Dashboard() {
             className="font-intimate text-lg leading-relaxed"
             style={{ fontStyle: "italic", color: BRAND.creamMuted }}
           >
-            {cfg.description}
+            {t(`dashboard.status.${status}.description`)}
           </p>
 
           {/* Timeline — only show when there's progress to show */}
@@ -486,7 +467,7 @@ export default function Dashboard() {
                   boxShadow: "0 0 18px rgba(221,168,83,0.3)",
                 }}
               >
-                Start application
+                {t("dashboard.startApplication")}
                 <ChevronRight size={15} />
               </Link>
             ) : canEdit ? (
@@ -500,14 +481,14 @@ export default function Dashboard() {
                     boxShadow: "0 0 18px rgba(221,168,83,0.3)",
                   }}
                 >
-                  Edit application
+                  {t("dashboard.editApplication")}
                   <ChevronRight size={15} />
                 </Link>
                 <p
                   className="self-center font-sans text-xs"
                   style={{ color: BRAND.sand }}
                 >
-                  You can edit until applications close.
+                  {t("dashboard.editUntilClose")}
                 </p>
               </>
             ) : (
@@ -516,7 +497,7 @@ export default function Dashboard() {
                 className="inline-flex items-center gap-2 font-sans text-sm hover:opacity-70 transition-opacity focus-visible:ring-2 rounded self-start"
                 style={{ color: BRAND.purpleLight }}
               >
-                View your application
+                {t("dashboard.viewApplication")}
                 <ChevronRight size={14} />
               </Link>
             )}
@@ -540,7 +521,7 @@ export default function Dashboard() {
             className="font-intimate text-sm"
             style={{ fontStyle: "italic", color: "rgba(217,207,192,0.4)" }}
           >
-            May Allah bless you.
+            {t("dashboard.blessing")}
           </p>
         </div>
       </main>

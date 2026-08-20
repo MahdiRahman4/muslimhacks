@@ -1,4 +1,7 @@
+import { useTranslation } from "react-i18next";
+
 export default function Footer() {
+  const { t } = useTranslation();
   return (
     <>
       <footer
@@ -9,7 +12,7 @@ export default function Footer() {
           className="font-intimate text-sm"
           style={{ fontStyle: "italic", color: "rgba(221,168,83,0.3)" }}
         >
-          Built with intention · Montréal
+          {t("footerUi.tagline")}
         </p>
       </footer>
     </>

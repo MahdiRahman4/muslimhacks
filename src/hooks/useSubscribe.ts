@@ -1,9 +1,11 @@
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { useTranslation } from "react-i18next";
 import { SUBSCRIBE_ENDPOINT } from "@/lib/api";
 
 export function useSubscribe() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -57,7 +59,7 @@ export function useSubscribe() {
 
       if (!response.ok) {
         const message =
-          (data as { error?: string } | null)?.error || "Failed to subscribe";
+          (data as { error?: string } | null)?.error || t("subscribeToasts.failed");
 
         setDialogOpen(false);
         toast.error(message);
@@ -81,9 +83,9 @@ export function useSubscribe() {
     } catch (error) {
       console.error("Subscription error:", error);
       setDialogOpen(false);
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("subscribeToasts.genericError"));
     }
-  }, [email]);
+  }, [email, t]);
 
   const handleConfirm = useCallback(async () => {
     if (!email) return;
@@ -94,7 +96,7 @@ export function useSubscribe() {
     try {
       if (!executeRecaptcha) {
         setDialogOpen(false);
-        toast.error("Captcha verification is not ready. Please try again.");
+        toast.error(t("subscribeToasts.captchaNotReady"));
         return;
       }
 
@@ -108,7 +110,7 @@ export function useSubscribe() {
 
       if (!token) {
         setDialogOpen(false);
-        toast.error("Captcha verification failed. Please try again.");
+        toast.error(t("subscribeToasts.captchaFailed"));
         return;
       }
 
@@ -116,7 +118,7 @@ export function useSubscribe() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [email, executeRecaptcha, subscribe]);
+  }, [email, executeRecaptcha, subscribe, t]);
 
   return {
     email,

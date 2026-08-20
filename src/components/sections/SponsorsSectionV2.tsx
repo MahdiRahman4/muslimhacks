@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { BRAND, StarPattern, GoldText, Eyebrow } from "../Shared";
 import {ExternalLink} from "lucide-react"
 import islamicReliefLogo from "../../assets/islamicrelieflogo.png"
 
 export default function SponsorsSectionV2() {
+  const { t } = useTranslation();
   const [headerRef, headerVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
   const [contentRef, contentVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.2 });
   const [ctaRef, ctaVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.3 });
@@ -19,22 +21,21 @@ export default function SponsorsSectionV2() {
     {/* <StarPattern opacity={0.05} /> */}
     <div className="relative max-w-5xl mx-auto flex flex-col gap-16">
       <div className="text-center flex flex-col gap-4">
-        <Eyebrow>Our partners</Eyebrow>
+        <Eyebrow>{t("sponsors.eyebrow")}</Eyebrow>
         <h2
           className="font-display font-bold"
           style={{ fontSize: "clamp(2.25rem, 5vw, 3.75rem)", color: BRAND.cream }}
         >
-          People who help make this{" "}
-          <GoldText>happen</GoldText>
+          {t("sponsors.titlePrefix")}{" "}
+          <GoldText>{t("sponsors.titleHighlight")}</GoldText>
         </h2>
         <p className="font-intimate text-xl max-w-xl mx-auto" style={{ fontStyle: "normal", color: BRAND.creamMuted }}>
-          Sponsoring MuslimHacks supports students building for their communities,
-          and funds raised go to charity through Islamic Relief Canada.
+          {t("sponsors.intro")}
         </p>
       </div>
 
       <div className="flex flex-col gap-4">
-        <Eyebrow className="text-center">Lead Partner</Eyebrow>
+        <Eyebrow className="text-center">{t("sponsors.leadPartnerEyebrow")}</Eyebrow>
         <div
           className="rounded-2xl p-10 flex flex-col sm:flex-row items-center justify-center gap-8"
           style={{
@@ -45,22 +46,22 @@ export default function SponsorsSectionV2() {
         >
           <img
               src={islamicReliefLogo}
-            alt="Islamic Relief Canada"
+            alt={t("sponsors.leadPartnerLogoAlt")}
             className="h-20 w-auto object-contain"
             />
           <div className="flex flex-col gap-1 text-center sm:text-left">
             <p className="font-display text-2xl font-semibold" style={{ color: BRAND.cream }}>
-              Islamic Relief Canada
+              {t("sponsors.leadPartnerName")}
             </p>
             <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>
-              Charity partner
+              {t("sponsors.leadPartnerRole")}
             </p>
           </div>
         </div>
       </div>
 
       <div className="flex flex-col gap-6">
-        <Eyebrow className="text-center">2026 Sponsors</Eyebrow>
+        <Eyebrow className="text-center">{t("sponsors.sponsorsYearEyebrow")}</Eyebrow>
         {/* Grid with blurred cards + centered overlay */}
         <div className="relative rounded-xl overflow-hidden">
           {/* Blurred placeholder grid */}
@@ -86,13 +87,13 @@ export default function SponsorsSectionV2() {
               className="font-display font-semibold"
               style={{ fontSize: "clamp(1.25rem, 3vw, 1.75rem)", color: BRAND.cream }}
             >
-              Coming soon
+              {t("sponsors.comingSoon")}
             </p>
             <p
               className="font-intimate text-base"
               style={{ fontStyle: "italic", color: BRAND.purpleLight }}
             >
-              We're working on it!
+              {t("sponsors.comingSoonNote")}
             </p>
           </div>
         </div>
@@ -106,11 +107,10 @@ export default function SponsorsSectionV2() {
         }}
       >
         <p className="font-display text-2xl font-semibold" style={{ color: BRAND.cream }}>
-          Interested in partnering <GoldText>with us?</GoldText>
+          {t("sponsors.partnerCtaTitle")} <GoldText>{t("sponsors.partnerCtaTitleHighlight")}</GoldText>
         </p>
         <p className="font-sans text-sm max-w-md" style={{ color: BRAND.creamMuted }}>
-          You'll reach Muslim students and builders across Quebec, plus people who
-          care about the communities we serve.
+          {t("sponsors.partnerCtaBody")}
         </p>
         <a
           href="mailto:sponsors@muslimhacksoutreach.ca"
@@ -121,7 +121,7 @@ export default function SponsorsSectionV2() {
             boxShadow: "0 8px 30px rgba(221,168,83,0.22)",
           }}
         >
-          Become a Sponsor
+          {t("sponsors.becomeSponsor")}
           <ExternalLink size={14} />
         </a>
         <p className="font-sans text-xs" style={{ color: BRAND.sand }}>

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { useTranslation } from "react-i18next";
 import GoldButton from "@/components/ui/goldButton";
 import { BRAND } from "@/components/Shared";
 import { useAuth } from "@/hooks/useAuth";
@@ -21,6 +22,7 @@ export function ApplyFunnelCta({
   align = "start",
   className = "",
 }: ApplyFunnelCtaProps) {
+  const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const { hasApplication } = useApplicationButtonState();
   const label = getApplicationButtonLabel(hasApplication);
@@ -32,18 +34,18 @@ export function ApplyFunnelCta({
     <div className={`flex flex-col gap-3 ${alignClass} ${className}`}>
       <SignedOut>
         <GoldButton as={Link} to="/signup" className="w-full sm:w-auto">
-          {label}
+          {t(label)}
         </GoldButton>
       </SignedOut>
       <SignedIn>
         {!isAdmin && (
           <GoldButton as={Link} to="/apply" className="w-full sm:w-auto">
-            {label}
+            {t(label)}
           </GoldButton>
         )}
         {isAdmin && (
           <GoldButton as={Link} to="/admin/applications" className="w-full sm:w-auto">
-            Go to Applications
+            {t("applyCta.goToApplications")}
           </GoldButton>
         )}
       </SignedIn>

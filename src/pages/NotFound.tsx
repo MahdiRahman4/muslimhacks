@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   BRAND,
   Eyebrow,
@@ -10,6 +11,7 @@ import {
 import Footer from "@/components/ui/footer";
 
 const NotFound = () => {
+  const { t } = useTranslation();
   const location = useLocation();
 
   useEffect(() => {
@@ -58,7 +60,7 @@ const NotFound = () => {
         <div className="max-w-lg w-full flex flex-col items-center text-center gap-10">
           {/* Eyebrow + heading */}
           <div className="flex flex-col gap-4">
-            <Eyebrow>404 — Page not found</Eyebrow>
+            <Eyebrow>{t("notFound.eyebrow")}</Eyebrow>
             <h1
               className="font-display font-black leading-tight"
               style={{
@@ -67,7 +69,7 @@ const NotFound = () => {
                 color: BRAND.cream,
               }}
             >
-              Lost on the <GoldText>path</GoldText>
+              {t("notFound.title")} <GoldText>{t("notFound.titleHighlight")}</GoldText>
             </h1>
           </div>
 
@@ -90,13 +92,13 @@ const NotFound = () => {
               className="font-intimate text-lg"
               style={{ fontStyle: "italic", color: BRAND.creamMuted }}
             >
-              "Did He not find you unguided then guided you?"
+              {t("notFound.quoteText")}
             </p>
             <p
               className="font-sans text-xs uppercase tracking-[0.22em]"
               style={{ color: BRAND.sand }}
             >
-              — Ad-Duhaa 93:7
+              {t("notFound.quoteSource")}
             </p>
           </div>
 
@@ -112,7 +114,7 @@ const NotFound = () => {
                   "0 0 18px rgba(221,168,83,0.3), 0 4px 16px rgba(221,168,83,0.18)",
               }}
             >
-              Back to home
+              {t("notFound.backHome")}
             </Link>
           </div>
         </div>

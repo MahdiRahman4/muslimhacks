@@ -25,8 +25,10 @@ import VisionSectionV2 from "@/components/sections/VisionSectionV2";
 import SponsorsSectionV2 from "@/components/sections/SponsorsSectionV2";
 import FAQSectionV2 from "@/components/sections/FAQSectionV2";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const Index = () => {
+  const { t } = useTranslation();
   const [displayInviteDialog, setDisplayInviteDialog] = useState(false);
   const [displayApplyDialog, setDisplayApplyDialog] = useState(true);
 
@@ -34,7 +36,7 @@ const Index = () => {
     <main className="relative overflow-x-hidden">
       {/* SEO: Primary heading for the page */}
       <h1 className="sr-only">
-        MuslimHacks - Quebec's Largest Muslim Charity Hackathon | September 2026
+        {t("hero.titleMuslim")}{t("hero.titleHacks")} - {t("hero.eyebrow")} | {t("hero.dateLabel")}
       </h1>
 
       {/* Navigation */}

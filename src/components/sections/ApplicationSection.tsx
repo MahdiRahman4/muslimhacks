@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Upload, X, CheckCircle2, AlertCircle, LogOut, Clock, ChevronDown } from "lucide-react";
+import { useTranslation, TFunction } from "react-i18next";
 import NotFound from "../../pages/NotFound";
 import { BRAND, StarPattern, GoldText, Eyebrow, GLOBAL_CSS, LoadingScreen } from "../Shared";
 import muslimHacksLogo from "../../assets/muslimhacks-gradient.svg";
@@ -104,43 +105,43 @@ function calcProgress(form: ApplicationForm): number {
   return Math.round((filled.length / keys.length) * 100);
 }
 
-function validate(form: ApplicationForm): Errors {
+function validate(form: ApplicationForm, t: TFunction): Errors {
   const e: Errors = {};
-  if (!form.fullName.trim()) e.fullName = "Full name is required.";
+  if (!form.fullName.trim()) e.fullName = t("apply.errors.fullNameRequired");
   if (form.phone) {
     const digitCount = form.phone.replace(/\D/g, "").length;
     if (digitCount === 0) {
-      e.phone = "Enter a valid phone number. Use numbers only.";
+      e.phone = t("apply.errors.phoneInvalid");
     } else if (/[a-zA-Z]/.test(form.phone)) {
-      e.phone = "Phone numbers can't contain letters.";
+      e.phone = t("apply.errors.phoneLetters");
     } else if (digitCount < 7) {
-      e.phone = "Phone number is too short.";
+      e.phone = t("apply.errors.phoneTooShort");
     } else if (digitCount > 15) {
-      e.phone = "Phone number is too long.";
+      e.phone = t("apply.errors.phoneTooLong");
     }
   }
-  if (!form.gender.trim()) e.gender = "Select Male or Female.";
+  if (!form.gender.trim()) e.gender = t("apply.errors.genderRequired");
   else if (form.gender !== "male" && form.gender !== "female") {
-    e.gender = "Select Male or Female.";
+    e.gender = t("apply.errors.genderRequired");
   }
-  if (!form.institution.trim()) e.institution = "School / university is required.";
+  if (!form.institution.trim()) e.institution = t("apply.errors.institutionRequired");
   if (form.github.trim() && !isValidGithubUrl(form.github)) {
-    e.github = "Use a link like github.com/yourusername.";
+    e.github = t("apply.errors.githubInvalid");
   }
   if (form.linkedin.trim() && !isValidLinkedinUrl(form.linkedin)) {
-    e.linkedin = "Use a link like linkedin.com/in/yourname.";
+    e.linkedin = t("apply.errors.linkedinInvalid");
   }
   if (!form.dietary.trim())
-    e.dietary = "Dietary info is required (put none if nothing).";
+    e.dietary = t("apply.errors.dietaryRequired");
   if (form.firstHackathon === null)
-    e.firstHackathon = "Select yes or no.";
+    e.firstHackathon = t("apply.errors.yesNoRequired");
   if (form.firstHackathon === false) {
     if (form.hackathonCount == null || form.hackathonCount < 1) {
-      e.hackathonCount = "Enter how many hackathons you've done.";
+      e.hackathonCount = t("apply.errors.hackathonCountRequired");
     }
   }
-  if (form.csCareer === null) e.csCareer = "Select yes or no.";
-  if (!form.motivation.trim()) e.motivation = "This field is required.";
+  if (form.csCareer === null) e.csCareer = t("apply.errors.yesNoRequired");
+  if (!form.motivation.trim()) e.motivation = t("apply.errors.fieldRequired");
   return e;
 }
 
@@ -353,6 +354,7 @@ function YesNoToggle({
   readOnly?: boolean;
   error?: string;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       id={id}
@@ -389,7 +391,7 @@ function YesNoToggle({
                 }
           }
         >
-          {opt ? "Yes" : "No"}
+          {opt ? t("apply.yes") : t("apply.no")}
         </button>
       ))}
     </div>
@@ -410,6 +412,7 @@ function ResumeUpload({
   readOnly?: boolean;
   error?: string;
 }) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -422,11 +425,11 @@ function ResumeUpload({
     const isPdf =
       file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
     if (!isPdf) {
-      toast.error("Resume must be a PDF.");
+      toast.error(t("apply.toasts.resumeMustBePdf"));
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("Resume must be 5 MB or smaller.");
+      toast.error(t("apply.toasts.resumeTooLarge"));
       return;
     }
     onChange(file);
@@ -465,7 +468,7 @@ function ResumeUpload({
             type="button"
             onClick={() => onChange(null)}
             className="p-1 rounded hover:opacity-70 transition-opacity focus-visible:ring-2"
-            aria-label="Remove file"
+            aria-label={t("apply.section1.removeFileAria")}
             style={{ color: BRAND.gold }}
           >
             <X size={16} />
@@ -503,7 +506,7 @@ function ResumeUpload({
         role={readOnly ? undefined : "button"}
         tabIndex={readOnly ? undefined : 0}
         onKeyDown={(e) => !readOnly && e.key === "Enter" && inputRef.current?.click()}
-        aria-label={readOnly ? undefined : "Upload resume"}
+        aria-label={readOnly ? undefined : t("apply.section1.uploadAria")}
       >
         <Upload size={24} style={{ color: BRAND.gold }} />
         <div className="text-center flex flex-col gap-1">
@@ -511,18 +514,18 @@ function ResumeUpload({
             className="font-sans text-sm font-medium"
             style={{ color: BRAND.cream }}
           >
-            Drag & drop or{" "}
+            {t("apply.section1.dragDrop")}{" "}
             <span
               style={{
                 color: BRAND.gold,
                 textDecoration: "underline",
               }}
             >
-              browse
+              {t("apply.section1.browse")}
             </span>
           </p>
           <p className="font-sans text-xs" style={{ color: BRAND.sand }}>
-            PDF only · max 5 MB
+            {t("apply.section1.pdfMax")}
           </p>
         </div>
       </div>
@@ -630,6 +633,7 @@ function Field({ children }: { children: React.ReactNode }) {
 
 // ─── Apply page ───────────────────────────────────────────────────────────────
 export default function ApplicationSection() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user: clerkUser } = useUser();
   const [form, setForm] = useState<ApplicationForm>(EMPTY_FORM);
@@ -697,7 +701,7 @@ export default function ApplicationSection() {
           toast.error(
             error instanceof ApiError
               ? error.message
-              : "Failed to load application"
+              : t("apply.toasts.loadFailed")
           );
         }
       } finally {
@@ -711,7 +715,7 @@ export default function ApplicationSection() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const errs = validate(form);
+    const errs = validate(form, t);
     setErrors(errs);
 
     if (Object.keys(errs).length > 0) {
@@ -727,7 +731,7 @@ export default function ApplicationSection() {
     try {
       const data = await saveApplicationV2(applicationFormPayload);
       setApplication(data.application);
-      toast.success("Application submitted! We'll be in touch soon.");
+      toast.success(t("apply.toasts.submitSuccess"));
       setForm(toFormValuesV2(data.application) || EMPTY_FORM);
       setErrors({});
       navigate("/apply/submitted");
@@ -735,9 +739,7 @@ export default function ApplicationSection() {
       if (error instanceof ApiError) {
         toast.error(error.message);
       } else {
-        toast.error(
-          "There was an error submitting your application. Please try again."
-        );
+        toast.error(t("apply.toasts.submitError"));
       }
     } finally {
       setIsSubmitting(false);
@@ -771,7 +773,7 @@ export default function ApplicationSection() {
   ]);
 
   if (loading) {
-    return <LoadingScreen message="Loading application..." />;
+    return <LoadingScreen message={t("apply.loading")} />;
   }
 
   return (
@@ -803,7 +805,7 @@ export default function ApplicationSection() {
             className="font-sans text-xs tabular-nums"
             style={{ color: BRAND.sand }}
           >
-            {progress}% complete
+            {t("apply.progressComplete", { progress })}
           </span>
           <div className="flex items-center gap-3">
             <Profile/>
@@ -827,7 +829,7 @@ export default function ApplicationSection() {
         {/* Header */}
         <div className="flex justify-between">
           <div className="flex flex-col gap-5 mb-14">
-            <Eyebrow>Apply</Eyebrow>
+            <Eyebrow>{t("apply.eyebrow")}</Eyebrow>
             <h1
               className="font-display font-black leading-tight"
               style={{
@@ -836,7 +838,7 @@ export default function ApplicationSection() {
                 color: BRAND.cream,
               }}
             >
-              Build <GoldText>with us</GoldText>
+              {t("apply.titlePrefix")} <GoldText>{t("apply.titleHighlight")}</GoldText>
             </h1>
             <p
               className="font-intimate text-xl leading-relaxed flex items-center gap-2"
@@ -846,13 +848,13 @@ export default function ApplicationSection() {
               }}
             >
               <Clock size={20} style={{ color: BRAND.gold }} />
-              This should take about 5 minutes.
+              {t("apply.timeEstimate")}
             </p>
           </div>
           <div className="h-full w-auto">
             <img
               src={muslimHacksLogo}
-              alt="MuslimHacks logo"
+              alt={t("apply.logoAlt")}
               className="w-auto"
               style={{ height: "12rem" }}
             />
@@ -872,7 +874,7 @@ export default function ApplicationSection() {
             <AlertCircle size={18} className="shrink-0 mt-0.5" />
             <div className="flex flex-col gap-2">
               <p className="font-semibold" style={{ color: BRAND.cream }}>
-                Please fix the following before you submit:
+                {t("apply.fixErrors")}
               </p>
               <ul className="list-disc pl-5 space-y-1">
                 {Object.values(errors).map((message) => (
@@ -891,20 +893,20 @@ export default function ApplicationSection() {
           {/* ── Section 1 ──────────────────────────────────────────── */}
           <FormSection
             number="01"
-            title="About you"
+            title={t("apply.section1.title")}
             collapsible
             forceOpen={section1HasError}
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field>
                 <FieldLabel htmlFor="fullName" required>
-                  Full Name
+                  {t("apply.section1.fullName")}
                 </FieldLabel>
                 <TextInput
                   id="fullName"
                   value={form.fullName}
                   onChange={(v) => set("fullName", v)}
-                  placeholder="Your full name"
+                  placeholder={t("apply.section1.fullNamePlaceholder")}
                   readOnly={readOnly}
                   error={errors.fullName}
                 />
@@ -913,7 +915,7 @@ export default function ApplicationSection() {
 
               <Field>
                 <FieldLabel htmlFor="phone">
-                  Phone Number
+                  {t("apply.section1.phone")}
                 </FieldLabel>
                 <TextInput
                   id="phone"
@@ -922,18 +924,18 @@ export default function ApplicationSection() {
                   onChange={(v) => {
                     set("phone", v);
                   }}
-                  placeholder="+1 (xxx) xxx-xxxx"
+                  placeholder={t("apply.section1.phonePlaceholder")}
                   readOnly={readOnly}
                   error={errors.phone}
                 />
-                <HelperText>Optional.</HelperText>
+                <HelperText>{t("apply.section1.phoneOptional")}</HelperText>
                 <FieldError message={errors.phone} />
               </Field>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field>
                 <FieldLabel htmlFor="gender" required>
-                  Gender
+                  {t("apply.section1.gender")}
                 </FieldLabel>
                 <select
                   id="gender"
@@ -954,30 +956,30 @@ export default function ApplicationSection() {
                   }
                 >
                   <option value="" disabled style={{ background: BRAND.navy }}>
-                    Select your gender
+                    {t("apply.section1.genderPlaceholder")}
                   </option>
                   <option value="male" style={{ background: BRAND.navy }}>
-                    Male
+                    {t("apply.section1.genderMale")}
                   </option>
                   <option value="female" style={{ background: BRAND.navy }}>
-                    Female
+                    {t("apply.section1.genderFemale")}
                   </option>
                 </select>
                 <HelperText>
-                  For rooming and prayer spaces.
+                  {t("apply.section1.genderHelper")}
                 </HelperText>
                 <FieldError message={errors.gender} />
               </Field>
 
               <Field>
                 <FieldLabel htmlFor="institution" required>
-                  School / university
+                  {t("apply.section1.institution")}
                 </FieldLabel>
                 <TextInput
                   id="institution"
                   value={form.institution}
                   onChange={(v) => set("institution", v)}
-                  placeholder="e.g. Concordia University"
+                  placeholder={t("apply.section1.institutionPlaceholder")}
                   readOnly={readOnly}
                   error={errors.institution}
                 />
@@ -986,35 +988,35 @@ export default function ApplicationSection() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field>
-                <FieldLabel htmlFor="linkedin">LinkedIn</FieldLabel>
+                <FieldLabel htmlFor="linkedin">{t("apply.section1.linkedin")}</FieldLabel>
                 <TextInput
                   id="linkedin"
                   value={form.linkedin}
                   onChange={(v) => set("linkedin", v)}
-                  placeholder="linkedin.com/in/yourname"
+                  placeholder={t("apply.section1.linkedinPlaceholder")}
                   readOnly={readOnly}
                   error={errors.linkedin}
                 />
-                <HelperText>Optional but recommended for recruiters</HelperText>
+                <HelperText>{t("apply.section1.linkedinHelper")}</HelperText>
                 <FieldError message={errors.linkedin} />
               </Field>
 
               <Field>
-                <FieldLabel htmlFor="github">GitHub</FieldLabel>
+                <FieldLabel htmlFor="github">{t("apply.section1.github")}</FieldLabel>
                 <TextInput
                   id="github"
                   value={form.github}
                   onChange={(v) => set("github", v)}
-                  placeholder="github.com/yourusername"
+                  placeholder={t("apply.section1.githubPlaceholder")}
                   readOnly={readOnly}
                   error={errors.github}
                 />
-                <HelperText>Optional but recommended for recruiters.</HelperText>
+                <HelperText>{t("apply.section1.githubHelper")}</HelperText>
                 <FieldError message={errors.github} />
               </Field>
             </div>
             <Field>
-              <FieldLabel htmlFor="resumeFile">Resume / CV</FieldLabel>
+              <FieldLabel htmlFor="resumeFile">{t("apply.section1.resume")}</FieldLabel>
               <ResumeUpload
                 id="resumeFile"
                 value={form.resumeFile}
@@ -1023,7 +1025,7 @@ export default function ApplicationSection() {
                 error={errors.resumeFile}
               />
               <HelperText>
-                Optional but recommended for recruiters. PDF only.
+                {t("apply.section1.resumeHelper")}
               </HelperText>
               <FieldError message={errors.resumeFile} />
             </Field>
@@ -1034,37 +1036,37 @@ export default function ApplicationSection() {
           {/* ── Section 2 ──────────────────────────────────────────── */}
           <FormSection
             number="02"
-            title="A few details"
+            title={t("apply.section2.title")}
             collapsible
             forceOpen={section2HasError}
           >
             <Field>
               <FieldLabel htmlFor="dietary" required>
-                Dietary restrictions & allergies
+                {t("apply.section2.dietary")}
               </FieldLabel>
               <TextInput
                 id="dietary"
                 value={form.dietary}
                 onChange={(v) => set("dietary", v)}
-                placeholder="e.g. nut allergy, vegan, none"
+                placeholder={t("apply.section2.dietaryPlaceholder")}
                 readOnly={readOnly}
                 error={errors.dietary}
               />
               <HelperText>
-                All food is already halal. Just tell us about allergies or anything else.
+                {t("apply.section2.dietaryHelper")}
               </HelperText>
               <FieldError message={errors.dietary} />
             </Field>
 
             <Field>
               <FieldLabel htmlFor="accessibility">
-                Accessibility needs
+                {t("apply.section2.accessibility")}
               </FieldLabel>
               <Textarea
                 id="accessibility"
                 value={form.accessibility}
                 onChange={(v) => set("accessibility", v)}
-                placeholder="Optional"
+                placeholder={t("apply.section2.accessibilityPlaceholder")}
                 rows={3}
                 readOnly={readOnly}
               />
@@ -1076,7 +1078,7 @@ export default function ApplicationSection() {
           {/* ── Section 3 ──────────────────────────────────────────── */}
           <FormSection
             number="03"
-            title="Tell us about you"
+            title={t("apply.section3.title")}
             collapsible
             forceOpen={section3HasError}
           >
@@ -1084,7 +1086,7 @@ export default function ApplicationSection() {
               <Field>
                 <div id="firstHackathon-label">
                   <FieldLabel htmlFor="firstHackathon" required>
-                    Is this your first hackathon?
+                    {t("apply.section3.firstHackathon")}
                   </FieldLabel>
                 </div>
                 <YesNoToggle
@@ -1103,7 +1105,7 @@ export default function ApplicationSection() {
               <Field>
                 <div id="csCareer-label">
                   <FieldLabel htmlFor="csCareer" required>
-                    Are you studying or going into tech / CS?
+                    {t("apply.section3.csCareer")}
                   </FieldLabel>
                 </div>
                 <YesNoToggle
@@ -1113,7 +1115,7 @@ export default function ApplicationSection() {
                   readOnly={readOnly}
                   error={errors.csCareer}
                 />
-                <HelperText>Beginners and non-CS majors are welcome.</HelperText>
+                <HelperText>{t("apply.section3.csCareerHelper")}</HelperText>
                 <FieldError message={errors.csCareer} />
               </Field>
             </div>
@@ -1121,7 +1123,7 @@ export default function ApplicationSection() {
             {form.firstHackathon === false && (
               <Field>
                 <FieldLabel htmlFor="hackathonCount" required>
-                  About how many hackathons have you done before?
+                  {t("apply.section3.hackathonCount")}
                 </FieldLabel>
                 <TextInput
                   id="hackathonCount"
@@ -1131,7 +1133,7 @@ export default function ApplicationSection() {
                     const n = Number(v);
                     set("hackathonCount", Number.isInteger(n) && n >= 1 ? n : null);
                   }}
-                  placeholder="e.g. 2"
+                  placeholder={t("apply.section3.hackathonCountPlaceholder")}
                   readOnly={readOnly}
                   error={errors.hackathonCount}
                 />
@@ -1141,14 +1143,13 @@ export default function ApplicationSection() {
 
             <Field>
               <FieldLabel htmlFor="motivation" required>
-                Why do you want to attend MuslimHacks? What are you hoping to
-                learn, build, or contribute?
+                {t("apply.section3.motivation")}
               </FieldLabel>
               <Textarea
                 id="motivation"
                 value={form.motivation}
                 onChange={(v) => set("motivation", v)}
-                placeholder="Be honest. A few sentences is enough."
+                placeholder={t("apply.section3.motivationPlaceholder")}
                 rows={5}
                 readOnly={readOnly}
                 error={errors.motivation}
@@ -1162,20 +1163,19 @@ export default function ApplicationSection() {
           {/* ── Section 4 ──────────────────────────────────────────── */}
           <FormSection
             number="04"
-            title="Optional Questions"
+            title={t("apply.section4.title")}
             collapsible
             defaultOpen={false}
           >
             <Field>
               <FieldLabel htmlFor="pastProject">
-                Tell us about something you're proud of accomplishing. What was
-                it, and why is it meaningful to you?
+                {t("apply.section4.pastProject")}
               </FieldLabel>
               <Textarea
                 id="pastProject"
                 value={form.pastProject}
                 onChange={(v) => set("pastProject", v)}
-                placeholder="School, work, personal, volunteering — anything that matters to you."
+                placeholder={t("apply.section4.pastProjectPlaceholder")}
                 rows={4}
                 readOnly={readOnly}
                 error={errors.pastProject}
@@ -1185,14 +1185,13 @@ export default function ApplicationSection() {
 
             <Field>
               <FieldLabel htmlFor="interests">
-                If you had the opportunity to build something that benefits the
-                Ummah, what would you build, and why?
+                {t("apply.section4.interests")}
               </FieldLabel>
               <Textarea
                 id="interests"
                 value={form.interests}
                 onChange={(v) => set("interests", v)}
-                placeholder="An idea, a problem you'd solve, or a direction you'd explore."
+                placeholder={t("apply.section4.interestsPlaceholder")}
                 rows={4}
                 readOnly={readOnly}
                 error={errors.interests}
@@ -1202,14 +1201,13 @@ export default function ApplicationSection() {
 
             <Field>
               <FieldLabel htmlFor="community">
-                Have you volunteered or contributed to your community? Tell us
-                about it.
+                {t("apply.section4.community")}
               </FieldLabel>
               <Textarea
                 id="community"
                 value={form.community}
                 onChange={(v) => set("community", v)}
-                placeholder="Mosque, school, events, online, neighborhood — whatever you've done."
+                placeholder={t("apply.section4.communityPlaceholder")}
                 rows={3}
                 readOnly={readOnly}
                 error={errors.community}
@@ -1232,14 +1230,18 @@ export default function ApplicationSection() {
                   }}
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Submitting..." : application ? "Update application" : "Submit application"}
+                  {isSubmitting
+                    ? t("apply.submitting")
+                    : application
+                    ? t("apply.updateApplication")
+                    : t("apply.submitApplication")}
                 </button>
 
                 <p
                   className="text-center font-intimate text-sm"
                   style={{ fontStyle: "italic", color: BRAND.sand }}
                 >
-                  We'll email you a confirmation once you submit.
+                  {t("apply.confirmationNote")}
                 </p>
               </>
             )}

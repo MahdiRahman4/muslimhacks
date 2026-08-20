@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ExternalLink, Copy, Check, X } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { BRAND } from "@/components/Shared";
 import {
   androidBrowserIntentUrl,
@@ -8,6 +9,7 @@ import {
 } from "@/lib/inAppBrowser";
 
 export function InAppBrowserNotice() {
+  const { t } = useTranslation();
   const [browser] = useState(() => detectInAppBrowser());
   const [dismissed, setDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -22,9 +24,9 @@ export function InAppBrowserNotice() {
     try {
       await navigator.clipboard.writeText(currentUrl);
       setCopied(true);
-      toast.success("Link copied. Paste it into Safari or Chrome.");
+      toast.success(t("inAppBrowser.linkCopiedToast"));
     } catch {
-      toast.error("Couldn't copy. Long-press the address bar to copy the link.");
+      toast.error(t("inAppBrowser.copyFailedToast"));
     }
   }
 
@@ -39,8 +41,7 @@ export function InAppBrowserNotice() {
     >
       <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-center gap-3">
         <p className="font-sans text-sm leading-snug">
-          You&apos;re browsing inside {browser.name}. Sign-in and resume uploads
-          often fail here — open this page in your normal browser to apply.
+          {t("inAppBrowser.message", { browserName: browser.name })}
         </p>
 
         <div className="flex items-center gap-2 shrink-0">
@@ -51,7 +52,7 @@ export function InAppBrowserNotice() {
               style={{ background: BRAND.gold, color: BRAND.navyDeep }}
             >
               <ExternalLink size={15} />
-              Open in browser
+              {t("inAppBrowser.openInBrowser")}
             </a>
           ) : (
             <button
@@ -61,14 +62,14 @@ export function InAppBrowserNotice() {
               style={{ background: BRAND.gold, color: BRAND.navyDeep }}
             >
               {copied ? <Check size={15} /> : <Copy size={15} />}
-              {copied ? "Copied" : "Copy link"}
+              {copied ? t("inAppBrowser.copied") : t("inAppBrowser.copyLink")}
             </button>
           )}
 
           <button
             type="button"
             onClick={() => setDismissed(true)}
-            aria-label="Dismiss"
+            aria-label={t("inAppBrowser.dismiss")}
             className="p-2 rounded-full opacity-70 hover:opacity-100"
             style={{ color: BRAND.creamMuted }}
           >
@@ -82,8 +83,7 @@ export function InAppBrowserNotice() {
           className="font-sans text-xs mt-2 max-w-3xl mx-auto"
           style={{ color: BRAND.creamMuted }}
         >
-          On iPhone you can also tap the ••• menu in the top corner and choose
-          &ldquo;Open in Safari&rdquo;.
+          {t("inAppBrowser.iosHint")}
         </p>
       )}
     </div>

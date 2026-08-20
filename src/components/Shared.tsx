@@ -1,4 +1,5 @@
 import { Bounce, ToastOptions } from "react-toastify";
+import { useTranslation } from "react-i18next";
 import muslimHacksLogo from "@/assets/muslimhacks-logo-white.svg";
 
 // Shared brand tokens, primitives, and layout components used across all pages.
@@ -95,10 +96,12 @@ export function Eyebrow({
 }
 
 export function LoadingScreen({
-  message = "Getting things ready...",
+  message,
 }: {
   message?: string;
 }) {
+  const { t } = useTranslation();
+  const resolvedMessage = message ?? t("loading.default");
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center gap-6 relative overflow-hidden"
@@ -120,7 +123,7 @@ export function LoadingScreen({
         }}
       />
       <p className="relative font-sans text-sm tracking-wide" style={{ color: BRAND.sand }}>
-        {message}
+        {resolvedMessage}
       </p>
     </div>
   );

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useScrollReveal, useParallax } from '@/hooks/useScrollReveal';
 import IslamicPattern, { IslamicPatternAlt } from '@/components/IslamicPattern';
 import { BRAND, StarPattern, GoldText, Eyebrow } from "../Shared";
@@ -7,27 +8,28 @@ import ValueCard from '../ui/valueCard';
 const STRIP_PHOTOS = [
   {
     url: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600&q=75",
-    alt: "Group collaborating on laptops at a hackathon",
+    altKey: "collaborating",
   },
   {
     url: "https://images.unsplash.com/photo-1573939705721-9fa2cdcda901?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600&q=75",
-    alt: "Community gathering",
+    altKey: "gathering",
   },
   {
     url: "https://images.unsplash.com/photo-1629904853893-c2c8981a1dc5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600&q=75",
-    alt: "Developer focused at a hackathon",
+    altKey: "focused",
   },
   {
     url: "https://images.unsplash.com/photo-1632910121591-29e2484c0259?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600&q=75",
-    alt: "Two developers working together",
+    altKey: "together",
   },
   {
     url: "https://images.unsplash.com/photo-1637073849667-91120a924221?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=600&q=75",
-    alt: "Pair programming at a community event",
+    altKey: "pairProgramming",
   },
 ];
 
 function PhotoStrip() {
+  const { t } = useTranslation();
   return (
     <div className="relative overflow-hidden" style={{ background: BRAND.navyDeep }}>
       <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory px-6 pb-6 pt-2 md:grid md:grid-cols-5 md:overflow-visible md:px-0 md:pb-0 md:pt-0">
@@ -39,7 +41,7 @@ function PhotoStrip() {
           >
             <img
               src={p.url}
-              alt={p.alt}
+              alt={t(`values.photoAlts.${p.altKey}`)}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               style={{ filter: "saturate(0.8) brightness(0.85)" }}
               loading="lazy"
@@ -115,6 +117,7 @@ function Marquee() {
 }
 
 export default function VisionSectionV2 () {
+  const { t } = useTranslation();
   const [parallaxRef, parallaxOffset] = useParallax(0.15);
   const [titleRef, titleVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.2 });
   const [detailsRef, detailsVisible] = useScrollReveal<HTMLDivElement>({ threshold: 0.15 });
@@ -131,29 +134,29 @@ export default function VisionSectionV2 () {
           {/* <StarPattern opacity={0.07} /> */}
           <div className="relative max-w-6xl mx-auto flex flex-col gap-12">
             <div className="text-center flex flex-col gap-3">
-              <Eyebrow>What matters to us</Eyebrow>
+              <Eyebrow>{t("values.eyebrow")}</Eyebrow>
               <h2
                 className="font-display font-bold"
                 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", color: BRAND.cream }}
               >
-                Build with <GoldText>purpose</GoldText>
+                {t("values.titlePrefix")} <GoldText>{t("values.titleHighlight")}</GoldText>
               </h2>
             </div>
             <div className="grid md:grid-cols-3 gap-6">
               <ValueCard
-                eyebrow="The people"
-                title="Show up together"
-                body="Muslims and friends of the community, designers, organizers, and people still learning to code. If you care about the work, you belong here."
+                eyebrow={t("values.cards.people.eyebrow")}
+                title={t("values.cards.people.title")}
+                body={t("values.cards.people.body")}
               />
               <ValueCard
-                eyebrow="The work"
-                title="Solve real problems"
-                body="You've got 24 hours. Pick something that actually affects Muslim communities, like access to resources, education, or local needs, and try to ship something useful."
+                eyebrow={t("values.cards.work.eyebrow")}
+                title={t("values.cards.work.title")}
+                body={t("values.cards.work.body")}
               />
               <ValueCard
-                eyebrow="The point"
-                title="Leave something behind"
-                body="We're hoping some of these projects keep going after the weekend. Open-source tools, charity platforms, small apps people can keep using."
+                eyebrow={t("values.cards.point.eyebrow")}
+                title={t("values.cards.point.title")}
+                body={t("values.cards.point.body")}
               />
             </div>
           </div>
@@ -163,9 +166,9 @@ export default function VisionSectionV2 () {
         <div className="py-12" style={{ background: BRAND.navyDeep }}>
           <div className="max-w-6xl mx-auto px-0 md:px-6 flex flex-col gap-6">
             <div className="px-6 md:px-0 flex flex-col gap-2">
-              <Eyebrow>Past weekends</Eyebrow>
+              <Eyebrow>{t("values.pastWeekendsEyebrow")}</Eyebrow>
               <p className="font-intimate text-xl" style={{ fontStyle: "italic", color: BRAND.creamMuted }}>
-                Late nights, sticky notes, and people who stayed to help.
+                {t("values.pastWeekendsCaption")}
               </p>
             </div>
             <PhotoStrip />

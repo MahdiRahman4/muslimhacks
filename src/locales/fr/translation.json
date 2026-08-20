@@ -1,0 +1,460 @@
+{
+  "app": {
+    "missingClerkKey": "VITE_CLERK_PUBLISHABLE_KEY est manquant. Copiez .env.example vers .env et ajoutez votre clé Clerk."
+  },
+  "nav": {
+    "home": "Accueil",
+    "about": "À propos",
+    "sponsors": "Commanditaires",
+    "faq": "FAQ",
+    "applyNow": "Postuler",
+    "signIn": "Se connecter",
+    "toggleLanguage": "Passer à l'anglais"
+  },
+  "profile": {
+    "admin": "Admin",
+    "dashboard": "Tableau de bord",
+    "eventOperations": "Opérations de l'événement",
+    "application": "Candidature"
+  },
+  "applyCta": {
+    "applyNow": "Postuler maintenant",
+    "updateApplication": "Modifier la candidature",
+    "goToApplications": "Voir les candidatures",
+    "applyFunnelHelper": "Postulez → nous étudions votre candidature →\nvous recevez un courriel avec la décision."
+  },
+  "hero": {
+    "eyebrow": "Le plus grand hackathon caritatif musulman du Québec",
+    "titleMuslim": "Muslim",
+    "titleHacks": "Hacks",
+    "tagline": "24 heures. Une fin de semaine. Créez quelque chose qui aide vraiment les gens.",
+    "dateLabel": "Septembre 2026",
+    "location": "Université Concordia, campus du centre-ville, Montréal, Québec",
+    "photoAlt": "Participants d'un hackathon collaborant",
+    "notifyHeading": "Soyez les premiers informés à l'ouverture des inscriptions",
+    "emailPlaceholder": "votre@courriel.com",
+    "sending": "Envoi en cours...",
+    "notifyMe": "M'aviser",
+    "readVision": "Découvrir notre vision"
+  },
+  "vision": {
+    "eyebrow": "Notre vision",
+    "titlePrefix": "Qu'est-ce que",
+    "titleSuffix": "?",
+    "paragraph1": "Avant de lancer MuslimHacks, nous avons constaté un problème clair au Québec : beaucoup de musulmans talentueux dans la tech, mais pas assez de réseau connecté. Notre mission est de bâtir ce réseau au cours des prochaines années, en commençant par relier les étudiants aux entreprises et professionnels musulmans.",
+    "paragraph2": "Nous voulons que les gens réalisent qu'il existe toute une industrie musulmane, et que nous n'avons pas toujours besoin de compter sur des réseaux non musulmans pour grandir. C'est l'idée que nous voulons cultiver, in shaa Allah.",
+    "differenceEyebrow": "Ce qui nous distingue",
+    "differenceParagraph1": "D'autres hackathons musulmans ont souvent démarré au sein d'écosystèmes déjà établis pour eux. Leur objectif était habituellement d'amener plus de musulmans dans des réseaux déjà florissants, par la miséricorde d'Allah.",
+    "differenceParagraph2": "Le Québec, c'est différent. Nous partons de zéro et essayons de jeter les bases du réseau que nous envisageons ici, in shaa Allah. Une fin de semaine ne résoudra pas tout, mais nous espérons que MuslimHacks deviendra un tremplin vers cet objectif.",
+    "seeWhatYouGet": "Découvrez ce que vous obtenez ↓"
+  },
+  "benefits": {
+    "eyebrow": "Ce que vous obtenez",
+    "titlePrefix": "C'est gratuit, et vous repartez avec",
+    "titleHighlight": "plus",
+    "intro": "La participation est gratuite. Tout ce qui figure sur cette liste fait partie de la fin de semaine.",
+    "items": [
+      {
+        "title": "Repas gratuits",
+        "body": "Chaque repas est couvert pendant votre séjour. Il suffit de venir et de créer."
+      },
+      {
+        "title": "Mentorat par des professionnels musulmans",
+        "body": "Des mentors de l'industrie sont présents pendant la création et vous aident à débloquer les situations."
+      },
+      {
+        "title": "Réseautage avec des entreprises musulmanes",
+        "body": "Rencontrez des fondateurs et des entreprises de l'industrie musulmane que nous bâtissons ici au Québec."
+      },
+      {
+        "title": "Occasions de stage",
+        "body": "Des recruteurs seront présents à l'événement in shaa Allah, afin que votre projet puisse mener à une offre d'emploi."
+      },
+      {
+        "title": "Investissement dans votre projet",
+        "body": "Si des investisseurs croient en ce que vous avez créé, la fin de semaine n'a pas à s'arrêter là."
+      }
+    ]
+  },
+  "question": {
+    "eyebrow": "Pourquoi nous faisons cela",
+    "titlePrefix": "Et si votre code pouvait être une",
+    "titleHighlight": "sadaqah ?",
+    "hadithQuote": "« Les meilleures personnes sont celles qui sont les plus utiles aux autres. »",
+    "hadithSource": "— Jami' at-Tirmidhi",
+    "body": "La plupart d'entre nous écrivons déjà du code pour l'école ou le travail. MuslimHacks consiste à mettre cette même énergie au service de quelque chose qui aide les gens, avec une intention sincère derrière."
+  },
+  "values": {
+    "eyebrow": "Ce qui compte pour nous",
+    "titlePrefix": "Créez avec",
+    "titleHighlight": "un objectif",
+    "cards": {
+      "people": {
+        "eyebrow": "Les gens",
+        "title": "Venez ensemble",
+        "body": "Des musulmans et des amis de la communauté, des designers, des organisateurs, et des gens qui apprennent encore à coder. Si le travail vous tient à cœur, vous avez votre place ici."
+      },
+      "work": {
+        "eyebrow": "Le travail",
+        "title": "Résolvez de vrais problèmes",
+        "body": "Vous avez 24 heures. Choisissez quelque chose qui touche réellement les communautés musulmanes, comme l'accès aux ressources, l'éducation ou les besoins locaux, et essayez de livrer quelque chose d'utile."
+      },
+      "point": {
+        "eyebrow": "L'objectif",
+        "title": "Laissez quelque chose derrière vous",
+        "body": "Nous espérons que certains de ces projets continueront après la fin de semaine. Des outils libres, des plateformes caritatives, de petites applications que les gens pourront continuer à utiliser."
+      }
+    },
+    "pastWeekendsEyebrow": "Fins de semaine passées",
+    "pastWeekendsCaption": "Nuits blanches, notes autocollantes, et des gens restés pour aider.",
+    "photoAlts": {
+      "collaborating": "Groupe collaborant sur des ordinateurs portables lors d'un hackathon",
+      "gathering": "Rassemblement communautaire",
+      "focused": "Développeur concentré lors d'un hackathon",
+      "together": "Deux développeurs travaillant ensemble",
+      "pairProgramming": "Programmation en binôme lors d'un événement communautaire"
+    }
+  },
+  "sponsors": {
+    "eyebrow": "Nos partenaires",
+    "titlePrefix": "Les gens qui rendent tout ceci",
+    "titleHighlight": "possible",
+    "intro": "Commanditer MuslimHacks soutient des étudiants qui créent pour leurs communautés, et les fonds recueillis sont versés à des œuvres de bienfaisance par l'entremise d'Islamic Relief Canada.",
+    "leadPartnerEyebrow": "Partenaire principal",
+    "leadPartnerLogoAlt": "Islamic Relief Canada",
+    "leadPartnerName": "Islamic Relief Canada",
+    "leadPartnerRole": "Partenaire caritatif",
+    "sponsorsYearEyebrow": "Commanditaires 2026",
+    "comingSoon": "À venir",
+    "comingSoonNote": "On y travaille !",
+    "partnerCtaTitle": "Intéressé à devenir partenaire",
+    "partnerCtaTitleHighlight": "avec nous ?",
+    "partnerCtaBody": "Vous rejoindrez des étudiants et bâtisseurs musulmans partout au Québec, ainsi que des gens qui se soucient des communautés que nous servons.",
+    "becomeSponsor": "Devenir commanditaire"
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "titlePrefix": "Questions",
+    "titleHighlight": "fréquentes",
+    "stillHaveQuestions": "Vous avez encore des questions ?",
+    "items": [
+      {
+        "question": "Dois-je être musulman pour participer ?",
+        "answer": "Non. L'événement s'inscrit dans les valeurs islamiques de service et de charité, mais toute personne qui souhaite créer quelque chose d'utile est la bienvenue."
+      },
+      {
+        "question": "Ai-je besoin d'une équipe ?",
+        "answer": "Vous pouvez venir seul ou avec jusqu'à 4 personnes. Si vous venez seul, nous vous aiderons à trouver une équipe dès la première soirée."
+      },
+      {
+        "question": "Offrirez-vous des remboursements de déplacement ?",
+        "answer": "Pas cette année, malheureusement. Nous savons que les déplacements peuvent être difficiles, et nous espérons pouvoir mieux les soutenir à mesure que l'événement grandit."
+      },
+      {
+        "question": "L'événement est-il en personne ou virtuel ?",
+        "answer": "En personne, au Québec. Nous voulons que les gens soient dans la même pièce, pas seulement sur un appel Zoom."
+      },
+      {
+        "question": "Quel est le coût ?",
+        "answer": "C'est gratuit. Nous faisons tout de même une collecte de fonds pour des œuvres de bienfaisance par l'entremise d'Islamic Relief Canada."
+      },
+      {
+        "question": "Y aura-t-il des espaces de prière et de la nourriture halal ?",
+        "answer": "Oui. Nous aurons un espace de prière, et il y a une mosquée à proximité. Toute la nourriture est halal, et nous pouvons composer avec les restrictions alimentaires."
+      },
+      {
+        "question": "Et si je suis débutant ?",
+        "answer": "C'est parfait. Apportez ce que vous savez déjà. Il y aura des mentors et des ateliers, ainsi que beaucoup de gens qui apprennent encore, eux aussi."
+      },
+      {
+        "question": "Comment les projets sont-ils jugés ?",
+        "answer": "Nous regardons l'impact, la qualité de la réalisation, la créativité et la présentation. Mais surtout : est-ce que cela aide réellement quelqu'un ?"
+      }
+    ]
+  },
+  "invitation": {
+    "applicationsOpen": "Les candidatures sont ouvertes",
+    "titleLine1": "Envie de créer",
+    "titleLine2": "avec nous ?",
+    "subtitle": "Venez pour la fin de semaine. Rencontrez des gens. Essayez de livrer quelque chose d'utile.",
+    "emailPlaceholder": "votre@courriel.com",
+    "sending": "Envoi en cours...",
+    "notifyMe": "M'aviser",
+    "privacyNote": "Nous respectons votre boîte de réception. Que des mises à jour, jamais de pourriel.",
+    "applyHelper": "Postulez → nous étudions votre candidature →\nvous recevez un courriel avec la décision.",
+    "blessing": "Qu'Allah vous bénisse",
+    "brand": "MuslimHacks",
+    "tagline": "Le plus grand hackathon caritatif musulman du Québec",
+    "partnership": "En partenariat avec Islamic Relief Canada"
+  },
+  "footerSection": {
+    "brand": "MuslimHacks",
+    "description": "Le plus grand hackathon caritatif musulman du Québec. Une fin de semaine pour créer quelque chose d'utile.",
+    "eventDetails": "Septembre 2026 · Université Concordia, campus du centre-ville, Montréal, Québec",
+    "quickLinks": "Liens rapides",
+    "links": {
+      "home": "Accueil",
+      "about": "À propos",
+      "sponsors": "Commanditaires",
+      "faq": "FAQ",
+      "register": "S'inscrire"
+    },
+    "contact": "Contact",
+    "generalInquiries": "Demandes générales",
+    "sponsorship": "Commandite",
+    "partner": "Partenaire",
+    "partnerName": "Islamic Relief Canada",
+    "partnerNote": "Les fonds recueillis sont versés à des œuvres de bienfaisance par l'entremise d'IR Canada.",
+    "copyright": "© {{year}} MuslimHacks. Tous droits réservés.",
+    "madeIn": "Fait à Montréal"
+  },
+  "footerUi": {
+    "tagline": "Créé avec intention · Montréal"
+  },
+  "loading": {
+    "default": "Préparation en cours..."
+  },
+  "subscribeDialog": {
+    "confirmTitle": "Veuillez confirmer votre adresse courriel :",
+    "confirmBody": "Nous vous enverrons des mises à jour à l'ouverture des inscriptions.",
+    "goBack": "Retour",
+    "confirming": "Confirmation en cours...",
+    "confirm": "Confirmer",
+    "verifyingTitle": "Encore une étape",
+    "verifyingBody": "Vérification de votre demande…",
+    "verifyingNote": "Cela ne devrait prendre qu'un instant.",
+    "duplicateTitle": "Vous êtes déjà préinscrit !",
+    "successTitle": "Merci de vous être préinscrit !",
+    "duplicateBody": "Vous êtes déjà sur notre liste — aucune action requise.",
+    "successBody": "Vous êtes sur la liste. Nous avons hâte de partager les mises à jour.",
+    "checkInboxPrefix": "Vérifiez",
+    "checkInboxAll": "TOUTES",
+    "checkInboxYour": "vos",
+    "checkInboxInboxes": "BOÎTES DE RÉCEPTION",
+    "checkInboxAnd": "et vos",
+    "checkInboxSpam": "POURRIELS",
+    "checkInboxSuffix": "juste au cas où !"
+  },
+  "subscribeToasts": {
+    "failed": "Échec de l'inscription",
+    "genericError": "Une erreur s'est produite. Veuillez réessayer.",
+    "captchaNotReady": "La vérification captcha n'est pas prête. Veuillez réessayer.",
+    "captchaFailed": "La vérification captcha a échoué. Veuillez réessayer."
+  },
+  "countdown": {
+    "applicationsClosed": "Les candidatures sont fermées",
+    "applicationsCloseIn": "Les candidatures ferment dans",
+    "timeLeftLabel": "Temps restant pour postuler",
+    "days": "Jours",
+    "hours": "Heures",
+    "mins": "Min",
+    "secs": "Sec"
+  },
+  "inAppBrowser": {
+    "message": "Vous naviguez dans {{browserName}}. La connexion et le téléversement de fichiers échouent souvent ici — ouvrez cette page dans votre navigateur habituel pour postuler.",
+    "openInBrowser": "Ouvrir dans le navigateur",
+    "copied": "Copié",
+    "copyLink": "Copier le lien",
+    "dismiss": "Fermer",
+    "iosHint": "Sur iPhone, vous pouvez aussi appuyer sur le menu ••• dans le coin supérieur et choisir « Ouvrir dans Safari ».",
+    "linkCopiedToast": "Lien copié. Collez-le dans Safari ou Chrome.",
+    "copyFailedToast": "Impossible de copier. Appuyez longuement sur la barre d'adresse pour copier le lien."
+  },
+  "checkin": {
+    "qrAriaLabel": "Code QR d'enregistrement pour {{code}}"
+  },
+  "notFound": {
+    "eyebrow": "404 — Page introuvable",
+    "title": "Perdu sur le",
+    "titleHighlight": "chemin",
+    "quoteText": "« Ne t'a-t-Il pas trouvé égaré, puis guidé ? »",
+    "quoteSource": "— Ad-Duhaa 93:7",
+    "backHome": "Retour à l'accueil"
+  },
+  "signIn": {
+    "backHome": "← Retour à l'accueil"
+  },
+  "signUp": {
+    "title": "Créez votre compte pour postuler",
+    "body": "Vous aurez besoin d'un compte rapide pour commencer votre candidature MuslimHacks, ce qui vous mène directement au formulaire. Vous en avez déjà un ? Utilisez « Se connecter » ci-dessous.",
+    "backHome": "← Retour à l'accueil"
+  },
+  "dashboard": {
+    "eyebrow": "Tableau de bord",
+    "greetingAhlan": "Ahlan,",
+    "greetingFriend": "ami",
+    "subtitle": "Voici où en est votre candidature MuslimHacks 2026.",
+    "statEventLabel": "Événement",
+    "statEventValue": "Sept. 2026",
+    "statEventSub": "Université Concordia",
+    "statDurationLabel": "Durée",
+    "statDurationValue": "24 h",
+    "statDurationSub": "En personne · Montréal",
+    "statDeadlineLabel": "Date limite",
+    "statDeadlineValue": "27 août 23 h 59",
+    "statDeadlineSub": "Candidatures ouvertes",
+    "statusEyebrow": "État de la candidature",
+    "statusTitle": "MuslimHacks 2026",
+    "startApplication": "Commencer la candidature",
+    "editApplication": "Modifier la candidature",
+    "editUntilClose": "Vous pouvez la modifier jusqu'à la fermeture des candidatures.",
+    "viewApplication": "Voir votre candidature",
+    "blessing": "Qu'Allah vous bénisse.",
+    "status": {
+      "not_started": {
+        "label": "Non commencée",
+        "description": "Vous n'avez pas encore commencé votre candidature. Les candidatures ferment bientôt. Commencez quand vous serez prêt."
+      },
+      "draft": {
+        "label": "Brouillon",
+        "description": "Votre candidature est enregistrée comme brouillon. Complétez-la et soumettez-la avant la date limite."
+      },
+      "pending": {
+        "label": "En attente",
+        "description": "Votre candidature a été soumise et est en attente d'examen. Jazakum Allahu khayran pour votre patience."
+      },
+      "approved": {
+        "label": "Acceptée",
+        "description": "Alhamdulillah — vous avez été accepté à MuslimHacks 2026 ! Utilisez votre code QR d'enregistrement ci-dessous à votre arrivée."
+      },
+      "rejected": {
+        "label": "Non retenue",
+        "description": "Malheureusement, nous n'avons pas pu vous offrir de place cette année. Nous espérons vous revoir la prochaine fois, in shaa Allah."
+      }
+    },
+    "timeline": {
+      "draft": "Brouillon enregistré",
+      "pending": "Soumise",
+      "approved": "Décision"
+    },
+    "checkinCard": {
+      "eyebrow": "Enregistrement à l'événement",
+      "title": "Votre code QR",
+      "body": "Montrez ceci à l'inscription pour un enregistrement rapide. Il se trouve aussi dans votre courriel d'acceptation.",
+      "backupCode": "Code de secours",
+      "checkedIn": "Vous êtes enregistré !"
+    },
+    "toasts": {
+      "summaryNotFound": "Résumé de l'utilisateur introuvable.",
+      "loadFailed": "Échec du chargement du tableau de bord"
+    }
+  },
+  "applySubmitted": {
+    "eyebrow": "Candidature reçue",
+    "titleLine1": "Jazakum Allahu",
+    "titleLine2": "khayran",
+    "subtitle": "Votre candidature est envoyée — nous sommes reconnaissants que vous vouliez créer avec nous.",
+    "confirmationNote": "Nous avons envoyé une confirmation à votre courriel. Si vous ne la voyez pas, vérifiez vos pourriels.",
+    "nextEyebrow": "Prochaines étapes",
+    "steps": [
+      {
+        "title": "Nous examinons chaque candidature",
+        "body": "Notre équipe lit chacune avec attention, in shaa Allah. Cela prend un peu de temps."
+      },
+      {
+        "title": "Nous vous enverrons une décision par courriel",
+        "body": "Surveillez votre boîte de réception au cours des prochaines semaines. Vous pouvez modifier vos réponses jusqu'à la fermeture des candidatures."
+      },
+      {
+        "title": "Si vous êtes accepté",
+        "body": "Nous partagerons votre offre et les prochaines étapes pour confirmer votre place à MuslimHacks."
+      }
+    ],
+    "blessing": "Qu'Allah vous bénisse.",
+    "backToMuslimHacks": "Retour à MuslimHacks",
+    "haveQuestion": "Une question ?"
+  },
+  "apply": {
+    "progressComplete": "{{progress}} % complété",
+    "eyebrow": "Postuler",
+    "titlePrefix": "Créez",
+    "titleHighlight": "avec nous",
+    "logoAlt": "Logo MuslimHacks",
+    "timeEstimate": "Cela devrait prendre environ 5 minutes.",
+    "fixErrors": "Veuillez corriger les éléments suivants avant de soumettre :",
+    "loading": "Chargement de la candidature...",
+    "yes": "Oui",
+    "no": "Non",
+    "submitting": "Envoi en cours...",
+    "updateApplication": "Modifier la candidature",
+    "submitApplication": "Soumettre la candidature",
+    "confirmationNote": "Nous vous enverrons une confirmation par courriel une fois soumise.",
+    "section1": {
+      "title": "À propos de vous",
+      "fullName": "Nom complet",
+      "fullNamePlaceholder": "Votre nom complet",
+      "phone": "Numéro de téléphone",
+      "phonePlaceholder": "+1 (xxx) xxx-xxxx",
+      "phoneOptional": "Facultatif.",
+      "gender": "Genre",
+      "genderPlaceholder": "Sélectionnez votre genre",
+      "genderMale": "Homme",
+      "genderFemale": "Femme",
+      "genderHelper": "Pour l'hébergement et les espaces de prière.",
+      "institution": "École / université",
+      "institutionPlaceholder": "p. ex. Université Concordia",
+      "linkedin": "LinkedIn",
+      "linkedinPlaceholder": "linkedin.com/in/votrenom",
+      "linkedinHelper": "Facultatif mais recommandé pour les recruteurs",
+      "github": "GitHub",
+      "githubPlaceholder": "github.com/votrenomdusager",
+      "githubHelper": "Facultatif mais recommandé pour les recruteurs.",
+      "resume": "CV",
+      "resumeHelper": "Facultatif mais recommandé pour les recruteurs. PDF seulement.",
+      "dragDrop": "Glissez-déposez ou",
+      "browse": "parcourir",
+      "pdfMax": "PDF seulement · max 5 Mo",
+      "uploadAria": "Téléverser le CV",
+      "removeFileAria": "Supprimer le fichier"
+    },
+    "section2": {
+      "title": "Quelques détails",
+      "dietary": "Restrictions alimentaires et allergies",
+      "dietaryPlaceholder": "p. ex. allergie aux noix, végane, aucune",
+      "dietaryHelper": "Toute la nourriture est déjà halal. Indiquez-nous simplement vos allergies ou toute autre information.",
+      "accessibility": "Besoins d'accessibilité",
+      "accessibilityPlaceholder": "Facultatif"
+    },
+    "section3": {
+      "title": "Parlez-nous de vous",
+      "firstHackathon": "Est-ce votre premier hackathon ?",
+      "csCareer": "Étudiez-vous ou vous dirigez-vous vers la technologie / l'informatique ?",
+      "csCareerHelper": "Les débutants et les non-spécialistes en informatique sont les bienvenus.",
+      "hackathonCount": "Environ combien de hackathons avez-vous déjà faits ?",
+      "hackathonCountPlaceholder": "p. ex. 2",
+      "motivation": "Pourquoi voulez-vous participer à MuslimHacks ? Qu'espérez-vous apprendre, créer ou apporter ?",
+      "motivationPlaceholder": "Soyez honnête. Quelques phrases suffisent."
+    },
+    "section4": {
+      "title": "Questions facultatives",
+      "pastProject": "Parlez-nous de quelque chose que vous êtes fier d'avoir accompli. De quoi s'agissait-il, et pourquoi est-ce important pour vous ?",
+      "pastProjectPlaceholder": "École, travail, personnel, bénévolat — tout ce qui compte pour vous.",
+      "interests": "Si vous aviez l'occasion de créer quelque chose qui profite à l'Oumma, que créeriez-vous, et pourquoi ?",
+      "interestsPlaceholder": "Une idée, un problème que vous résoudriez, ou une piste que vous exploreriez.",
+      "community": "Avez-vous fait du bénévolat ou contribué à votre communauté ? Parlez-nous-en.",
+      "communityPlaceholder": "Mosquée, école, événements, en ligne, quartier — tout ce que vous avez fait."
+    },
+    "errors": {
+      "fullNameRequired": "Le nom complet est requis.",
+      "phoneInvalid": "Entrez un numéro de téléphone valide. Chiffres seulement.",
+      "phoneLetters": "Les numéros de téléphone ne peuvent pas contenir de lettres.",
+      "phoneTooShort": "Le numéro de téléphone est trop court.",
+      "phoneTooLong": "Le numéro de téléphone est trop long.",
+      "genderRequired": "Sélectionnez Homme ou Femme.",
+      "institutionRequired": "L'école / université est requise.",
+      "githubInvalid": "Utilisez un lien comme github.com/votrenomdusager.",
+      "linkedinInvalid": "Utilisez un lien comme linkedin.com/in/votrenom.",
+      "dietaryRequired": "Les informations alimentaires sont requises (indiquez « aucune » si rien à signaler).",
+      "yesNoRequired": "Sélectionnez oui ou non.",
+      "hackathonCountRequired": "Indiquez combien de hackathons vous avez faits.",
+      "fieldRequired": "Ce champ est requis."
+    },
+    "toasts": {
+      "resumeMustBePdf": "Le CV doit être un PDF.",
+      "resumeTooLarge": "Le CV doit faire 5 Mo ou moins.",
+      "loadFailed": "Échec du chargement de la candidature",
+      "submitSuccess": "Candidature soumise ! Nous vous contacterons bientôt.",
+      "submitError": "Une erreur s'est produite lors de l'envoi de votre candidature. Veuillez réessayer."
+    }
+  }
+}

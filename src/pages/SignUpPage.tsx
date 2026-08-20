@@ -1,8 +1,11 @@
 import { SignUp } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { BRAND, StarPattern, GLOBAL_CSS } from "../components/Shared";
 
-const SignUpPage = () => (
+const SignUpPage = () => {
+  const { t } = useTranslation();
+  return (
   <div
     className="min-h-screen font-sans flex flex-col items-center justify-center relative px-4 py-12"
     style={{
@@ -66,15 +69,13 @@ const SignUpPage = () => (
             color: BRAND.cream,
           }}
         >
-          Create your account to apply
+          {t("signUp.title")}
         </h1>
         <p
           className="font-sans text-sm leading-relaxed"
           style={{ color: BRAND.creamMuted }}
         >
-          You&apos;ll need a quick account to start your MuslimHacks
-          application, and it takes you straight to the form. Already have one?
-          Use &ldquo;Sign in&rdquo; below.
+          {t("signUp.body")}
         </p>
       </div>
       <SignUp
@@ -88,11 +89,12 @@ const SignUpPage = () => (
           to="/"
           className="hover:opacity-70 transition-opacity underline underline-offset-4"
         >
-          ← Back to home
+          {t("signUp.backHome")}
         </Link>
       </p>
     </div>
   </div>
-);
+  );
+};
 
 export default SignUpPage;

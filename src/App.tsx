@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
+import { frFR } from "@clerk/localizations";
+import { useTranslation } from "react-i18next";
 import { clerkAppearance } from "@/lib/clerkTheme";
 import { GoogleReCaptchaProvider } from "react-google-recaptcha-v3";
 import { RequireAdmin, RequireAuth } from "@/components/auth/RequireAuth";
@@ -27,19 +29,22 @@ const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || "";
 
 const App = () => {
+  const { t, i18n } = useTranslation();
+
   if (!clerkPublishableKey) {
     return (
       <div className="min-h-screen flex items-center justify-center p-8 text-center">
-        <p>
-          Missing VITE_CLERK_PUBLISHABLE_KEY. Copy .env.example to .env and add
-          your Clerk key.
-        </p>
+        <p>{t("app.missingClerkKey")}</p>
       </div>
     );
   }
 
   return (
-    <ClerkProvider publishableKey={clerkPublishableKey} appearance={clerkAppearance}>
+    <ClerkProvider
+      publishableKey={clerkPublishableKey}
+      appearance={clerkAppearance}
+      localization={i18n.language === "fr" ? frFR : undefined}
+    >
       <QueryClientProvider client={queryClient}>
         <AuthTokenBridge />
         <ApplicationButtonProvider>
