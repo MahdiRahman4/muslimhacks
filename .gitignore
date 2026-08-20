@@ -32,3 +32,4 @@ worker/.wrangler/
 .env.local
 .env.*.local
 !.env.example
+.claude
