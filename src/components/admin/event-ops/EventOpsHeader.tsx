@@ -1,50 +1,35 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { BRAND } from "@/components/Shared";
+import muslimHacksLogo from "@/assets/muslimhacks-logo-white.svg";
+import Profile from "@/components/ui/profile";
 
-interface EventOpsHeaderProps {
-  email: string;
-  activeSection: "event-ops" | "exports";
-  onSectionChange: (section: "event-ops" | "exports") => void;
-  onLogout: () => void;
-}
-
-export function EventOpsHeader({
-  email,
-  activeSection,
-  onSectionChange,
-  onLogout,
-}: EventOpsHeaderProps) {
+export function EventOpsHeader() {
   return (
-    <header className="border-b bg-background sticky top-0 z-10">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 p-4">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Staff tool</p>
-          <h1 className="text-xl font-semibold">MuslimHacks 2026 — Event Ops</h1>
-          <p className="text-sm text-muted-foreground">{email}</p>
+    <header
+      className="sticky top-0 z-50 border-b"
+      style={{ background: "rgba(6,15,32,0.95)", backdropFilter: "blur(14px)", borderColor: "rgba(221,168,83,0.1)" }}
+    >
+      <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link to="/">
+            <img src={muslimHacksLogo} alt="MuslimHacks" className="h-6 w-auto object-contain" />
+          </Link>
+          <div className="h-4 w-px" style={{ background: "rgba(221,168,83,0.2)" }} />
+          <span className="font-sans text-xs uppercase tracking-[0.22em] font-medium" style={{ color: BRAND.sand }}>
+            Admin
+          </span>
         </div>
 
-        <nav className="flex items-center gap-2">
-          <Button
-            variant={activeSection === "event-ops" ? "default" : "outline"}
-            size="sm"
-            onClick={() => onSectionChange("event-ops")}
+        <div className="flex items-center gap-4">
+          {/* <Link
+            to="/admin/applications"
+            className="font-sans text-xs font-medium transition-opacity hover:opacity-70"
+            style={{ color: BRAND.sand }}
           >
-            Event Ops
-          </Button>
-          <Button
-            variant={activeSection === "exports" ? "default" : "outline"}
-            size="sm"
-            onClick={() => onSectionChange("exports")}
-          >
-            Exports
-          </Button>
-          <Link to="/admin/applications" className="text-sm underline px-2">
             Applications
-          </Link>
-          <Button variant="outline" size="sm" onClick={onLogout}>
-            Sign out
-          </Button>
-        </nav>
+          </Link> */}
+          <Profile />
+        </div>
       </div>
     </header>
   );

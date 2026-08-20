@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { BRAND, GoldText, Eyebrow, GLOBAL_CSS } from "@/components/Shared";
 import {
   fetchEventOpsSummary,
   fetchParticipants,
@@ -37,8 +38,13 @@ const DEFAULT_FILTERS: ParticipantFilterValues = {
   sortOrder: "desc",
 };
 
+const SECTION_TABS: { key: "event-ops" | "exports"; label: string }[] = [
+  { key: "event-ops", label: "Event Ops" },
+  { key: "exports", label: "Exports" },
+];
+
 const EventOpsDashboardPage = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [activeSection, setActiveSection] = useState<"event-ops" | "exports">("event-ops");
 
   const [summary, setSummary] = useState<EventOpsSummary | null>(null);
@@ -124,21 +130,59 @@ const EventOpsDashboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <EventOpsHeader
-        email={user.email}
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-        onLogout={logout}
-      />
+    <div className="min-h-screen font-sans" style={{ background: BRAND.navyDeep, color: BRAND.cream }}>
+      <style>{GLOBAL_CSS}</style>
 
-      <main className="mx-auto max-w-7xl space-y-6 p-4 md:p-6">
+      <EventOpsHeader />
+
+      <main className="max-w-7xl mx-auto px-6 py-10 flex flex-col gap-8">
+        <div className="flex flex-col gap-1">
+          <Eyebrow>Admin</Eyebrow>
+          <h1
+            className="font-display font-black leading-tight"
+            style={{ fontSize: "clamp(1.75rem, 3vw, 2.5rem)", letterSpacing: "-0.02em" }}
+          >
+            Event <GoldText>Operations</GoldText>
+          </h1>
+          <p className="font-intimate text-base" style={{ fontStyle: "italic", color: BRAND.creamMuted }}>
+            Check participants in, track meal claims, and export data.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {SECTION_TABS.map((t) => {
+            const active = activeSection === t.key;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setActiveSection(t.key)}
+                className="px-4 py-1.5 rounded-full font-sans text-xs font-medium transition-all duration-200 focus-visible:ring-2 whitespace-nowrap"
+                style={
+                  active
+                    ? {
+                        background: "rgba(221,168,83,0.12)",
+                        border: "1px solid rgba(221,168,83,0.4)",
+                        color: BRAND.gold,
+                      }
+                    : {
+                        background: "rgba(245,238,227,0.04)",
+                        border: "1px solid rgba(245,238,227,0.08)",
+                        color: BRAND.sand,
+                      }
+                }
+              >
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+
         {activeSection === "event-ops" ? (
           <>
             <SummaryStrip summary={summary} loading={summaryLoading} error={summaryError} />
 
             <div className="grid gap-6 lg:grid-cols-3">
-              <div className="space-y-4 lg:col-span-2">
+              <div className="flex flex-col gap-4 lg:col-span-2">
                 <ParticipantFilters values={filters} onChange={handleFiltersChange} />
                 <ParticipantsTable
                   participants={participants}
@@ -153,7 +197,7 @@ const EventOpsDashboardPage = () => {
                 />
               </div>
 
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <CheckinCard onSuccess={handleCheckinSuccess} />
                 <ParticipantDetailPanel
                   key={`${selectedId ?? "none"}-${detailKey}`}

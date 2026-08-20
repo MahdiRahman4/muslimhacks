@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { BRAND } from "@/components/Shared";
 import {
   claimParticipantMeal,
   fetchParticipantDetail,
@@ -24,6 +21,27 @@ function formatTime(ms: number | null) {
 
 function formatMealLabel(key: MealKey): string {
   return key.replace(/_/g, " ");
+}
+
+const cardStyle = {
+  background: "rgba(245,238,227,0.03)",
+  border: "1px solid rgba(221,168,83,0.1)",
+};
+
+function CheckinBadge({ status }: { status: ParticipantDetail["checkin_status"] }) {
+  const checkedIn = status === "checked_in";
+  return (
+    <span
+      className="inline-flex items-center px-2.5 py-1 rounded-full font-sans text-xs font-semibold whitespace-nowrap"
+      style={
+        checkedIn
+          ? { color: "#5FA877", background: "rgba(95,168,119,0.12)", border: "1px solid rgba(95,168,119,0.35)" }
+          : { color: BRAND.sand, background: "rgba(245,238,227,0.06)", border: "1px solid rgba(245,238,227,0.12)" }
+      }
+    >
+      {checkedIn ? "Checked in" : "Not checked in"}
+    </span>
+  );
 }
 
 export function ParticipantDetailPanel({
@@ -63,16 +81,14 @@ export function ParticipantDetailPanel({
 
   if (!participantId) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Participant detail</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Select a participant from the table to view details and claim meals.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl p-6 flex flex-col gap-2" style={cardStyle}>
+        <h2 className="font-display font-bold text-lg" style={{ letterSpacing: "-0.01em" }}>
+          Participant detail
+        </h2>
+        <p className="font-sans text-sm" style={{ color: BRAND.sand }}>
+          Select a participant from the table to view details and claim meals.
+        </p>
+      </div>
     );
   }
 
@@ -99,86 +115,109 @@ export function ParticipantDetailPanel({
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base">Participant detail</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {loading && <p className="text-sm text-muted-foreground">Loading…</p>}
+    <div className="rounded-2xl p-6 flex flex-col gap-4" style={cardStyle}>
+      <h2 className="font-display font-bold text-lg" style={{ letterSpacing: "-0.01em" }}>
+        Participant detail
+      </h2>
 
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+      {loading && (
+        <p className="font-sans text-sm" style={{ color: BRAND.sand }}>
+          Loading…
+        </p>
+      )}
 
-        {detail && !loading && (
-          <>
-            <div className="space-y-1 text-sm">
-              <p className="text-lg font-semibold">{detail.full_name}</p>
-              <p>{detail.email}</p>
-              <p>Gender: {detail.gender || "—"}</p>
-              <p className="font-mono">Code: {detail.public_checkin_code}</p>
-              <p>
-                Status:{" "}
-                <Badge variant={detail.checkin_status === "checked_in" ? "default" : "secondary"}>
-                  {detail.checkin_status.replace("_", " ")}
-                </Badge>
-              </p>
-              <p>Checked in: {formatTime(detail.checked_in_at)}</p>
-              <p className="text-xs text-muted-foreground break-all">
-                By: {detail.checked_in_by || "—"}
-              </p>
+      {error && (
+        <div
+          className="rounded-lg px-3.5 py-2.5 font-sans text-sm"
+          style={{ background: "rgba(196,112,112,0.1)", border: "1px solid rgba(196,112,112,0.3)", color: "#C47070" }}
+        >
+          {error}
+        </div>
+      )}
+
+      {detail && !loading && (
+        <>
+          <div className="flex flex-col gap-1.5">
+            <p className="font-display text-lg font-bold" style={{ color: BRAND.cream }}>{detail.full_name}</p>
+            <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>{detail.email}</p>
+            <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>Gender: {detail.gender || "—"}</p>
+            <p className="font-mono text-sm" style={{ color: BRAND.sand }}>Code: {detail.public_checkin_code}</p>
+            <div className="flex items-center gap-2">
+              <span className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>Status:</span>
+              <CheckinBadge status={detail.checkin_status} />
             </div>
+            <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>
+              Checked in: {formatTime(detail.checked_in_at)}
+            </p>
+            <p className="font-sans text-xs break-all" style={{ color: BRAND.sand }}>
+              By: {detail.checked_in_by || "—"}
+            </p>
+          </div>
 
-            <div>
-              <p className="mb-2 text-sm font-medium">Meals claimed</p>
-              {detail.meals.length === 0 ? (
-                <p className="text-sm text-muted-foreground">None yet</p>
-              ) : (
-                <ul className="space-y-1 text-sm">
-                  {detail.meals.map((meal) => (
-                    <li key={meal.id} className="flex justify-between gap-2">
-                      <span className="capitalize">{formatMealLabel(meal.meal_key)}</span>
-                      <span className="text-muted-foreground">{formatTime(meal.claimed_at)}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
-            <div>
-              <p className="mb-2 text-sm font-medium">Claim meal</p>
-              <div className="grid grid-cols-2 gap-2">
-                {MEAL_KEYS.map((key) => {
-                  const claimed = claimedKeys.has(key);
-                  return (
-                    <Button
-                      key={key}
-                      variant={claimed ? "secondary" : "outline"}
-                      size="sm"
-                      disabled={claimed || claimingMeal !== null}
-                      onClick={() => void handleClaim(key)}
-                    >
-                      {claimingMeal === key
-                        ? "Claiming…"
-                        : claimed
-                          ? `${formatMealLabel(key)} ✓`
-                          : formatMealLabel(key)}
-                    </Button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {mealError && (
-              <Alert variant="destructive">
-                <AlertDescription>{mealError}</AlertDescription>
-              </Alert>
+          <div>
+            <p className="mb-2 font-sans text-xs uppercase tracking-[0.2em]" style={{ color: BRAND.gold, opacity: 0.7 }}>
+              Meals claimed
+            </p>
+            {detail.meals.length === 0 ? (
+              <p className="font-sans text-sm" style={{ color: BRAND.sand }}>None yet</p>
+            ) : (
+              <ul className="flex flex-col gap-1.5">
+                {detail.meals.map((meal) => (
+                  <li key={meal.id} className="flex justify-between gap-2 font-sans text-sm">
+                    <span className="capitalize" style={{ color: BRAND.cream }}>{formatMealLabel(meal.meal_key)}</span>
+                    <span style={{ color: BRAND.sand }}>{formatTime(meal.claimed_at)}</span>
+                  </li>
+                ))}
+              </ul>
             )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+          </div>
+
+          <div>
+            <p className="mb-2 font-sans text-xs uppercase tracking-[0.2em]" style={{ color: BRAND.gold, opacity: 0.7 }}>
+              Claim meal
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {MEAL_KEYS.map((key) => {
+                const claimed = claimedKeys.has(key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    disabled={claimed || claimingMeal !== null}
+                    onClick={() => void handleClaim(key)}
+                    className="px-3 py-2 rounded-lg font-sans text-xs font-medium capitalize transition-all duration-200 hover:opacity-80 disabled:cursor-not-allowed focus-visible:ring-2"
+                    style={
+                      claimed
+                        ? { background: "rgba(95,168,119,0.12)", border: "1px solid rgba(95,168,119,0.35)", color: "#5FA877" }
+                        : {
+                            background: "rgba(245,238,227,0.06)",
+                            border: "1px solid rgba(221,168,83,0.2)",
+                            color: BRAND.cream,
+                            opacity: claimingMeal !== null ? 0.6 : 1,
+                          }
+                    }
+                  >
+                    {claimingMeal === key
+                      ? "Claiming…"
+                      : claimed
+                        ? `${formatMealLabel(key)} ✓`
+                        : formatMealLabel(key)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {mealError && (
+            <div
+              className="rounded-lg px-3.5 py-2.5 font-sans text-sm"
+              style={{ background: "rgba(196,112,112,0.1)", border: "1px solid rgba(196,112,112,0.3)", color: "#C47070" }}
+            >
+              {mealError}
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 }

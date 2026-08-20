@@ -1,13 +1,5 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Search } from "lucide-react";
+import { BRAND } from "@/components/Shared";
 
 export interface ParticipantFilterValues {
   search: string;
@@ -22,84 +14,80 @@ interface ParticipantFiltersProps {
   onChange: (values: ParticipantFilterValues) => void;
 }
 
+const selectStyle = {
+  background: "rgba(245,238,227,0.06)",
+  border: "1px solid rgba(221,168,83,0.18)",
+  outline: "none",
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23C9BBA8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+  backgroundRepeat: "no-repeat",
+  backgroundPosition: "right 12px center",
+} as const;
+
 export function ParticipantFilters({ values, onChange }: ParticipantFiltersProps) {
   const update = (patch: Partial<ParticipantFilterValues>) => {
     onChange({ ...values, ...patch });
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">Filters</CardTitle>
-      </CardHeader>
-      <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <div className="space-y-2 sm:col-span-2">
-          <Label htmlFor="search">Search</Label>
-          <Input
-            id="search"
-            placeholder="Name or email"
-            value={values.search}
-            onChange={(e) => update({ search: e.target.value })}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Check-in</Label>
-          <Select
-            value={values.checkedIn}
-            onValueChange={(v) => update({ checkedIn: v as ParticipantFilterValues["checkedIn"] })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="true">Checked in</SelectItem>
-              <SelectItem value="false">Not checked in</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Gender</Label>
-          <Select
-            value={values.gender}
-            onValueChange={(v) => update({ gender: v as ParticipantFilterValues["gender"] })}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="Male">Male</SelectItem>
-              <SelectItem value="Female">Female</SelectItem>
-              <SelectItem value="Other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Sort</Label>
-          <Select
-            value={`${values.sortBy}:${values.sortOrder}`}
-            onValueChange={(v) => {
-              const [sortBy, sortOrder] = v.split(":") as [
-                ParticipantFilterValues["sortBy"],
-                ParticipantFilterValues["sortOrder"],
-              ];
-              update({ sortBy, sortOrder });
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="created_at:desc">Newest first</SelectItem>
-              <SelectItem value="created_at:asc">Oldest first</SelectItem>
-              <SelectItem value="checked_in_at:desc">Checked in (recent)</SelectItem>
-              <SelectItem value="checked_in_at:asc">Checked in (oldest)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardContent>
-    </Card>
+    <div
+      className="rounded-2xl p-5 flex flex-col gap-3"
+      style={{ background: "rgba(245,238,227,0.03)", border: "1px solid rgba(221,168,83,0.1)" }}
+    >
+      <div className="relative">
+        <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: BRAND.sand }} />
+        <input
+          type="search"
+          placeholder="Search by name or email…"
+          value={values.search}
+          onChange={(e) => update({ search: e.target.value })}
+          className="w-full pl-9 pr-4 py-2.5 font-sans text-sm rounded-lg focus-visible:ring-2 focus-visible:ring-offset-1"
+          style={{ background: "rgba(245,238,227,0.06)", border: "1px solid rgba(221,168,83,0.18)", color: BRAND.cream, outline: "none" }}
+        />
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <select
+          value={values.checkedIn}
+          onChange={(e) => update({ checkedIn: e.target.value as ParticipantFilterValues["checkedIn"] })}
+          className="flex-1 px-4 py-2.5 font-sans text-sm rounded-lg focus-visible:ring-2 appearance-none"
+          style={{ ...selectStyle, color: BRAND.cream }}
+        >
+          <option value="all" style={{ background: BRAND.navy }}>All check-in statuses</option>
+          <option value="true" style={{ background: BRAND.navy }}>Checked in</option>
+          <option value="false" style={{ background: BRAND.navy }}>Not checked in</option>
+        </select>
+
+        <select
+          value={values.gender}
+          onChange={(e) => update({ gender: e.target.value as ParticipantFilterValues["gender"] })}
+          className="flex-1 px-4 py-2.5 font-sans text-sm rounded-lg focus-visible:ring-2 appearance-none"
+          style={{ ...selectStyle, color: BRAND.cream }}
+        >
+          <option value="all" style={{ background: BRAND.navy }}>All genders</option>
+          <option value="Male" style={{ background: BRAND.navy }}>Male</option>
+          <option value="Female" style={{ background: BRAND.navy }}>Female</option>
+          <option value="Other" style={{ background: BRAND.navy }}>Other</option>
+        </select>
+
+        <select
+          value={`${values.sortBy}:${values.sortOrder}`}
+          onChange={(e) => {
+            const [sortBy, sortOrder] = e.target.value.split(":") as [
+              ParticipantFilterValues["sortBy"],
+              ParticipantFilterValues["sortOrder"],
+            ];
+            update({ sortBy, sortOrder });
+          }}
+          className="flex-1 px-4 py-2.5 font-sans text-sm rounded-lg focus-visible:ring-2 appearance-none"
+          style={{ ...selectStyle, color: BRAND.cream }}
+        >
+          <option value="created_at:desc" style={{ background: BRAND.navy }}>Newest first</option>
+          <option value="created_at:asc" style={{ background: BRAND.navy }}>Oldest first</option>
+          <option value="checked_in_at:desc" style={{ background: BRAND.navy }}>Checked in (recent)</option>
+          <option value="checked_in_at:asc" style={{ background: BRAND.navy }}>Checked in (oldest)</option>
+        </select>
+      </div>
+    </div>
   );
 }
 

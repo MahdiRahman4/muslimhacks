@@ -14,7 +14,7 @@ export default function Profile() {
           {/* Conditional mapping without using wrapper Fragments (<> </>) */}
           {isAdmin ? (
             <UserButton.Link
-              label="Admin"
+              label="Student Applications"
               labelIcon={<Lock size={imgSize} />}
               href="/admin/applications"
             />

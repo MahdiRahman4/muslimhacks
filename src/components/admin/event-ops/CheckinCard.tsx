@@ -1,9 +1,5 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { BRAND } from "@/components/Shared";
 import { checkinByCode, getEventOpsErrorMessage, EventOpsApiError } from "@/lib/event-ops-api";
 import type { ParticipantSummary } from "@/types/event-ops";
 import { QrCheckinScanner } from "./QrCheckinScanner";
@@ -13,6 +9,11 @@ interface CheckinCardProps {
 }
 
 type CheckinMode = "type" | "scan";
+
+const cardStyle = {
+  background: "rgba(245,238,227,0.03)",
+  border: "1px solid rgba(221,168,83,0.1)",
+};
 
 export function CheckinCard({ onSuccess }: CheckinCardProps) {
   const [mode, setMode] = useState<CheckinMode>("scan");
@@ -58,70 +59,98 @@ export function CheckinCard({ onSuccess }: CheckinCardProps) {
   };
 
   return (
-    <Card>
-      <CardHeader className="space-y-3">
-        <CardTitle className="text-base">Check-in</CardTitle>
-        <div className="flex gap-2">
-          <Button
+    <div className="rounded-2xl p-6 flex flex-col gap-4" style={cardStyle}>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="font-display font-bold text-lg" style={{ letterSpacing: "-0.01em" }}>
+          Check-in
+        </h2>
+        <div className="flex gap-1.5">
+          <button
             type="button"
-            size="sm"
-            variant={mode === "scan" ? "default" : "outline"}
             onClick={() => setMode("scan")}
+            className="px-3 py-1.5 rounded-full font-sans text-xs font-medium transition-all duration-200 focus-visible:ring-2 whitespace-nowrap"
+            style={
+              mode === "scan"
+                ? { background: "rgba(221,168,83,0.12)", border: "1px solid rgba(221,168,83,0.4)", color: BRAND.gold }
+                : { background: "rgba(245,238,227,0.04)", border: "1px solid rgba(245,238,227,0.08)", color: BRAND.sand }
+            }
           >
             Scan QR
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
-            size="sm"
-            variant={mode === "type" ? "default" : "outline"}
             onClick={() => setMode("type")}
+            className="px-3 py-1.5 rounded-full font-sans text-xs font-medium transition-all duration-200 focus-visible:ring-2 whitespace-nowrap"
+            style={
+              mode === "type"
+                ? { background: "rgba(221,168,83,0.12)", border: "1px solid rgba(221,168,83,0.4)", color: BRAND.gold }
+                : { background: "rgba(245,238,227,0.04)", border: "1px solid rgba(245,238,227,0.08)", color: BRAND.sand }
+            }
           >
             Type code
-          </Button>
+          </button>
         </div>
-      </CardHeader>
-      <CardContent>
-        {mode === "scan" ? (
-          <QrCheckinScanner onSuccess={handleScanSuccess} disabled={submitting} />
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="checkin-code">Public check-in code</Label>
-              <Input
-                id="checkin-code"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="e.g. SM53H769"
-                className="font-mono"
-                disabled={submitting}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={submitting || !code.trim()}>
-              {submitting ? "Checking in…" : "Check in"}
-            </Button>
-          </form>
-        )}
+      </div>
 
-        {mode === "type" && success && (
-          <Alert className="mt-4">
-            <AlertDescription>
-              <strong>{success.full_name}</strong> — {success.checkin_status.replace("_", " ")}
-            </AlertDescription>
-          </Alert>
-        )}
+      {mode === "scan" ? (
+        <QrCheckinScanner onSuccess={handleScanSuccess} disabled={submitting} />
+      ) : (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="checkin-code" className="font-sans text-xs uppercase tracking-[0.18em]" style={{ color: BRAND.sand }}>
+              Public check-in code
+            </label>
+            <input
+              id="checkin-code"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              placeholder="e.g. SM53H769"
+              disabled={submitting}
+              className="w-full px-3.5 py-2.5 rounded-lg font-mono text-sm focus:outline-none placeholder:opacity-40 disabled:opacity-60"
+              style={{ background: "rgba(245,238,227,0.06)", border: "1px solid rgba(221,168,83,0.2)", color: BRAND.cream }}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={submitting || !code.trim()}
+            className="w-full py-3 rounded-full font-sans text-sm font-semibold uppercase tracking-[0.16em] transition-all duration-200 hover:brightness-110 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 disabled:opacity-60"
+            style={{
+              background: `linear-gradient(135deg, ${BRAND.goldSoft} 0%, ${BRAND.gold} 100%)`,
+              color: BRAND.navyDeep,
+              boxShadow: "0 0 18px rgba(221,168,83,0.25), 0 4px 12px rgba(221,168,83,0.15)",
+            }}
+          >
+            {submitting ? "Checking in…" : "Check in"}
+          </button>
+        </form>
+      )}
 
-        {mode === "type" && info && (
-          <Alert className="mt-4">
-            <AlertDescription>{info}</AlertDescription>
-          </Alert>
-        )}
+      {mode === "type" && success && (
+        <div
+          className="rounded-lg px-3.5 py-2.5 font-sans text-sm"
+          style={{ background: "rgba(95,168,119,0.1)", border: "1px solid rgba(95,168,119,0.3)", color: "#5FA877" }}
+        >
+          <strong style={{ color: BRAND.cream }}>{success.full_name}</strong> — {success.checkin_status.replace("_", " ")}
+        </div>
+      )}
 
-        {mode === "type" && error && (
-          <Alert variant="destructive" className="mt-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-      </CardContent>
-    </Card>
+      {mode === "type" && info && (
+        <div
+          className="rounded-lg px-3.5 py-2.5 font-sans text-sm"
+          style={{ background: "rgba(221,168,83,0.08)", border: "1px solid rgba(221,168,83,0.25)", color: BRAND.goldSoft }}
+        >
+          {info}
+        </div>
+      )}
+
+      {mode === "type" && error && (
+        <div
+          className="rounded-lg px-3.5 py-2.5 font-sans text-sm"
+          style={{ background: "rgba(196,112,112,0.1)", border: "1px solid rgba(196,112,112,0.3)", color: "#C47070" }}
+        >
+          {error}
+        </div>
+      )}
+    </div>
   );
 }
