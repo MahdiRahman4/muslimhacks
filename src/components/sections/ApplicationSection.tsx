@@ -997,6 +997,7 @@ export default function ApplicationSection() {
                   readOnly={readOnly}
                   error={errors.institution}
                 />
+                <HelperText>{t("apply.schoolHelp")}</HelperText>
                 <FieldError message={errors.institution} />
               </Field>
             </div>
