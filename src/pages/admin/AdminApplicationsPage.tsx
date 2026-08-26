@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Search, Download, ChevronLeft, ChevronRight,
-  ChevronUp, ChevronDown, ChevronsUpDown, SlidersHorizontal,
+  ChevronUp, ChevronDown, ChevronsUpDown, SlidersHorizontal, Columns3,
 } from "lucide-react";
 import { BRAND, GoldText, Eyebrow, GLOBAL_CSS } from "@/components/Shared";
 import muslimHacksLogo from "@/assets/muslimhacks-logo-white.svg";
@@ -64,6 +64,70 @@ const STATUS_TABS: { key: ApplicationStatus | "all"; label: string }[] = [
   { key: "rejected", label: "Rejected" },
 ];
 
+const ANSWER_COLUMNS = [
+  { key: "dietary_restrictions", label: "Dietary / allergies" },
+  { key: "accessibility", label: "Accessibility" },
+  { key: "first_hackathon", label: "First hackathon" },
+  { key: "hackathon_count", label: "Hackathon count" },
+  { key: "cs_career", label: "CS / tech" },
+  { key: "school", label: "School" },
+  { key: "phone", label: "Phone" },
+  { key: "motivation", label: "Why attend" },
+  { key: "past_project", label: "Proud of" },
+  { key: "interests", label: "Ummah idea" },
+  { key: "community", label: "Volunteering" },
+] as const;
+
+type AnswerColumnKey = (typeof ANSWER_COLUMNS)[number]["key"];
+
+const ANSWER_COLUMNS_STORAGE_KEY = "mh-admin-app-answer-columns";
+
+function loadAnswerColumns(): AnswerColumnKey[] {
+  try {
+    const raw = localStorage.getItem(ANSWER_COLUMNS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    const allowed = new Set(ANSWER_COLUMNS.map((col) => col.key));
+    return parsed.filter((key): key is AnswerColumnKey => typeof key === "string" && allowed.has(key as AnswerColumnKey));
+  } catch {
+    return [];
+  }
+}
+
+function formatYesNo(value: boolean | null | undefined): string {
+  if (value == null) return "—";
+  return value ? "Yes" : "No";
+}
+
+function formatAnswer(row: AdminApplicationSummary, key: AnswerColumnKey): string {
+  switch (key) {
+    case "first_hackathon":
+      return formatYesNo(row.first_hackathon);
+    case "cs_career":
+      return formatYesNo(row.cs_career);
+    case "hackathon_count":
+      if (row.first_hackathon === true) return "0 (first)";
+      return row.hackathon_count == null ? "—" : String(row.hackathon_count);
+    case "school":
+      return row.school?.trim() || "—";
+    case "phone":
+      return row.phone?.trim() || "—";
+    case "dietary_restrictions":
+      return row.dietary_restrictions?.trim() || "—";
+    case "accessibility":
+      return row.accessibility?.trim() || "—";
+    case "motivation":
+      return row.motivation?.trim() || "—";
+    case "past_project":
+      return row.past_project?.trim() || "—";
+    case "interests":
+      return row.interests?.trim() || "—";
+    case "community":
+      return row.community?.trim() || "—";
+  }
+}
+
 const selectStyle = {
   background: "rgba(245,238,227,0.06)",
   border: "1px solid rgba(221,168,83,0.18)",
@@ -91,6 +155,15 @@ const AdminApplicationsPage = () => {
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
+  const [answerColumns, setAnswerColumns] = useState<AnswerColumnKey[]>(loadAnswerColumns);
+  const [answerPickerOpen, setAnswerPickerOpen] = useState(false);
+  const answerPickerRef = useRef<HTMLDivElement>(null);
+
+  const visibleAnswerColumns = useMemo(
+    () => ANSWER_COLUMNS.filter((col) => answerColumns.includes(col.key)),
+    [answerColumns],
+  );
+
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +175,21 @@ const AdminApplicationsPage = () => {
     }, 300);
     return () => clearTimeout(handle);
   }, [searchInput]);
+
+  useEffect(() => {
+    localStorage.setItem(ANSWER_COLUMNS_STORAGE_KEY, JSON.stringify(answerColumns));
+  }, [answerColumns]);
+
+  useEffect(() => {
+    if (!answerPickerOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!answerPickerRef.current?.contains(event.target as Node)) {
+        setAnswerPickerOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [answerPickerOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -191,6 +279,12 @@ const AdminApplicationsPage = () => {
       setSortDir(col === "created_at" ? "desc" : "asc");
     }
     setPage(1);
+  }
+
+  function toggleAnswerColumn(key: AnswerColumnKey) {
+    setAnswerColumns((current) =>
+      current.includes(key) ? current.filter((item) => item !== key) : [...current, key],
+    );
   }
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -391,6 +485,79 @@ const AdminApplicationsPage = () => {
               </select>
             )}
 
+            {view === "applications" && (
+              <div className="relative" ref={answerPickerRef}>
+                <button
+                  type="button"
+                  onClick={() => setAnswerPickerOpen((open) => !open)}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-sans text-sm transition-all duration-200 hover:opacity-80 focus-visible:ring-2 whitespace-nowrap"
+                  style={{
+                    background: answerColumns.length > 0 ? "rgba(221,168,83,0.12)" : "rgba(245,238,227,0.06)",
+                    border: `1px solid ${answerColumns.length > 0 ? "rgba(221,168,83,0.4)" : "rgba(221,168,83,0.18)"}`,
+                    color: answerColumns.length > 0 ? BRAND.gold : BRAND.cream,
+                    minWidth: "160px",
+                  }}
+                >
+                  <Columns3 size={14} />
+                  {answerColumns.length === 0 ? "Show answers" : `${answerColumns.length} answer${answerColumns.length === 1 ? "" : "s"}`}
+                </button>
+                {answerPickerOpen && (
+                  <div
+                    className="absolute right-0 z-20 mt-2 w-[min(22rem,calc(100vw-3rem))] rounded-xl p-3 flex flex-col gap-2"
+                    style={{
+                      background: BRAND.navy,
+                      border: "1px solid rgba(221,168,83,0.22)",
+                      boxShadow: "0 18px 40px rgba(6,15,32,0.55)",
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-2 px-1">
+                      <p className="font-sans text-xs uppercase tracking-[0.18em]" style={{ color: BRAND.sand }}>
+                        Questions
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setAnswerColumns(ANSWER_COLUMNS.map((col) => col.key))}
+                          className="font-sans text-xs hover:opacity-80"
+                          style={{ color: BRAND.goldSoft }}
+                        >
+                          All
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAnswerColumns([])}
+                          className="font-sans text-xs hover:opacity-80"
+                          style={{ color: BRAND.goldSoft }}
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                    {ANSWER_COLUMNS.map((col) => {
+                      const checked = answerColumns.includes(col.key);
+                      return (
+                        <label
+                          key={col.key}
+                          className="flex items-center gap-3 rounded-lg px-3 py-2 cursor-pointer"
+                          style={{ background: checked ? "rgba(221,168,83,0.08)" : "transparent" }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggleAnswerColumn(col.key)}
+                            className="accent-[#DDA853]"
+                          />
+                          <span className="font-sans text-sm" style={{ color: BRAND.cream }}>
+                            {col.label}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
             <select
               value={`${sortKey}:${sortDir}`}
               onChange={(e) => {
@@ -477,22 +644,36 @@ const AdminApplicationsPage = () => {
                 </tbody>
               </table>
             ) : (
-              <table className="w-full table-fixed min-w-[880px]">
-                <colgroup>
-                  <col style={{ width: "18%" }} />
-                  <col style={{ width: "24%" }} />
-                  <col style={{ width: "18%" }} />
-                  <col style={{ width: "10%" }} />
-                  <col style={{ width: "12%" }} />
-                  <col style={{ width: "13%" }} />
-                  <col style={{ width: "5%" }} />
-                </colgroup>
+              <table
+                className="w-full min-w-[880px]"
+                style={visibleAnswerColumns.length === 0 ? undefined : { minWidth: 880 + visibleAnswerColumns.length * 220 }}
+              >
+                {visibleAnswerColumns.length === 0 && (
+                  <colgroup>
+                    <col style={{ width: "18%" }} />
+                    <col style={{ width: "24%" }} />
+                    <col style={{ width: "18%" }} />
+                    <col style={{ width: "10%" }} />
+                    <col style={{ width: "12%" }} />
+                    <col style={{ width: "13%" }} />
+                    <col style={{ width: "5%" }} />
+                  </colgroup>
+                )}
                 <thead style={{ background: "rgba(75,46,99,0.2)", borderBottom: "1px solid rgba(221,168,83,0.1)" }}>
                   <tr>
                     <TH col="full_name">Name</TH>
                     <TH col="email">Email</TH>
                     <th className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium" style={{ color: BRAND.sand }}>Program</th>
                     <TH col="gender">Gender</TH>
+                    {visibleAnswerColumns.map((col) => (
+                      <th
+                        key={col.key}
+                        className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium whitespace-nowrap"
+                        style={{ color: BRAND.gold }}
+                      >
+                        {col.label}
+                      </th>
+                    ))}
                     <TH col="status">Status</TH>
                     <TH col="created_at">Submitted</TH>
                     <th className="px-4 py-3" />
@@ -501,7 +682,7 @@ const AdminApplicationsPage = () => {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-16 text-center">
+                      <td colSpan={7 + visibleAnswerColumns.length} className="px-6 py-16 text-center">
                         <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
                           Loading applications…
                         </p>
@@ -509,7 +690,7 @@ const AdminApplicationsPage = () => {
                     </tr>
                   ) : applications.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-16 text-center">
+                      <td colSpan={7 + visibleAnswerColumns.length} className="px-6 py-16 text-center">
                         <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
                           No applications match your filters.
                         </p>
@@ -546,6 +727,27 @@ const AdminApplicationsPage = () => {
                           {row.gender || "—"}
                         </span>
                       </td>
+                      {visibleAnswerColumns.map((col) => {
+                        const value = formatAnswer(row, col.key);
+                        return (
+                          <td key={col.key} className="px-4 py-3.5 align-top" style={{ minWidth: 180, maxWidth: 280 }}>
+                            <span
+                              className="font-sans text-sm block"
+                              title={value}
+                              style={{
+                                color: value === "—" ? BRAND.sand : BRAND.cream,
+                                display: "-webkit-box",
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: "vertical",
+                                overflow: "hidden",
+                                whiteSpace: "pre-wrap",
+                              }}
+                            >
+                              {value}
+                            </span>
+                          </td>
+                        );
+                      })}
                       <td className="px-4 py-3.5">
                         <StatusBadge status={row.status} />
                       </td>

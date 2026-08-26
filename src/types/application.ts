@@ -147,6 +147,12 @@ export interface AdminApplicationSummary {
   first_hackathon: boolean | null;
   hackathon_count?: number | null;
   cs_career: boolean | null;
+  dietary_restrictions?: string | null;
+  accessibility?: string | null;
+  motivation?: string | null;
+  past_project?: string | null;
+  interests?: string | null;
+  community?: string | null;
   reviewed_by: string | null;
   reviewed_at: number | null;
   created_at: number;
