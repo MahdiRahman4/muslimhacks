@@ -41,7 +41,12 @@ export function CheckinCard({ onSuccess }: CheckinCardProps) {
       onSuccess(data.participant);
       setCode("");
     } catch (err) {
-      if (err instanceof EventOpsApiError && err.code === "already_checked_in") {
+      if (err instanceof EventOpsApiError && err.code === "already_checked_in" && err.participant) {
+        setSuccess(err.participant);
+        setInfo(err.message);
+        onSuccess(err.participant);
+        setCode("");
+      } else if (err instanceof EventOpsApiError && err.code === "already_checked_in") {
         setInfo(err.message);
         setError(null);
       } else {

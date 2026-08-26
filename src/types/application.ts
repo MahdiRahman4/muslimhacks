@@ -89,6 +89,7 @@ export interface MyParticipant {
   checkin_code: string;
   checkin_status: "not_checked_in" | "checked_in";
   checked_in_at: number | null;
+  claimed_meals: string[];
 }
 
 export interface MyParticipantResponse {

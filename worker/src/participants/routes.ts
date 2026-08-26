@@ -39,6 +39,13 @@ export async function handleParticipantRoutes(
         checkin_code: participant.public_checkin_code,
         checkin_status: participant.checkin_status,
         checked_in_at: participant.checked_in_at,
+        claimed_meals: (
+          await env.DB.prepare(
+            "SELECT meal_key FROM participant_meals WHERE participant_id = ?",
+          )
+            .bind(participant.id)
+            .all<{ meal_key: string }>()
+        ).results?.map((row) => row.meal_key) ?? [],
       },
     });
   }

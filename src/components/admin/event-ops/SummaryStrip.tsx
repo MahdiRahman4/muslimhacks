@@ -1,15 +1,12 @@
 import { BRAND } from "@/components/Shared";
-import type { EventOpsSummary, MealKey } from "@/types/event-ops";
+import type { EventOpsSummary } from "@/types/event-ops";
 import { MEAL_KEYS } from "@/types/event-ops";
+import { formatMealLabel } from "@/lib/meals";
 
 interface SummaryStripProps {
   summary: EventOpsSummary | null;
   loading: boolean;
   error: string | null;
-}
-
-function formatMealLabel(key: MealKey): string {
-  return key.replace(/_/g, " ");
 }
 
 function StatTile({ label, value, color }: { label: string; value: string | number; color?: string }) {
@@ -65,7 +62,7 @@ export function SummaryStrip({ summary, loading, error }: SummaryStripProps) {
             className="flex flex-col gap-0.5 px-4 py-3 rounded-xl"
             style={{ background: "rgba(245,238,227,0.03)", border: "1px solid rgba(221,168,83,0.08)" }}
           >
-            <span className="font-sans text-xs uppercase tracking-[0.18em] capitalize" style={{ color: BRAND.sand }}>
+            <span className="font-sans text-xs uppercase tracking-[0.18em]" style={{ color: BRAND.sand }}>
               {formatMealLabel(key)}
             </span>
             <span className="font-display text-xl font-bold" style={{ color: BRAND.cream }}>

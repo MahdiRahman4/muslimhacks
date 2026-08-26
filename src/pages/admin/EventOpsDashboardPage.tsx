@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { BRAND, GoldText, Eyebrow, GLOBAL_CSS } from "@/components/Shared";
 import {
@@ -16,7 +17,6 @@ import {
 } from "@/components/admin/event-ops/ParticipantFilters";
 import { ParticipantsTable } from "@/components/admin/event-ops/ParticipantsTable";
 import { CheckinCard } from "@/components/admin/event-ops/CheckinCard";
-import { ParticipantDetailPanel } from "@/components/admin/event-ops/ParticipantDetailPanel";
 import { ExportsSection } from "@/components/admin/event-ops/ExportsSection";
 
 /**
@@ -45,6 +45,7 @@ const SECTION_TABS: { key: "event-ops" | "exports"; label: string }[] = [
 
 const EventOpsDashboardPage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState<"event-ops" | "exports">("event-ops");
 
   const [summary, setSummary] = useState<EventOpsSummary | null>(null);
@@ -57,9 +58,6 @@ const EventOpsDashboardPage = () => {
   const [offset, setOffset] = useState(0);
   const [tableLoading, setTableLoading] = useState(true);
   const [tableError, setTableError] = useState<string | null>(null);
-
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [detailKey, setDetailKey] = useState(0);
 
   const queryParams = useMemo(
     () => ({
@@ -110,19 +108,8 @@ const EventOpsDashboardPage = () => {
     setOffset(0);
   };
 
-  const refreshAll = () => {
-    void loadSummary();
-    void loadParticipants();
-    setDetailKey((k) => k + 1);
-  };
-
-  const handleCheckinSuccess = (participant: ParticipantSummary) => {
-    setSelectedId(participant.id);
-    refreshAll();
-  };
-
-  const handleSelectParticipant = (participant: ParticipantSummary) => {
-    setSelectedId(participant.id);
+  const openParticipantPage = (participant: ParticipantSummary) => {
+    navigate(`/admin/event-ops/participants/${participant.id}`);
   };
 
   if (!user) {
@@ -191,19 +178,13 @@ const EventOpsDashboardPage = () => {
                   limit={PAGE_SIZE}
                   loading={tableLoading}
                   error={tableError}
-                  selectedId={selectedId}
-                  onSelect={handleSelectParticipant}
+                  onSelect={openParticipantPage}
                   onPageChange={setOffset}
                 />
               </div>
 
-              <div className="flex flex-col gap-4">
-                <CheckinCard onSuccess={handleCheckinSuccess} />
-                <ParticipantDetailPanel
-                  key={`${selectedId ?? "none"}-${detailKey}`}
-                  participantId={selectedId}
-                  onUpdated={refreshAll}
-                />
+              <div className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
+                <CheckinCard onSuccess={openParticipantPage} />
               </div>
             </div>
           </>

@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { BRAND } from "@/components/Shared";
 import { useI18n } from "@/i18n/LanguageProvider";
 
-// Application deadline: August 27, 2026, 11:59:59 PM EDT (UTC-4)
-export const APPLICATION_DEADLINE = new Date("2026-08-27T23:59:59-04:00");
+// Application deadline: August 31, 2026, 11:59:59 PM EDT (UTC-4)
+export const APPLICATION_DEADLINE = new Date("2026-08-31T23:59:59-04:00");
 
 type TimeLeft = {
   days: number;

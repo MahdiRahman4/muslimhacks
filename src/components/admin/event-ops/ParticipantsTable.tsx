@@ -1,6 +1,8 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { BRAND } from "@/components/Shared";
 import type { ParticipantSummary } from "@/types/event-ops";
+import { MEAL_KEYS } from "@/types/event-ops";
+import { formatMealLabel, formatMealShort } from "@/lib/meals";
 
 interface ParticipantsTableProps {
   participants: ParticipantSummary[];
@@ -9,7 +11,6 @@ interface ParticipantsTableProps {
   limit: number;
   loading: boolean;
   error: string | null;
-  selectedId: string | null;
   onSelect: (participant: ParticipantSummary) => void;
   onPageChange: (offset: number) => void;
 }
@@ -35,6 +36,23 @@ function CheckinBadge({ status }: { status: ParticipantSummary["checkin_status"]
   );
 }
 
+function MealDot({ claimed, label }: { claimed: boolean; label: string }) {
+  return (
+    <span
+      className="inline-flex items-center justify-center w-7 h-7 rounded-full"
+      title={`${label}: ${claimed ? "got it" : "not yet"}`}
+      aria-label={`${label}: ${claimed ? "got it" : "not yet"}`}
+      style={
+        claimed
+          ? { background: "rgba(95,168,119,0.18)", color: "#5FA877", border: "1px solid rgba(95,168,119,0.4)" }
+          : { background: "rgba(245,238,227,0.04)", color: BRAND.sand, border: "1px solid rgba(245,238,227,0.12)", opacity: 0.7 }
+      }
+    >
+      {claimed ? <Check size={13} strokeWidth={3} /> : <span className="font-sans text-[10px] leading-none">—</span>}
+    </span>
+  );
+}
+
 export function ParticipantsTable({
   participants,
   total,
@@ -42,7 +60,6 @@ export function ParticipantsTable({
   limit,
   loading,
   error,
-  selectedId,
   onSelect,
   onPageChange,
 }: ParticipantsTableProps) {
@@ -74,10 +91,10 @@ export function ParticipantsTable({
             No participants match these filters.
           </p>
         ) : (
-          <table className="w-full min-w-[720px]">
+          <table className="w-full min-w-[980px]">
             <thead style={{ background: "rgba(75,46,99,0.2)", borderBottom: "1px solid rgba(221,168,83,0.1)" }}>
               <tr>
-                {["Name", "Email", "Gender", "Code", "Status", "Checked in"].map((h) => (
+                {["Name", "Email", "Gender", "Code", "Status"].map((h) => (
                   <th
                     key={h}
                     className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium whitespace-nowrap"
@@ -86,25 +103,40 @@ export function ParticipantsTable({
                     {h}
                   </th>
                 ))}
+                {MEAL_KEYS.map((key) => (
+                  <th
+                    key={key}
+                    className="px-2 py-3 text-center font-sans text-xs uppercase tracking-[0.16em] font-medium whitespace-nowrap"
+                    style={{ color: BRAND.sand }}
+                    title={formatMealLabel(key)}
+                  >
+                    {formatMealShort(key)}
+                  </th>
+                ))}
+                <th
+                  className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium whitespace-nowrap"
+                  style={{ color: BRAND.sand }}
+                >
+                  Checked in
+                </th>
               </tr>
             </thead>
             <tbody>
               {participants.map((p, i) => {
-                const selected = selectedId === p.id;
+                const claimed = new Set(p.claimed_meals ?? []);
                 return (
                   <tr
                     key={p.id}
                     className="cursor-pointer transition-colors duration-150"
                     style={{
                       borderBottom: i < participants.length - 1 ? "1px solid rgba(221,168,83,0.07)" : "none",
-                      background: selected ? "rgba(221,168,83,0.08)" : "transparent",
                     }}
                     onClick={() => onSelect(p)}
                     onMouseEnter={(e) => {
-                      if (!selected) e.currentTarget.style.background = "rgba(245,238,227,0.03)";
+                      e.currentTarget.style.background = "rgba(245,238,227,0.03)";
                     }}
                     onMouseLeave={(e) => {
-                      if (!selected) e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.background = "transparent";
                     }}
                   >
                     <td className="px-4 py-3.5 overflow-hidden">
@@ -130,6 +162,11 @@ export function ParticipantsTable({
                     <td className="px-4 py-3.5">
                       <CheckinBadge status={p.checkin_status} />
                     </td>
+                    {MEAL_KEYS.map((key) => (
+                      <td key={key} className="px-2 py-3.5 text-center">
+                        <MealDot claimed={claimed.has(key)} label={formatMealLabel(key)} />
+                      </td>
+                    ))}
                     <td className="px-4 py-3.5 overflow-hidden">
                       <span className="font-sans text-xs tabular-nums block truncate" style={{ color: BRAND.sand }}>
                         {formatTime(p.checked_in_at)}

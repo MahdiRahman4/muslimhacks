@@ -11,6 +11,7 @@ import type { AuthUser } from "../auth/types";
 import {
   isMealKey,
   MEAL_KEYS,
+  type MealKey,
   type ParticipantMealRow,
   type ParticipantRow,
 } from "../participants/service";
@@ -18,7 +19,7 @@ import {
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
 
-function toParticipantSummary(row: ParticipantRow) {
+function toParticipantSummary(row: ParticipantRow, claimedMeals: MealKey[] = []) {
   return {
     id: row.id,
     user_id: row.user_id,
@@ -31,12 +32,16 @@ function toParticipantSummary(row: ParticipantRow) {
     checked_in_at: row.checked_in_at,
     created_at: row.created_at,
     updated_at: row.updated_at,
+    claimed_meals: claimedMeals,
   };
 }
 
 function toParticipantDetail(row: ParticipantRow, meals: ParticipantMealRow[]) {
   return {
-    ...toParticipantSummary(row),
+    ...toParticipantSummary(
+      row,
+      meals.map((meal) => meal.meal_key),
+    ),
     checked_in_by: row.checked_in_by,
     meals: meals.map((meal) => ({
       id: meal.id,
@@ -83,6 +88,36 @@ async function getParticipantMeals(
     .all<ParticipantMealRow>();
 
   return result.results ?? [];
+}
+
+async function getClaimedMealsByParticipantIds(
+  env: Env,
+  participantIds: string[],
+): Promise<Map<string, MealKey[]>> {
+  const claimed = new Map<string, MealKey[]>();
+  if (participantIds.length === 0) {
+    return claimed;
+  }
+
+  const placeholders = participantIds.map(() => "?").join(",");
+  const result = await env.DB.prepare(
+    `SELECT participant_id, meal_key FROM participant_meals WHERE participant_id IN (${placeholders})`,
+  )
+    .bind(...participantIds)
+    .all<{ participant_id: string; meal_key: MealKey }>();
+
+  for (const row of result.results ?? []) {
+    const list = claimed.get(row.participant_id) ?? [];
+    list.push(row.meal_key);
+    claimed.set(row.participant_id, list);
+  }
+
+  return claimed;
+}
+
+async function getParticipantMealKeys(env: Env, participantId: string): Promise<MealKey[]> {
+  const meals = await getParticipantMeals(env, participantId);
+  return meals.map((meal) => meal.meal_key);
 }
 
 async function markParticipantCheckedIn(
@@ -147,8 +182,16 @@ async function handleListParticipants(
     .bind(...binds, pagination.limit, pagination.offset)
     .all<ParticipantRow>();
 
+  const participants = rows.results ?? [];
+  const claimedById = await getClaimedMealsByParticipantIds(
+    env,
+    participants.map((row) => row.id),
+  );
+
   return respond({
-    participants: (rows.results ?? []).map(toParticipantSummary),
+    participants: participants.map((row) =>
+      toParticipantSummary(row, claimedById.get(row.id) ?? []),
+    ),
     pagination: {
       limit: pagination.limit,
       offset: pagination.offset,
@@ -198,8 +241,11 @@ async function handleCheckinParticipant(
   }
 
   if (participant.checkin_status === "checked_in") {
-    return respondEventOpsError(respond, "already_checked_in", {
-      participant: toParticipantSummary(participant),
+    const claimedMeals = await getParticipantMealKeys(env, participant.id);
+    return respond({
+      participant: toParticipantSummary(participant, claimedMeals),
+      already_checked_in: true,
+      message: "Already checked in",
     });
   }
 
@@ -208,7 +254,9 @@ async function handleCheckinParticipant(
     return respond({ error: "Failed to check in participant" }, 500);
   }
 
-  return respond({ participant: toParticipantSummary(updated) });
+  return respond({
+    participant: toParticipantSummary(updated, await getParticipantMealKeys(env, updated.id)),
+  });
 }
 
 async function handleCheckinByCode(
@@ -249,8 +297,11 @@ async function handleCheckinByCode(
   }
 
   if (participant.checkin_status === "checked_in") {
-    return respondEventOpsError(respond, "already_checked_in", {
-      participant: toParticipantSummary(participant),
+    const claimedMeals = await getParticipantMealKeys(env, participant.id);
+    return respond({
+      participant: toParticipantSummary(participant, claimedMeals),
+      already_checked_in: true,
+      message: "Already checked in",
     });
   }
 
@@ -259,7 +310,9 @@ async function handleCheckinByCode(
     return respond({ error: "Failed to check in participant" }, 500);
   }
 
-  return respond({ participant: toParticipantSummary(updated) });
+  return respond({
+    participant: toParticipantSummary(updated, await getParticipantMealKeys(env, updated.id)),
+  });
 }
 
 async function handleClaimMeal(

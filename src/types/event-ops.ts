@@ -27,6 +27,7 @@ export interface ParticipantSummary {
   checked_in_at: number | null;
   created_at: number;
   updated_at: number;
+  claimed_meals: MealKey[];
 }
 
 export interface ParticipantMeal {
@@ -68,10 +69,12 @@ export interface ParticipantListResponse {
 
 export interface CheckinResponse {
   participant: ParticipantSummary;
+  already_checked_in?: boolean;
   message?: string;
 }
 
 export interface ApiErrorBody {
   error: string;
   code?: string;
+  participant?: ParticipantSummary;
 }

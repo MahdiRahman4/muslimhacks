@@ -8,19 +8,17 @@ import {
 } from "@/lib/event-ops-api";
 import type { MealKey, ParticipantDetail } from "@/types/event-ops";
 import { MEAL_KEYS } from "@/types/event-ops";
+import { formatMealLabel } from "@/lib/meals";
 
 interface ParticipantDetailPanelProps {
   participantId: string | null;
   onUpdated: () => void;
+  prominent?: boolean;
 }
 
 function formatTime(ms: number | null) {
   if (!ms) return "—";
   return new Date(ms).toLocaleString();
-}
-
-function formatMealLabel(key: MealKey): string {
-  return key.replace(/_/g, " ");
 }
 
 const cardStyle = {
@@ -47,6 +45,7 @@ function CheckinBadge({ status }: { status: ParticipantDetail["checkin_status"] 
 export function ParticipantDetailPanel({
   participantId,
   onUpdated,
+  prominent = false,
 }: ParticipantDetailPanelProps) {
   const [detail, setDetail] = useState<ParticipantDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -93,9 +92,10 @@ export function ParticipantDetailPanel({
   }
 
   const claimedKeys = new Set(detail?.meals.map((m) => m.meal_key) ?? []);
+  const checkedIn = detail?.checkin_status === "checked_in";
 
   const handleClaim = async (mealKey: MealKey) => {
-    if (!participantId || claimingMeal) return;
+    if (!participantId || claimingMeal || !checkedIn) return;
 
     setClaimingMeal(mealKey);
     setMealError(null);
@@ -117,7 +117,7 @@ export function ParticipantDetailPanel({
   return (
     <div className="rounded-2xl p-6 flex flex-col gap-4" style={cardStyle}>
       <h2 className="font-display font-bold text-lg" style={{ letterSpacing: "-0.01em" }}>
-        Participant detail
+        {prominent ? "Food counter" : "Participant detail"}
       </h2>
 
       {loading && (
@@ -156,36 +156,25 @@ export function ParticipantDetailPanel({
 
           <div>
             <p className="mb-2 font-sans text-xs uppercase tracking-[0.2em]" style={{ color: BRAND.gold, opacity: 0.7 }}>
-              Meals claimed
+              Meals
             </p>
-            {detail.meals.length === 0 ? (
-              <p className="font-sans text-sm" style={{ color: BRAND.sand }}>None yet</p>
-            ) : (
-              <ul className="flex flex-col gap-1.5">
-                {detail.meals.map((meal) => (
-                  <li key={meal.id} className="flex justify-between gap-2 font-sans text-sm">
-                    <span className="capitalize" style={{ color: BRAND.cream }}>{formatMealLabel(meal.meal_key)}</span>
-                    <span style={{ color: BRAND.sand }}>{formatTime(meal.claimed_at)}</span>
-                  </li>
-                ))}
-              </ul>
+            {!checkedIn && (
+              <p className="mb-3 font-sans text-sm" style={{ color: BRAND.goldSoft }}>
+                Check this person in before marking meals.
+              </p>
             )}
-          </div>
-
-          <div>
-            <p className="mb-2 font-sans text-xs uppercase tracking-[0.2em]" style={{ color: BRAND.gold, opacity: 0.7 }}>
-              Claim meal
-            </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className={prominent ? "flex flex-col gap-2" : "grid grid-cols-2 gap-2"}>
               {MEAL_KEYS.map((key) => {
                 const claimed = claimedKeys.has(key);
                 return (
                   <button
                     key={key}
                     type="button"
-                    disabled={claimed || claimingMeal !== null}
+                    disabled={!checkedIn || claimed || claimingMeal !== null}
                     onClick={() => void handleClaim(key)}
-                    className="px-3 py-2 rounded-lg font-sans text-xs font-medium capitalize transition-all duration-200 hover:opacity-80 disabled:cursor-not-allowed focus-visible:ring-2"
+                    className={`rounded-lg font-sans font-medium transition-all duration-200 hover:opacity-80 disabled:cursor-not-allowed focus-visible:ring-2 ${
+                      prominent ? "px-4 py-4 text-sm" : "px-3 py-2 text-xs"
+                    }`}
                     style={
                       claimed
                         ? { background: "rgba(95,168,119,0.12)", border: "1px solid rgba(95,168,119,0.35)", color: "#5FA877" }
@@ -193,20 +182,36 @@ export function ParticipantDetailPanel({
                             background: "rgba(245,238,227,0.06)",
                             border: "1px solid rgba(221,168,83,0.2)",
                             color: BRAND.cream,
-                            opacity: claimingMeal !== null ? 0.6 : 1,
+                            opacity: !checkedIn || claimingMeal !== null ? 0.6 : 1,
                           }
                     }
                   >
                     {claimingMeal === key
-                      ? "Claiming…"
+                      ? "Marking…"
                       : claimed
-                        ? `${formatMealLabel(key)} ✓`
-                        : formatMealLabel(key)}
+                        ? `${formatMealLabel(key)} · got it`
+                        : `${formatMealLabel(key)} · not yet`}
                   </button>
                 );
               })}
             </div>
           </div>
+
+          {detail.meals.length > 0 && (
+            <div>
+              <p className="mb-2 font-sans text-xs uppercase tracking-[0.2em]" style={{ color: BRAND.gold, opacity: 0.7 }}>
+                Claimed at
+              </p>
+              <ul className="flex flex-col gap-1.5">
+                {detail.meals.map((meal) => (
+                  <li key={meal.id} className="flex justify-between gap-2 font-sans text-sm">
+                    <span style={{ color: BRAND.cream }}>{formatMealLabel(meal.meal_key)}</span>
+                    <span style={{ color: BRAND.sand }}>{formatTime(meal.claimed_at)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {mealError && (
             <div

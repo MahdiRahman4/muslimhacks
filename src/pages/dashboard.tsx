@@ -7,6 +7,7 @@ import {
   ChevronRight,
   PenLine,
   QrCode,
+  Utensils,
 } from "lucide-react";
 import {
   BRAND,
@@ -25,6 +26,8 @@ import { SignedIn, UserButton } from "@clerk/clerk-react";
 import Profile from "@/components/ui/profile";
 import { CheckinQr } from "@/components/CheckinQr";
 import CountdownTimer from "@/components/CountdownTimer";
+import { MEAL_KEYS } from "@/types/event-ops";
+import { formatMealLabel } from "@/lib/meals";
 
 type AppStatus = "not_started" | "draft" | "pending" | "approved" | "rejected";
 
@@ -209,65 +212,135 @@ function StatCard({
 function ParticipantCheckinCard({ participant }: { participant: MyParticipant }) {
   const checkedIn = participant.checkin_status === "checked_in";
   const code = participant.checkin_code.trim().toUpperCase();
+  const claimed = new Set(participant.claimed_meals ?? []);
 
   return (
-    <div
-      className="rounded-2xl p-7 flex flex-col gap-5"
-      style={{
-        background: "rgba(95,168,119,0.08)",
-        border: "1px solid rgba(95,168,119,0.35)",
-        boxShadow: "0 24px 60px rgba(6,15,32,0.4)",
-      }}
-    >
-      <div className="flex items-start gap-3">
-        <div
-          className="p-2 rounded-lg shrink-0"
-          style={{ background: "rgba(95,168,119,0.15)", color: "#5FA877" }}
-        >
-          <QrCode size={22} />
+    <div className="flex flex-col gap-5">
+      <div
+        className="rounded-2xl p-7 flex flex-col gap-5"
+        style={{
+          background: "rgba(95,168,119,0.08)",
+          border: "1px solid rgba(95,168,119,0.35)",
+          boxShadow: "0 24px 60px rgba(6,15,32,0.4)",
+        }}
+      >
+        <div className="flex items-start gap-3">
+          <div
+            className="p-2 rounded-lg shrink-0"
+            style={{ background: "rgba(95,168,119,0.15)", color: "#5FA877" }}
+          >
+            <QrCode size={22} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Eyebrow>Event check-in</Eyebrow>
+            <h2
+              className="font-display text-2xl font-bold"
+              style={{ color: BRAND.cream }}
+            >
+              Your QR code
+            </h2>
+            <p
+              className="font-intimate text-base leading-relaxed"
+              style={{ fontStyle: "italic", color: BRAND.creamMuted }}
+            >
+              Show this at registration for a fast check-in. It&apos;s also in your
+              approval email.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col gap-1">
-          <Eyebrow>Event check-in</Eyebrow>
-          <h2
-            className="font-display text-2xl font-bold"
-            style={{ color: BRAND.cream }}
-          >
-            Your QR code
-          </h2>
-          <p
-            className="font-intimate text-base leading-relaxed"
-            style={{ fontStyle: "italic", color: BRAND.creamMuted }}
-          >
-            Show this at registration for a fast check-in. It&apos;s also in your
-            approval email.
-          </p>
+
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <CheckinQr code={code} size={200} />
+          <div className="flex flex-col gap-2 text-center sm:text-left">
+            <p
+              className="font-sans text-xs uppercase tracking-[0.15em]"
+              style={{ color: BRAND.sand }}
+            >
+              Backup code
+            </p>
+            <p
+              className="font-mono text-2xl font-bold tracking-[0.14em]"
+              style={{ color: BRAND.gold }}
+            >
+              {code}
+            </p>
+            {checkedIn && (
+              <p
+                className="font-sans text-sm font-semibold"
+                style={{ color: "#5FA877" }}
+              >
+                You&apos;re checked in!
+              </p>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-6">
-        <CheckinQr code={code} size={200} />
-        <div className="flex flex-col gap-2 text-center sm:text-left">
-          <p
-            className="font-sans text-xs uppercase tracking-[0.15em]"
-            style={{ color: BRAND.sand }}
+      <div
+        className="rounded-2xl p-7 flex flex-col gap-5"
+        style={{
+          background: "rgba(245,238,227,0.04)",
+          border: "1px solid rgba(221,168,83,0.13)",
+          boxShadow: "0 24px 60px rgba(6,15,32,0.4)",
+        }}
+      >
+        <div className="flex items-start gap-3">
+          <div
+            className="p-2 rounded-lg shrink-0"
+            style={{ background: "rgba(221,168,83,0.12)", color: BRAND.gold }}
           >
-            Backup code
-          </p>
-          <p
-            className="font-mono text-2xl font-bold tracking-[0.14em]"
-            style={{ color: BRAND.gold }}
-          >
-            {code}
-          </p>
-          {checkedIn && (
-            <p
-              className="font-sans text-sm font-semibold"
-              style={{ color: "#5FA877" }}
+            <Utensils size={22} />
+          </div>
+          <div className="flex flex-col gap-1">
+            <Eyebrow>Food</Eyebrow>
+            <h2
+              className="font-display text-2xl font-bold"
+              style={{ color: BRAND.cream }}
             >
-              You&apos;re checked in!
+              Meal counter
+            </h2>
+            <p
+              className="font-intimate text-base leading-relaxed"
+              style={{ fontStyle: "italic", color: BRAND.creamMuted }}
+            >
+              Staff will check off each meal when you pick it up. You can see
+              what you&apos;ve already gotten here.
             </p>
-          )}
+          </div>
         </div>
+
+        <ul className="flex flex-col gap-2">
+          {MEAL_KEYS.map((key) => {
+            const gotIt = claimed.has(key);
+            return (
+              <li
+                key={key}
+                className="flex items-center justify-between gap-3 rounded-xl px-4 py-3"
+                style={
+                  gotIt
+                    ? {
+                        background: "rgba(95,168,119,0.1)",
+                        border: "1px solid rgba(95,168,119,0.3)",
+                      }
+                    : {
+                        background: "rgba(245,238,227,0.04)",
+                        border: "1px solid rgba(221,168,83,0.12)",
+                      }
+                }
+              >
+                <span className="font-sans text-sm" style={{ color: BRAND.cream }}>
+                  {formatMealLabel(key)}
+                </span>
+                <span
+                  className="font-sans text-xs font-semibold uppercase tracking-[0.14em]"
+                  style={{ color: gotIt ? "#5FA877" : BRAND.sand }}
+                >
+                  {gotIt ? "Got it" : "Not yet"}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
@@ -407,7 +480,7 @@ export default function Dashboard() {
           />
           <StatCard
             label="Deadline"
-            value="Aug. 27th 11:59 PM"
+            value="Aug. 31st 11:59 PM"
             sub="Applications open"
           />
         </div>

@@ -6,6 +6,7 @@ import type {
   ParticipantDetail,
   ParticipantListParams,
   ParticipantListResponse,
+  ParticipantSummary,
   ApiErrorBody,
 } from "@/types/event-ops";
 import { ApiError } from "./api";
@@ -25,11 +26,18 @@ async function parseJson(response: Response): Promise<unknown> {
 
 export class EventOpsApiError extends ApiError {
   code?: string;
+  participant?: ParticipantSummary;
 
-  constructor(status: number, message: string, code?: string) {
+  constructor(
+    status: number,
+    message: string,
+    code?: string,
+    participant?: ParticipantSummary,
+  ) {
     super(status, message);
     this.name = "EventOpsApiError";
     this.code = code;
+    this.participant = participant;
   }
 }
 
@@ -52,6 +60,7 @@ async function eventOpsFetch<T>(path: string, options: RequestInit = {}): Promis
       response.status,
       data?.error || "Request failed",
       data?.code,
+      data?.participant,
     );
   }
 
@@ -86,10 +95,25 @@ export async function fetchParticipantDetail(id: string) {
 }
 
 export async function checkinByCode(code: string) {
-  return eventOpsFetch<CheckinResponse>("/api/admin/participants/checkin/by-code", {
-    method: "POST",
-    body: JSON.stringify({ code: code.trim().toUpperCase() }),
-  });
+  try {
+    return await eventOpsFetch<CheckinResponse>("/api/admin/participants/checkin/by-code", {
+      method: "POST",
+      body: JSON.stringify({ code: code.trim().toUpperCase() }),
+    });
+  } catch (error) {
+    if (
+      error instanceof EventOpsApiError &&
+      error.code === "already_checked_in" &&
+      error.participant
+    ) {
+      return {
+        participant: error.participant,
+        already_checked_in: true,
+        message: error.message,
+      } satisfies CheckinResponse;
+    }
+    throw error;
+  }
 }
 
 export async function claimParticipantMeal(participantId: string, mealKey: MealKey) {

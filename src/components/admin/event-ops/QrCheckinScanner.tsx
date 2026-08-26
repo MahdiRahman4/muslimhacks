@@ -62,7 +62,11 @@ export function QrCheckinScanner({ onSuccess, disabled }: QrCheckinScannerProps)
         if (data.message) setInfo(data.message);
         onSuccess(data.participant);
       } catch (err) {
-        if (err instanceof EventOpsApiError && err.code === "already_checked_in") {
+        if (err instanceof EventOpsApiError && err.code === "already_checked_in" && err.participant) {
+          setSuccess(err.participant);
+          setInfo(err.message);
+          onSuccess(err.participant);
+        } else if (err instanceof EventOpsApiError && err.code === "already_checked_in") {
           setInfo(err.message);
         } else {
           setError(getEventOpsErrorMessage(err));
