@@ -1,8 +1,138 @@
 import { useScrollReveal } from '@/hooks/useScrollReveal';
-import { BRAND, StarPattern, GoldText, Eyebrow } from "../Shared";
+import { BRAND, GoldText, Eyebrow } from "../Shared";
 import {ExternalLink} from "lucide-react"
-import islamicReliefLogo from "../../assets/islamicrelieflogo.png"
+import PPLUSLogo from "../../assets/pplus-logo.png";
+import islamicReliefLogo from "../../assets/islamicrelieflogo.png";
+import replitLogo from "../../assets/sponsor-logo-placeholder.svg";
+import BannyaLogo from "../../assets/sponsor-logo-placeholder.svg";
 import { useI18n } from "@/i18n/LanguageProvider";
+
+type SponsorTierKey = "platinum" | "gold" | "silver" | "bronze";
+
+type Sponsor = {
+  name: string;
+  logoPath: string;
+  /** Optional i18n key for a small caption under the name, e.g. "sponsors.charityPartner" */
+  subtitleKey?: string;
+};
+
+// Tier labels, shown as the heading above each tier's sponsor row.
+const TIER_LABELS: Record<SponsorTierKey, string> = {
+  platinum: "Platinum",
+  gold: "Gold",
+  silver: "Silver",
+  bronze: "Bronze",
+};
+
+// Logo box size per tier
+const TIER_LOGO_SIZE: Record<SponsorTierKey, { height: string; width: string }> = {
+  platinum: { height: "clamp(4.5rem, 8vw, 7rem)", width: "clamp(9rem, 16vw, 15rem)" },
+  gold: { height: "clamp(3.5rem, 6.5vw, 5.5rem)", width: "clamp(7.5rem, 13vw, 12rem)" },
+  silver: { height: "clamp(2.75rem, 5vw, 4.25rem)", width: "clamp(6rem, 10vw, 9.5rem)" },
+  bronze: { height: "clamp(2.1rem, 4vw, 3.2rem)", width: "clamp(4.5rem, 8vw, 7rem)" },
+};
+
+// Card style per tier
+const TIER_CARD_STYLE: Record<SponsorTierKey, { border: string; shadow: string; padding: string }> = {
+  platinum: { border: "rgba(221,168,83,0.28)", shadow: "0 8px 30px rgba(221,168,83,0.10)", padding: "p-7" },
+  gold: { border: "rgba(221,168,83,0.22)", shadow: "0 6px 24px rgba(221,168,83,0.08)", padding: "p-6" },
+  silver: { border: "rgba(221,168,83,0.16)", shadow: "none", padding: "p-5" },
+  bronze: { border: "rgba(221,168,83,0.12)", shadow: "none", padding: "p-4" },
+};
+
+const TIER_ORDER: SponsorTierKey[] = ["platinum", "gold", "silver", "bronze"];
+
+// Placeholder sponsor data for demonstration purposes. Replace with real sponsor data as needed.
+const SPONSORS: Record<SponsorTierKey, Sponsor[]> = {
+  platinum: [
+    { name: "PPLUS.io", logoPath: PPLUSLogo },
+    { name: "Islamic Relief Canada", logoPath: islamicReliefLogo, subtitleKey: "sponsors.charityPartner" },
+    { name: "Replit", logoPath: replitLogo },
+  ],
+  gold: [],
+  silver: [],
+  bronze: [
+    { name: "Bannya Systems Inc.", logoPath: BannyaLogo },
+  ],
+};
+
+function SponsorCard({ sponsor, tier }: { sponsor: Sponsor; tier: SponsorTierKey }) {
+  const { t } = useI18n();
+  const card = TIER_CARD_STYLE[tier];
+  const size = TIER_LOGO_SIZE[tier];
+
+  return (
+    <div
+      className={`rounded-2xl ${card.padding} flex flex-col items-center gap-3`}
+      style={{
+        background: "rgba(245,238,227,0.05)",
+        border: `1px solid ${card.border}`,
+        boxShadow: card.shadow,
+      }}
+    >
+      <div
+        className="flex items-center justify-center"
+        style={{ height: size.height, width: size.width }}
+      >
+        <img
+          src={sponsor.logoPath}
+          alt={sponsor.name}
+          className="max-h-full max-w-full object-contain"
+        />
+      </div>
+      <div className="flex flex-col items-center gap-0.5 text-center">
+        <p className="font-display text-base font-semibold" style={{ color: BRAND.cream }}>
+          {sponsor.name}
+        </p>
+        {sponsor.subtitleKey && (
+          <p className="font-sans text-xs" style={{ color: BRAND.creamMuted }}>
+            {t(sponsor.subtitleKey)}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EmptyTierPlaceholder({ tier }: { tier: SponsorTierKey }) {
+  const { t } = useI18n();
+  const size = TIER_LOGO_SIZE[tier];
+
+  return (
+    <div
+      className="rounded-2xl px-10 flex flex-col items-center justify-center gap-1"
+      style={{
+        height: `calc(${size.height} + 2.5rem)`,
+        background: "rgba(245,238,227,0.03)",
+        border: `1px dashed rgba(221,168,83,0.18)`,
+      }}
+    >
+      <p className="font-display text-sm font-semibold" style={{ color: BRAND.creamMuted }}>
+        {t("sponsors.comingSoon")}
+      </p>
+      <p className="font-intimate text-sm" style={{ fontStyle: "italic", color: BRAND.purpleLight }}>
+        {t("sponsors.workingOnIt")}
+      </p>
+    </div>
+  );
+}
+
+function TierSection({ tier }: { tier: SponsorTierKey }) {
+  const sponsors = SPONSORS[tier];
+
+  return sponsors.length > 0 ? (
+    <>
+      <div className="flex flex-col gap-5">
+        <Eyebrow className="text-center text-sm sm:text-base">{TIER_LABELS[tier]}</Eyebrow>
+        <div className="flex flex-wrap items-stretch justify-center gap-5 sm:gap-6">
+          {sponsors.map((sponsor) => (
+            <SponsorCard key={sponsor.name} sponsor={sponsor} tier={tier} />
+          ))}
+        </div>
+      </div>
+    </>
+  ) : null;
+}
 
 export default function SponsorsSectionV2() {
   const { t } = useI18n();
@@ -34,69 +164,10 @@ export default function SponsorsSectionV2() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <Eyebrow className="text-center">{t("sponsors.leadPartner")}</Eyebrow>
-        <div
-          className="rounded-2xl p-10 flex flex-col sm:flex-row items-center justify-center gap-8"
-          style={{
-            background: "rgba(245,238,227,0.05)",
-            border: `1px solid rgba(221,168,83,0.28)`,
-            boxShadow: "0 8px 30px rgba(221,168,83,0.1)",
-          }}
-        >
-          <img
-              src={islamicReliefLogo}
-            alt="Islamic Relief Canada"
-            className="h-20 w-auto object-contain"
-            />
-          <div className="flex flex-col gap-1 text-center sm:text-left">
-            <p className="font-display text-2xl font-semibold" style={{ color: BRAND.cream }}>
-              Islamic Relief Canada
-            </p>
-            <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>
-              {t("sponsors.charityPartner")}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-6">
-        <Eyebrow className="text-center">{t("sponsors.yearSponsors")}</Eyebrow>
-        {/* Grid with blurred cards + centered overlay */}
-        <div className="relative rounded-xl overflow-hidden">
-          {/* Blurred placeholder grid */}
-          <div
-            className="grid grid-cols-3 md:grid-cols-4 gap-3 p-6"
-            style={{ filter: "blur(2px)", opacity: 0.35, pointerEvents: "none", userSelect: "none" }}
-          >
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-20 rounded-lg"
-                style={{
-                  background: "rgba(245,238,227,0.07)",
-                  border: `1px solid rgba(221,168,83,0.15)`,
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Centered overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-            <p
-              className="font-display font-semibold"
-              style={{ fontSize: "clamp(1.25rem, 3vw, 1.75rem)", color: BRAND.cream }}
-            >
-              {t("sponsors.comingSoon")}
-            </p>
-            <p
-              className="font-intimate text-base"
-              style={{ fontStyle: "italic", color: BRAND.purpleLight }}
-            >
-              {t("sponsors.workingOnIt")}
-            </p>
-          </div>
-        </div>
+      <div className="flex flex-col gap-12">
+        {TIER_ORDER.map((tier) => (
+          <TierSection key={tier} tier={tier} />
+        ))}
       </div>
 
       <div
@@ -132,4 +203,3 @@ export default function SponsorsSectionV2() {
   </section>
   );
 };
-
