@@ -51,16 +51,16 @@ export async function sendApplicationApprovedEmail(
     "Please RSVP by joining our Discord server. If you join, that means you're coming:",
     DISCORD_RSVP_URL,
     "",
-    "Event details:",
-    "• September 5–6, 2026",
-    "• Concordia University, Downtown Campus, Montréal, Quebec",
-    "• In person, free to attend",
-    "",
     "For check-in, open your dashboard to get your QR code:",
     DASHBOARD_URL,
     "",
     "Backup check-in code (if needed):",
     code,
+    "",
+    "Event details:",
+    "• September 5-6, 2026",
+    "• Concordia University, Downtown Campus, Montréal, Quebec",
+    "• In person, free to attend",
     "",
     `Questions? Reply to this email or contact us at ${DEFAULT_REPLY_TO}`,
     "",
@@ -77,10 +77,6 @@ export async function sendApplicationApprovedEmail(
     <p style="margin:0 0 24px 0;color:#666;font-size:14px;text-align:left;">
       Or open this link: <a href="${DISCORD_RSVP_URL}" style="color:#b8860b;">${DISCORD_RSVP_URL}</a>
     </p>
-    <p style="margin:0 0 8px 0;text-align:left;"><strong>Event details</strong></p>
-    <p style="margin:0 0 4px 0;text-align:left;">• September 5–6, 2026</p>
-    <p style="margin:0 0 4px 0;text-align:left;">• Concordia University, Downtown Campus, Montréal, Quebec</p>
-    <p style="margin:0 0 24px 0;text-align:left;">• In person, free to attend</p>
     <p style="margin:0 0 8px 0;text-align:left;"><strong>Check-in</strong></p>
     <p style="margin:0 0 8px 0;text-align:left;">Open your dashboard to get your QR code. Show it at registration for a fast check-in:</p>
     ${linkButton(DASHBOARD_URL, "Open my dashboard", "#b8860b")}
@@ -89,6 +85,12 @@ export async function sendApplicationApprovedEmail(
       ${escapeHtml(code)}
     </p>
     <p style="margin:0 0 24px 0;color:#666;font-size:14px;text-align:left;">Save this code on your phone just in case.</p>
+    <p style="margin:0 0 16px 0;text-align:left;">
+      <strong>Event details</strong><br>
+      • September 5-6, 2026<br>
+      • Concordia University, Downtown Campus, Montréal, Quebec<br>
+      • In person, free to attend
+    </p>
     <p style="margin:0 0 16px 0;color:#666;font-size:14px;text-align:left;">
       Questions? Reply to this email or contact
       <a href="mailto:${escapeHtml(DEFAULT_REPLY_TO)}" style="color:#b8860b;">${escapeHtml(DEFAULT_REPLY_TO)}</a>
