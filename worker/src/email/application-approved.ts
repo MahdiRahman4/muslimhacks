@@ -52,7 +52,7 @@ export async function sendApplicationApprovedEmail(
     DISCORD_RSVP_URL,
     "",
     "Event details:",
-    "• September 2026",
+    "• September 5–6, 2026",
     "• Concordia University, Downtown Campus, Montréal, Quebec",
     "• In person, free to attend",
     "",
@@ -78,7 +78,7 @@ export async function sendApplicationApprovedEmail(
       Or open this link: <a href="${DISCORD_RSVP_URL}" style="color:#b8860b;">${DISCORD_RSVP_URL}</a>
     </p>
     <p style="margin:0 0 8px 0;text-align:left;"><strong>Event details</strong></p>
-    <p style="margin:0 0 4px 0;text-align:left;">• September 2026</p>
+    <p style="margin:0 0 4px 0;text-align:left;">• September 5–6, 2026</p>
     <p style="margin:0 0 4px 0;text-align:left;">• Concordia University, Downtown Campus, Montréal, Quebec</p>
     <p style="margin:0 0 24px 0;text-align:left;">• In person, free to attend</p>
     <p style="margin:0 0 8px 0;text-align:left;"><strong>Check-in</strong></p>
