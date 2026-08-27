@@ -3,6 +3,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { BRAND } from "@/components/Shared";
 import { checkinByCode, getEventOpsErrorMessage, EventOpsApiError } from "@/lib/event-ops-api";
 import type { ParticipantSummary } from "@/types/event-ops";
+import { FoodWaveBadge } from "@/components/FoodWaveBadge";
 
 const SCANNER_ID = "admin-qr-checkin-scanner";
 
@@ -147,11 +148,14 @@ export function QrCheckinScanner({ onSuccess, disabled }: QrCheckinScannerProps)
       )}
 
       {success && (
-        <div
-          className="rounded-lg px-3.5 py-2.5 font-sans text-sm"
-          style={{ background: "rgba(95,168,119,0.1)", border: "1px solid rgba(95,168,119,0.3)", color: "#5FA877" }}
-        >
-          <strong style={{ color: BRAND.cream }}>{success.full_name}</strong> checked in.
+        <div className="flex flex-col gap-2">
+          {success.food_wave && <FoodWaveBadge wave={success.food_wave} size="lg" />}
+          <div
+            className="rounded-lg px-3.5 py-2.5 font-sans text-sm"
+            style={{ background: "rgba(95,168,119,0.1)", border: "1px solid rgba(95,168,119,0.3)", color: "#5FA877" }}
+          >
+            <strong style={{ color: BRAND.cream }}>{success.full_name}</strong> checked in.
+          </div>
         </div>
       )}
 

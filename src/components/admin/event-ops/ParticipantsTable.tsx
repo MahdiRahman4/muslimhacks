@@ -3,6 +3,7 @@ import { BRAND } from "@/components/Shared";
 import type { ParticipantSummary } from "@/types/event-ops";
 import { MEAL_KEYS } from "@/types/event-ops";
 import { formatMealLabel, formatMealShort } from "@/lib/meals";
+import { FoodWaveBadge } from "@/components/FoodWaveBadge";
 
 interface ParticipantsTableProps {
   participants: ParticipantSummary[];
@@ -94,7 +95,7 @@ export function ParticipantsTable({
           <table className="w-full min-w-[980px]">
             <thead style={{ background: "rgba(75,46,99,0.2)", borderBottom: "1px solid rgba(221,168,83,0.1)" }}>
               <tr>
-                {["Name", "Email", "Gender", "Code", "Status"].map((h) => (
+                {["Name", "Email", "Gender", "Food", "Code", "Status"].map((h) => (
                   <th
                     key={h}
                     className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium whitespace-nowrap"
@@ -153,6 +154,9 @@ export function ParticipantsTable({
                       <span className="font-sans text-sm block truncate" style={{ color: BRAND.creamMuted }}>
                         {p.gender || "—"}
                       </span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <FoodWaveBadge wave={p.food_wave} />
                     </td>
                     <td className="px-4 py-3.5 overflow-hidden">
                       <span className="font-mono text-xs block truncate" style={{ color: BRAND.sand }}>

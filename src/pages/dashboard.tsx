@@ -26,6 +26,7 @@ import { SignedIn, UserButton } from "@clerk/clerk-react";
 import Profile from "@/components/ui/profile";
 import { CheckinQr } from "@/components/CheckinQr";
 import CountdownTimer from "@/components/CountdownTimer";
+import { FoodWaveBadge } from "@/components/FoodWaveBadge";
 import { MEAL_KEYS } from "@/types/event-ops";
 import { formatMealLabel } from "@/lib/meals";
 
@@ -275,6 +276,19 @@ function ParticipantCheckinCard({ participant }: { participant: MyParticipant })
           </div>
         </div>
       </div>
+
+      {participant.food_wave && (
+        <div className="flex flex-col gap-3">
+          <FoodWaveBadge wave={participant.food_wave} size="lg" />
+          <p
+            className="font-intimate text-base leading-relaxed px-1"
+            style={{ fontStyle: "italic", color: BRAND.creamMuted }}
+          >
+            We&apos;ll call food groups on Discord. Sisters first, then{" "}
+            {participant.food_wave.label.toLowerCase()}.
+          </p>
+        </div>
+      )}
 
       <div
         className="rounded-2xl p-7 flex flex-col gap-5"

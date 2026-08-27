@@ -9,6 +9,7 @@ import {
 import type { MealKey, ParticipantDetail } from "@/types/event-ops";
 import { MEAL_KEYS } from "@/types/event-ops";
 import { formatMealLabel } from "@/lib/meals";
+import { FoodWaveBadge } from "@/components/FoodWaveBadge";
 
 interface ParticipantDetailPanelProps {
   participantId: string | null;
@@ -141,6 +142,11 @@ export function ParticipantDetailPanel({
             <p className="font-display text-lg font-bold" style={{ color: BRAND.cream }}>{detail.full_name}</p>
             <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>{detail.email}</p>
             <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>Gender: {detail.gender || "—"}</p>
+            {detail.food_wave && (
+              <div className="pt-2">
+                <FoodWaveBadge wave={detail.food_wave} size={prominent ? "lg" : "sm"} />
+              </div>
+            )}
             <p className="font-mono text-sm" style={{ color: BRAND.sand }}>Code: {detail.public_checkin_code}</p>
             <div className="flex items-center gap-2">
               <span className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>Status:</span>

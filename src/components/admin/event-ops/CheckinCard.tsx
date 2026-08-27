@@ -3,6 +3,7 @@ import { BRAND } from "@/components/Shared";
 import { checkinByCode, getEventOpsErrorMessage, EventOpsApiError } from "@/lib/event-ops-api";
 import type { ParticipantSummary } from "@/types/event-ops";
 import { QrCheckinScanner } from "./QrCheckinScanner";
+import { FoodWaveBadge } from "@/components/FoodWaveBadge";
 
 interface CheckinCardProps {
   onSuccess: (participant: ParticipantSummary) => void;
@@ -131,11 +132,14 @@ export function CheckinCard({ onSuccess }: CheckinCardProps) {
       )}
 
       {mode === "type" && success && (
-        <div
-          className="rounded-lg px-3.5 py-2.5 font-sans text-sm"
-          style={{ background: "rgba(95,168,119,0.1)", border: "1px solid rgba(95,168,119,0.3)", color: "#5FA877" }}
-        >
-          <strong style={{ color: BRAND.cream }}>{success.full_name}</strong> — {success.checkin_status.replace("_", " ")}
+        <div className="flex flex-col gap-2">
+          {success.food_wave && <FoodWaveBadge wave={success.food_wave} size="lg" />}
+          <div
+            className="rounded-lg px-3.5 py-2.5 font-sans text-sm"
+            style={{ background: "rgba(95,168,119,0.1)", border: "1px solid rgba(95,168,119,0.3)", color: "#5FA877" }}
+          >
+            <strong style={{ color: BRAND.cream }}>{success.full_name}</strong> — {success.checkin_status.replace("_", " ")}
+          </div>
         </div>
       )}
 

@@ -28,6 +28,12 @@ export interface ParticipantSummary {
   created_at: number;
   updated_at: number;
   claimed_meals: MealKey[];
+  food_wave: {
+    key: string;
+    label: string;
+    hex: string;
+    text_hex: string;
+  } | null;
 }
 
 export interface ParticipantMeal {

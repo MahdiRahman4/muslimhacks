@@ -90,6 +90,12 @@ export interface MyParticipant {
   checkin_status: "not_checked_in" | "checked_in";
   checked_in_at: number | null;
   claimed_meals: string[];
+  food_wave?: {
+    key: string;
+    label: string;
+    hex: string;
+    text_hex: string;
+  } | null;
 }
 
 export interface MyParticipantResponse {
