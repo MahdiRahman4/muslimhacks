@@ -12,12 +12,18 @@ const DISCORD_RSVP_URL = "https://discord.gg/7dxzMvfDw5";
 
 function linkButton(href: string, label: string, background: string): string {
   return `
-<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left" style="margin:12px 0 20px 0;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:12px 0 16px 0;">
   <tr>
-    <td align="left" bgcolor="${background}" style="background:${background};border-radius:6px;">
-      <a href="${href}" style="display:inline-block;padding:12px 18px;color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;text-decoration:none;border-radius:6px;">
-        ${label}
-      </a>
+    <td align="left">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td align="left" bgcolor="${background}" style="background:${background};border-radius:6px;">
+            <a href="${href}" style="display:inline-block;padding:12px 18px;color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;text-decoration:none;border-radius:6px;">
+              ${label}
+            </a>
+          </td>
+        </tr>
+      </table>
     </td>
   </tr>
 </table>`.trim();
