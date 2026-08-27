@@ -145,7 +145,7 @@ export const en = {
     contact: "Contact",
     general: "General inquiries",
     sponsorship: "Sponsorship",
-    partner: "Partner",
+    partner: "Charity Partner",
     funds: "Funds raised go to charity through IR Canada.",
     rights: "© {year} MuslimHacks. All rights reserved.",
     madeIn: "Made in Montreal",

@@ -109,7 +109,7 @@ const Footer = () => {
           <p className="font-sans text-sm text-cream/40">
             {t("footer.rights", { year: new Date().getFullYear() })}
           </p>
-          <LanguageSwitcher />
+          {/* <LanguageSwitcher /> */}
           <p className="font-sans text-sm text-cream/40">
             {t("footer.madeIn")}
           </p>
