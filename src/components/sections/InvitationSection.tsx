@@ -158,8 +158,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
               </GoldButton>
             </SignedOut>
             <SignedIn>
-              {(!isAdmin) && (
-
+              {!isAdmin && !hasApplication && (
                 <GoldButton
                   as={Link}
                   to="/apply"

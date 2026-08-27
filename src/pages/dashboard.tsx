@@ -284,8 +284,7 @@ function ParticipantCheckinCard({ participant }: { participant: MyParticipant })
             className="font-intimate text-base leading-relaxed px-1"
             style={{ fontStyle: "italic", color: BRAND.creamMuted }}
           >
-            We&apos;ll call food groups on Discord. Sisters first, then{" "}
-            {participant.food_wave.label.toLowerCase()}.
+            We&apos;ll call food groups on Discord.
           </p>
         </div>
       )}

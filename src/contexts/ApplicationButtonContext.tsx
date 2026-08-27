@@ -74,8 +74,8 @@ export function useApplicationButtonState() {
 }
 
 export function getApplicationButtonLabel(
-  hasApplication: boolean,
+  _hasApplication: boolean,
   t: (path: string) => string,
 ) {
-  return hasApplication ? t("nav.updateApplication") : t("nav.applyNow");
+  return t("nav.applyNow");
 }

@@ -38,7 +38,7 @@ export function ApplyFunnelCta({
         </GoldButton>
       </SignedOut>
       <SignedIn>
-        {!isAdmin && (
+        {!isAdmin && !hasApplication && (
           <GoldButton as={Link} to="/apply" className="w-full sm:w-auto">
             {label}
           </GoldButton>

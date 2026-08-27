@@ -132,7 +132,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
           )}
           {displayApplyDialog && (
             <SignedIn>
-              {!isAdmin && (
+              {!isAdmin && !hasApplication && (
                 <GoldButton
                   as={Link}
                   to="/apply"
