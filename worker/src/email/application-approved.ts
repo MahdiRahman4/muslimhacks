@@ -4,9 +4,24 @@ import {
   escapeHtml,
   firstName,
   sendResendEmail,
+  wrapEmailHtml,
 } from "./shared";
 
 const DASHBOARD_URL = "https://muslimhacks.ca/dashboard";
+const DISCORD_RSVP_URL = "https://discord.gg/7dxzMvfDw5";
+
+function linkButton(href: string, label: string, background: string): string {
+  return `
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="left" style="margin:12px 0 20px 0;">
+  <tr>
+    <td align="left" bgcolor="${background}" style="background:${background};border-radius:6px;">
+      <a href="${href}" style="display:inline-block;padding:12px 18px;color:#ffffff;font-family:Arial,sans-serif;font-size:14px;font-weight:bold;text-decoration:none;border-radius:6px;">
+        ${label}
+      </a>
+    </td>
+  </tr>
+</table>`.trim();
+}
 
 /**
  * Sent when an admin approves an application. Points to dashboard for QR check-in.
@@ -27,6 +42,9 @@ export async function sendApplicationApprovedEmail(
     "",
     "Alhamdulillah, you've been accepted to MuslimHacks 2026!",
     "",
+    "Please RSVP by joining our Discord server. If you join, that means you're coming:",
+    DISCORD_RSVP_URL,
+    "",
     "Event details:",
     "• September 2026",
     "• Concordia University, Downtown Campus, Montréal, Quebec",
@@ -44,37 +62,33 @@ export async function sendApplicationApprovedEmail(
     "The MuslimHacks Team",
   ].join("\n");
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<body style="font-family: Georgia, serif; color: #1a1a2e; line-height: 1.6; max-width: 560px; margin: 0 auto; padding: 24px;">
-  <p>Assalamu alaikum <strong>${escapeHtml(name)}</strong>,</p>
-  <p>Alhamdulillah, you've been accepted to <strong>MuslimHacks 2026</strong>!</p>
-  <p><strong>Event details</strong></p>
-  <ul>
-    <li>September 2026</li>
-    <li>Concordia University, Downtown Campus, Montréal, Quebec</li>
-    <li>In person, free to attend</li>
-  </ul>
-  <p><strong>Check-in</strong></p>
-  <p>Open your dashboard to get your QR code. Show it at registration for a fast check-in:</p>
-  <p style="margin: 20px 0;">
-    <a href="${DASHBOARD_URL}" style="display: inline-block; padding: 14px 24px; background: #b8860b; color: #ffffff; font-weight: bold; text-decoration: none; border-radius: 999px;">
-      Open my dashboard
-    </a>
-  </p>
-  <p><strong>Backup code</strong> (if you can't open the dashboard):</p>
-  <p style="font-family: monospace; font-size: 22px; letter-spacing: 0.12em; font-weight: bold; color: #b8860b;">
-    ${escapeHtml(code)}
-  </p>
-  <p style="color: #666; font-size: 14px;">Save this code on your phone just in case.</p>
-  <p style="color: #666; font-size: 14px;">
-    Questions? Reply to this email or contact
-    <a href="mailto:${escapeHtml(DEFAULT_REPLY_TO)}" style="color: #b8860b;">${escapeHtml(DEFAULT_REPLY_TO)}</a>
-  </p>
-  <p>Jazakum Allahu khayran,<br><strong>The MuslimHacks Team</strong></p>
-</body>
-</html>`.trim();
+  const html = wrapEmailHtml(`
+    <p style="margin:0 0 16px 0;text-align:left;">Assalamu alaikum <strong>${escapeHtml(name)}</strong>,</p>
+    <p style="margin:0 0 16px 0;text-align:left;">Alhamdulillah, you've been accepted to <strong>MuslimHacks 2026</strong>!</p>
+    <p style="margin:0 0 8px 0;text-align:left;"><strong>RSVP</strong></p>
+    <p style="margin:0 0 8px 0;text-align:left;">Please join our Discord server to RSVP. Joining the server means you're coming.</p>
+    ${linkButton(DISCORD_RSVP_URL, "Join Discord to RSVP", "#5865F2")}
+    <p style="margin:0 0 24px 0;color:#666;font-size:14px;text-align:left;">
+      Or open this link: <a href="${DISCORD_RSVP_URL}" style="color:#b8860b;">${DISCORD_RSVP_URL}</a>
+    </p>
+    <p style="margin:0 0 8px 0;text-align:left;"><strong>Event details</strong></p>
+    <p style="margin:0 0 4px 0;text-align:left;">• September 2026</p>
+    <p style="margin:0 0 4px 0;text-align:left;">• Concordia University, Downtown Campus, Montréal, Quebec</p>
+    <p style="margin:0 0 24px 0;text-align:left;">• In person, free to attend</p>
+    <p style="margin:0 0 8px 0;text-align:left;"><strong>Check-in</strong></p>
+    <p style="margin:0 0 8px 0;text-align:left;">Open your dashboard to get your QR code. Show it at registration for a fast check-in:</p>
+    ${linkButton(DASHBOARD_URL, "Open my dashboard", "#b8860b")}
+    <p style="margin:0 0 8px 0;text-align:left;"><strong>Backup code</strong> (if you can't open the dashboard):</p>
+    <p style="margin:0 0 8px 0;font-family:Arial,monospace;font-size:22px;letter-spacing:0.12em;font-weight:bold;color:#b8860b;text-align:left;">
+      ${escapeHtml(code)}
+    </p>
+    <p style="margin:0 0 24px 0;color:#666;font-size:14px;text-align:left;">Save this code on your phone just in case.</p>
+    <p style="margin:0 0 16px 0;color:#666;font-size:14px;text-align:left;">
+      Questions? Reply to this email or contact
+      <a href="mailto:${escapeHtml(DEFAULT_REPLY_TO)}" style="color:#b8860b;">${escapeHtml(DEFAULT_REPLY_TO)}</a>
+    </p>
+    <p style="margin:0;text-align:left;">Jazakum Allahu khayran,<br><strong>The MuslimHacks Team</strong></p>
+  `);
 
   await sendResendEmail(env, {
     to,

@@ -16,6 +16,26 @@ export function firstName(fullName: string): string {
   return fullName.split(" ")[0] || "there";
 }
 
+/** Left-aligned wrapper so Gmail doesn't center short emails. */
+export function wrapEmailHtml(inner: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body style="margin:0;padding:0;background:#ffffff;text-align:left;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" align="left" style="width:100%;text-align:left;">
+    <tr>
+      <td align="left" style="font-family:Georgia,serif;color:#1a1a2e;line-height:1.6;font-size:16px;text-align:left;padding:16px 8px;">
+        ${inner}
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
 export interface ResendAttachment {
   filename: string;
   content: string;
