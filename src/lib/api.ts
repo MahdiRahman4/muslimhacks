@@ -305,6 +305,19 @@ export async function fetchAdminApplications(params: {
   }>(`/api/admin/applications${suffix}`);
 }
 
+export async function fetchAdminDietarySummary(params: { approvedOnly?: boolean } = {}) {
+  const query = new URLSearchParams();
+  if (params.approvedOnly) query.set("approved_only", "true");
+  const suffix = query.toString() ? `?${query.toString()}` : "";
+  return apiFetch<{
+    answers: { answer: string; count: number }[];
+    none_count: number;
+    listed_count: number;
+    considered: number;
+    approved_only: boolean;
+  }>(`/api/admin/applications/dietary-summary${suffix}`);
+}
+
 export async function fetchAdminUsersWithoutApplication(params: {
   search?: string;
   limit?: number;
@@ -384,6 +397,22 @@ export async function submitApplicationReview(
   }>(`/api/admin/applications/${id}/review`, {
     method: "POST",
     body: JSON.stringify(body),
+  });
+}
+
+export async function submitBulkApplicationReview(
+  ids: string[],
+  status: "pending" | "approved" | "rejected",
+) {
+  return apiFetch<{
+    status: string;
+    processed: number;
+    updated: number;
+    skipped: number;
+    failed: { id: string; error: string }[];
+  }>("/api/admin/applications/bulk-review", {
+    method: "POST",
+    body: JSON.stringify({ ids, status }),
   });
 }
 

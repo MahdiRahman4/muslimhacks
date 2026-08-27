@@ -6,6 +6,7 @@ import type { ParticipantSummary } from "@/types/event-ops";
 import { FoodWaveBadge } from "@/components/FoodWaveBadge";
 
 const SCANNER_ID = "admin-qr-checkin-scanner";
+const SAME_CODE_COOLDOWN_MS = 2500;
 
 function normalizeScannedCode(raw: string): string {
   const trimmed = raw.trim().toUpperCase();
@@ -23,6 +24,7 @@ interface QrCheckinScannerProps {
 export function QrCheckinScanner({ onSuccess, disabled }: QrCheckinScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const busyRef = useRef(false);
+  const lastScanRef = useRef({ code: "", at: 0 });
   const [active, setActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -46,34 +48,50 @@ export function QrCheckinScanner({ onSuccess, disabled }: QrCheckinScannerProps)
   const handleScan = useCallback(
     async (raw: string) => {
       if (busyRef.current || disabled) return;
+
+      const code = normalizeScannedCode(raw);
+      if (!code) return;
+
+      const now = Date.now();
+      if (
+        lastScanRef.current.code === code &&
+        now - lastScanRef.current.at < SAME_CODE_COOLDOWN_MS
+      ) {
+        return;
+      }
+
       busyRef.current = true;
       setError(null);
       setInfo(null);
       setSuccess(null);
 
-      const code = normalizeScannedCode(raw);
-      if (!code) {
-        busyRef.current = false;
-        return;
-      }
-
       try {
         const data = await checkinByCode(code);
+        lastScanRef.current = { code, at: Date.now() };
         setSuccess(data.participant);
         if (data.message) setInfo(data.message);
         onSuccess(data.participant);
+        // Stay busy briefly so the camera cannot fire again before navigation.
+        window.setTimeout(() => {
+          busyRef.current = false;
+        }, SAME_CODE_COOLDOWN_MS);
       } catch (err) {
         if (err instanceof EventOpsApiError && err.code === "already_checked_in" && err.participant) {
+          lastScanRef.current = { code, at: Date.now() };
           setSuccess(err.participant);
           setInfo(err.message);
           onSuccess(err.participant);
+          window.setTimeout(() => {
+            busyRef.current = false;
+          }, SAME_CODE_COOLDOWN_MS);
         } else if (err instanceof EventOpsApiError && err.code === "already_checked_in") {
+          lastScanRef.current = { code, at: Date.now() };
           setInfo(err.message);
+          busyRef.current = false;
         } else {
           setError(getEventOpsErrorMessage(err));
+          busyRef.current = false;
         }
-      } finally {
-        busyRef.current = false;
       }
     },
     [disabled, onSuccess],

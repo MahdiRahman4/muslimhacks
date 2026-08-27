@@ -277,7 +277,7 @@ function ParticipantCheckinCard({ participant }: { participant: MyParticipant })
         </div>
       </div>
 
-      {participant.food_wave && (
+      {participant.food_wave ? (
         <div className="flex flex-col gap-3">
           <FoodWaveBadge wave={participant.food_wave} size="lg" />
           <p
@@ -287,6 +287,13 @@ function ParticipantCheckinCard({ participant }: { participant: MyParticipant })
             We&apos;ll call food groups on Discord.
           </p>
         </div>
+      ) : (
+        <p
+          className="font-intimate text-base leading-relaxed px-1"
+          style={{ fontStyle: "italic", color: BRAND.creamMuted }}
+        >
+          Your food group will be assigned when you check in at registration.
+        </p>
       )}
 
       <div

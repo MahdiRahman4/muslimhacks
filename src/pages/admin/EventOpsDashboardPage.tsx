@@ -59,17 +59,21 @@ const EventOpsDashboardPage = () => {
   const [tableLoading, setTableLoading] = useState(true);
   const [tableError, setTableError] = useState<string | null>(null);
 
+  const [debouncedSearch, setDebouncedSearch] = useState(DEFAULT_FILTERS.search);
+
   const queryParams = useMemo(
     () => ({
-      ...filtersToQueryParams(filters),
+      ...filtersToQueryParams({ ...filters, search: debouncedSearch }),
       limit: PAGE_SIZE,
       offset,
     }),
-    [filters, offset],
+    [filters.checkedIn, filters.gender, filters.sortBy, filters.sortOrder, debouncedSearch, offset],
   );
 
-  const loadSummary = useCallback(async () => {
-    setSummaryLoading(true);
+  const loadSummary = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      setSummaryLoading(true);
+    }
     setSummaryError(null);
     try {
       const data = await fetchEventOpsSummary();
@@ -77,7 +81,9 @@ const EventOpsDashboardPage = () => {
     } catch (err) {
       setSummaryError(getEventOpsErrorMessage(err));
     } finally {
-      setSummaryLoading(false);
+      if (!options?.silent) {
+        setSummaryLoading(false);
+      }
     }
   }, []);
 
@@ -100,6 +106,13 @@ const EventOpsDashboardPage = () => {
   }, [loadSummary]);
 
   useEffect(() => {
+    const handle = window.setTimeout(() => {
+      setDebouncedSearch(filters.search);
+    }, 300);
+    return () => window.clearTimeout(handle);
+  }, [filters.search]);
+
+  useEffect(() => {
     void loadParticipants();
   }, [loadParticipants]);
 
@@ -109,7 +122,10 @@ const EventOpsDashboardPage = () => {
   };
 
   const openParticipantPage = (participant: ParticipantSummary) => {
-    navigate(`/admin/event-ops/participants/${participant.id}`);
+    void loadSummary({ silent: true });
+    navigate(`/admin/event-ops/participants/${participant.id}`, {
+      state: { participant },
+    });
   };
 
   if (!user) {

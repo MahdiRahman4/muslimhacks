@@ -1,4 +1,5 @@
 import type { Env } from "../env";
+import type { AuthUser } from "../auth/types";
 import { requireAdmin, readJson, escapeLike, type JsonResponder } from "./auth";
 import type { ApplicationRow, ApplicationStatus } from "../applications/types";
 import {
@@ -277,6 +278,81 @@ async function handleListApplications(
   });
 }
 
+const NONE_DIETARY = new Set([
+  "",
+  "-",
+  "n/a",
+  "n.a",
+  "n.a.",
+  "na",
+  "nil",
+  "no",
+  "none",
+  "none.",
+  "no allergies",
+  "no allergy",
+  "no dietary restrictions",
+  "nothing",
+]);
+
+function isNoneDietary(value: string): boolean {
+  return NONE_DIETARY.has(value.trim().toLowerCase());
+}
+
+async function handleDietarySummary(
+  request: Request,
+  env: Env,
+  respond: JsonResponder,
+): Promise<Response> {
+  const auth = await requireAdmin(request, env, respond);
+  if (auth instanceof Response) {
+    return auth;
+  }
+
+  const url = new URL(request.url);
+  const approvedOnly = url.searchParams.get("approved_only") === "true";
+  const statusClause = approvedOnly
+    ? "status = 'approved'"
+    : "status IN ('pending', 'approved')";
+
+  const rows = await env.DB.prepare(
+    `SELECT TRIM(dietary_restrictions) AS answer
+     FROM applications
+     WHERE ${statusClause}`,
+  ).all<{ answer: string | null }>();
+
+  const counts = new Map<string, { answer: string; count: number }>();
+  let noneCount = 0;
+
+  for (const row of rows.results ?? []) {
+    const answer = row.answer?.trim() ?? "";
+    if (!answer || isNoneDietary(answer)) {
+      noneCount += 1;
+      continue;
+    }
+    const key = answer.toLowerCase();
+    const existing = counts.get(key);
+    if (existing) {
+      existing.count += 1;
+    } else {
+      counts.set(key, { answer, count: 1 });
+    }
+  }
+
+  const answers = [...counts.values()].sort((a, b) => {
+    if (b.count !== a.count) return b.count - a.count;
+    return a.answer.localeCompare(b.answer);
+  });
+
+  return respond({
+    answers,
+    none_count: noneCount,
+    listed_count: answers.reduce((sum, item) => sum + item.count, 0),
+    considered: (rows.results ?? []).length,
+    approved_only: approvedOnly,
+  });
+}
+
 async function getParticipantSummaryForApplication(
   env: Env,
   applicationId: string,
@@ -403,38 +479,30 @@ function validateReviewBody(
   };
 }
 
-async function handleReviewApplication(
-  request: Request,
+const MAX_BULK_REVIEW = 100;
+
+async function applyApplicationReview(
   env: Env,
-  respond: JsonResponder,
+  admin: AuthUser,
   applicationId: string,
-): Promise<Response> {
-  const admin = await requireAdmin(request, env, respond);
-  if (admin instanceof Response) {
-    return admin;
+  data: { score: number | null; notes: string | null; status: ReviewStatus },
+  options?: { skipIfAlreadyApproved?: boolean },
+): Promise<
+  | { ok: true; skipped: boolean; reviewId: string | null; application: ApplicationWithEmail | null; participant: Awaited<ReturnType<typeof ensureParticipantForApprovedApplication>> }
+  | { ok: false; error: string; status: number }
+> {
+  const current = await getApplicationWithEmail(env, applicationId);
+  if (!current) {
+    return { ok: false, error: "Application not found", status: 404 };
   }
 
-  const application = await env.DB.prepare("SELECT id FROM applications WHERE id = ? LIMIT 1")
-    .bind(applicationId)
-    .first();
-
-  if (!application) {
-    return respond({ error: "Application not found" }, 404);
-  }
-
-  const body = await readJson(request);
-  if (body === null) {
-    return respond({ error: "Invalid JSON body" }, 400);
-  }
-
-  const validated = validateReviewBody(body);
-  if (!validated.ok) {
-    return respond({ error: validated.error }, 400);
+  if (options?.skipIfAlreadyApproved && current.status === "approved" && data.status === "approved") {
+    return { ok: true, skipped: true, reviewId: null, application: current, participant: null };
   }
 
   const now = Date.now();
   const reviewId = crypto.randomUUID();
-  const { score, notes, status } = validated.data;
+  const { score, notes, status } = data;
 
   await env.DB.prepare(
     `INSERT INTO application_reviews (
@@ -472,17 +540,119 @@ async function handleReviewApplication(
     }
   }
 
-  const review = await env.DB.prepare(
-    "SELECT * FROM application_reviews WHERE id = ? LIMIT 1",
-  )
-    .bind(reviewId)
-    .first<ApplicationReviewRow>();
+  return { ok: true, skipped: false, reviewId, application: updated, participant };
+}
+
+async function handleReviewApplication(
+  request: Request,
+  env: Env,
+  respond: JsonResponder,
+  applicationId: string,
+): Promise<Response> {
+  const admin = await requireAdmin(request, env, respond);
+  if (admin instanceof Response) {
+    return admin;
+  }
+
+  const application = await env.DB.prepare("SELECT id FROM applications WHERE id = ? LIMIT 1")
+    .bind(applicationId)
+    .first();
+
+  if (!application) {
+    return respond({ error: "Application not found" }, 404);
+  }
+
+  const body = await readJson(request);
+  if (body === null) {
+    return respond({ error: "Invalid JSON body" }, 400);
+  }
+
+  const validated = validateReviewBody(body);
+  if (!validated.ok) {
+    return respond({ error: validated.error }, 400);
+  }
+
+  const applied = await applyApplicationReview(env, admin, applicationId, validated.data);
+  if (!applied.ok) {
+    return respond({ error: applied.error }, applied.status);
+  }
+
+  const review = applied.reviewId
+    ? await env.DB.prepare("SELECT * FROM application_reviews WHERE id = ? LIMIT 1")
+        .bind(applied.reviewId)
+        .first<ApplicationReviewRow>()
+    : null;
 
   return respond({
-    application: updated ? toApplicationDetail(updated) : null,
+    application: applied.application ? toApplicationDetail(applied.application) : null,
     review: review ? toReviewResponse(review, admin.email) : null,
-    participant: participant ? toParticipantPayload(participant) : null,
+    participant: applied.participant ? toParticipantPayload(applied.participant) : null,
   }, 201);
+}
+
+async function handleBulkReviewApplications(
+  request: Request,
+  env: Env,
+  respond: JsonResponder,
+): Promise<Response> {
+  const admin = await requireAdmin(request, env, respond);
+  if (admin instanceof Response) {
+    return admin;
+  }
+
+  const body = await readJson(request);
+  if (!body || typeof body !== "object") {
+    return respond({ error: "Invalid JSON body" }, 400);
+  }
+
+  const input = body as Record<string, unknown>;
+  const ids = Array.isArray(input.ids)
+    ? input.ids.filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+    : [];
+  const uniqueIds = [...new Set(ids.map((id) => id.trim()))];
+
+  if (uniqueIds.length === 0) {
+    return respond({ error: "ids must be a non-empty array" }, 400);
+  }
+  if (uniqueIds.length > MAX_BULK_REVIEW) {
+    return respond({ error: `ids must contain at most ${MAX_BULK_REVIEW} applications` }, 400);
+  }
+
+  if (typeof input.status !== "string" || !REVIEW_STATUSES.includes(input.status as ReviewStatus)) {
+    return respond({ error: "status must be one of: pending, approved, rejected" }, 400);
+  }
+
+  const status = input.status as ReviewStatus;
+  let approved = 0;
+  let skipped = 0;
+  const failed: { id: string; error: string }[] = [];
+
+  for (const id of uniqueIds) {
+    const applied = await applyApplicationReview(
+      env,
+      admin,
+      id,
+      { score: null, notes: null, status },
+      { skipIfAlreadyApproved: status === "approved" },
+    );
+    if (!applied.ok) {
+      failed.push({ id, error: applied.error });
+      continue;
+    }
+    if (applied.skipped) {
+      skipped += 1;
+    } else {
+      approved += 1;
+    }
+  }
+
+  return respond({
+    status,
+    processed: uniqueIds.length,
+    updated: approved,
+    skipped,
+    failed,
+  });
 }
 
 const APPLICATION_EXPORT_HEADERS = [
@@ -653,6 +823,14 @@ export async function handleAdminApplicationRoutes(
   // Must be before the /:id detail route so "export" is not treated as an id
   if (pathname === "/api/admin/applications/export" && method === "GET") {
     return handleExportApplications(request, env, respond);
+  }
+
+  if (pathname === "/api/admin/applications/dietary-summary" && method === "GET") {
+    return handleDietarySummary(request, env, respond);
+  }
+
+  if (pathname === "/api/admin/applications/bulk-review" && method === "POST") {
+    return handleBulkReviewApplications(request, env, respond);
   }
 
   const resumeMatch = pathname.match(

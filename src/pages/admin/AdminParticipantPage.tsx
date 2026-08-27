@@ -1,12 +1,16 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { BRAND, GLOBAL_CSS } from "@/components/Shared";
 import { EventOpsHeader } from "@/components/admin/event-ops/EventOpsHeader";
 import { ParticipantDetailPanel } from "@/components/admin/event-ops/ParticipantDetailPanel";
+import type { ParticipantSummary } from "@/types/event-ops";
 
 export default function AdminParticipantPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialParticipant = (location.state as { participant?: ParticipantSummary } | null)
+    ?.participant;
 
   return (
     <div className="min-h-screen font-sans" style={{ background: BRAND.navyDeep, color: BRAND.cream }}>
@@ -38,6 +42,7 @@ export default function AdminParticipantPage() {
 
         <ParticipantDetailPanel
           participantId={id ?? null}
+          initialParticipant={initialParticipant?.id === id ? initialParticipant : undefined}
           onUpdated={() => undefined}
           prominent
         />

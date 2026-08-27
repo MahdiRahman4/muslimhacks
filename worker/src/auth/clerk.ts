@@ -124,8 +124,6 @@ export async function authenticateClerk(
     return null;
   }
 
-  logTokenArrival(token, request);
-
   try {
     // @clerk/backend v3 verifyToken returns the JwtPayload directly and
     // throws when the token is invalid/expired.
@@ -137,6 +135,13 @@ export async function authenticateClerk(
     if (!clerkUserId) {
       console.error("[clerk auth] verified token missing sub");
       return null;
+    }
+
+    // Event-day hot path: known staff already have a D1 row. Skip Clerk's
+    // users.getUser HTTP call on every scan.
+    const existing = await selectUser(env, "clerk_id", clerkUserId);
+    if (existing) {
+      return { ...existing, full_name: null };
     }
 
     const identity = await resolveClerkIdentity(env, clerkUserId);
@@ -152,23 +157,6 @@ export async function authenticateClerk(
     console.error("[clerk auth] token verification threw", error);
     logTokenDiagnostics(token);
     return null;
-  }
-}
-
-/** Compact one-liner on every auth attempt: token age at arrival. */
-function logTokenArrival(token: string, request: Request): void {
-  try {
-    const base64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
-    const payload = JSON.parse(atob(base64)) as { iat?: number; exp?: number };
-    const now = Date.now();
-    const ageSeconds = Math.round((now - (payload.iat ?? 0) * 1000) / 1000);
-    const remainingSeconds = Math.round(((payload.exp ?? 0) * 1000 - now) / 1000);
-    console.log(
-      `[clerk auth] token arrived for ${new URL(request.url).pathname}: ` +
-        `age=${ageSeconds}s remaining=${remainingSeconds}s`,
-    );
-  } catch {
-    console.log("[clerk auth] token arrived but could not be decoded");
   }
 }
 

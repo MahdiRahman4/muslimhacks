@@ -30,6 +30,7 @@ export interface ParticipantRow {
   checked_in_by: string | null;
   created_at: number;
   updated_at: number;
+  food_wave_key?: string | null;
 }
 
 export interface ParticipantMealRow {

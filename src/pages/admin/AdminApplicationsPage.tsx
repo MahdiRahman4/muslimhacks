@@ -1,15 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Search, Download, ChevronLeft, ChevronRight,
-  ChevronUp, ChevronDown, ChevronsUpDown, SlidersHorizontal, Columns3,
+  ChevronUp, ChevronDown, ChevronsUpDown, SlidersHorizontal,
 } from "lucide-react";
 import { BRAND, GoldText, Eyebrow, GLOBAL_CSS } from "@/components/Shared";
 import muslimHacksLogo from "@/assets/muslimhacks-logo-white.svg";
 import {
   downloadApplicationsCsv,
   fetchAdminApplications,
+  fetchAdminDietarySummary,
   fetchAdminUsersWithoutApplication,
+  submitBulkApplicationReview,
 } from "@/lib/api";
 import type {
   AdminApplicationSummary,
@@ -18,7 +20,7 @@ import type {
 } from "@/types/application";
 import Profile from "@/components/ui/profile";
 
-type ListView = "applications" | "not_applied";
+type ListView = "applications" | "not_applied" | "allergies";
 type SortKey = "full_name" | "email" | "gender" | "status" | "created_at";
 type SortDir = "asc" | "desc";
 
@@ -64,70 +66,6 @@ const STATUS_TABS: { key: ApplicationStatus | "all"; label: string }[] = [
   { key: "rejected", label: "Rejected" },
 ];
 
-const ANSWER_COLUMNS = [
-  { key: "dietary_restrictions", label: "Dietary / allergies" },
-  { key: "accessibility", label: "Accessibility" },
-  { key: "first_hackathon", label: "First hackathon" },
-  { key: "hackathon_count", label: "Hackathon count" },
-  { key: "cs_career", label: "CS / tech" },
-  { key: "school", label: "School" },
-  { key: "phone", label: "Phone" },
-  { key: "motivation", label: "Why attend" },
-  { key: "past_project", label: "Proud of" },
-  { key: "interests", label: "Ummah idea" },
-  { key: "community", label: "Volunteering" },
-] as const;
-
-type AnswerColumnKey = (typeof ANSWER_COLUMNS)[number]["key"];
-
-const ANSWER_COLUMNS_STORAGE_KEY = "mh-admin-app-answer-columns";
-
-function loadAnswerColumns(): AnswerColumnKey[] {
-  try {
-    const raw = localStorage.getItem(ANSWER_COLUMNS_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
-    const allowed = new Set(ANSWER_COLUMNS.map((col) => col.key));
-    return parsed.filter((key): key is AnswerColumnKey => typeof key === "string" && allowed.has(key as AnswerColumnKey));
-  } catch {
-    return [];
-  }
-}
-
-function formatYesNo(value: boolean | null | undefined): string {
-  if (value == null) return "—";
-  return value ? "Yes" : "No";
-}
-
-function formatAnswer(row: AdminApplicationSummary, key: AnswerColumnKey): string {
-  switch (key) {
-    case "first_hackathon":
-      return formatYesNo(row.first_hackathon);
-    case "cs_career":
-      return formatYesNo(row.cs_career);
-    case "hackathon_count":
-      if (row.first_hackathon === true) return "0 (first)";
-      return row.hackathon_count == null ? "—" : String(row.hackathon_count);
-    case "school":
-      return row.school?.trim() || "—";
-    case "phone":
-      return row.phone?.trim() || "—";
-    case "dietary_restrictions":
-      return row.dietary_restrictions?.trim() || "—";
-    case "accessibility":
-      return row.accessibility?.trim() || "—";
-    case "motivation":
-      return row.motivation?.trim() || "—";
-    case "past_project":
-      return row.past_project?.trim() || "—";
-    case "interests":
-      return row.interests?.trim() || "—";
-    case "community":
-      return row.community?.trim() || "—";
-  }
-}
-
 const selectStyle = {
   background: "rgba(245,238,227,0.06)",
   border: "1px solid rgba(221,168,83,0.18)",
@@ -155,18 +93,17 @@ const AdminApplicationsPage = () => {
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  const [answerColumns, setAnswerColumns] = useState<AnswerColumnKey[]>(loadAnswerColumns);
-  const [answerPickerOpen, setAnswerPickerOpen] = useState(false);
-  const answerPickerRef = useRef<HTMLDivElement>(null);
-
-  const visibleAnswerColumns = useMemo(
-    () => ANSWER_COLUMNS.filter((col) => answerColumns.includes(col.key)),
-    [answerColumns],
-  );
+  const [dietaryAnswers, setDietaryAnswers] = useState<{ answer: string; count: number }[]>([]);
+  const [dietaryNoneCount, setDietaryNoneCount] = useState(0);
+  const [dietaryConsidered, setDietaryConsidered] = useState(0);
+  const [dietaryApprovedOnly, setDietaryApprovedOnly] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkApproving, setBulkApproving] = useState(false);
+  const [listEpoch, setListEpoch] = useState(0);
 
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -177,21 +114,6 @@ const AdminApplicationsPage = () => {
   }, [searchInput]);
 
   useEffect(() => {
-    localStorage.setItem(ANSWER_COLUMNS_STORAGE_KEY, JSON.stringify(answerColumns));
-  }, [answerColumns]);
-
-  useEffect(() => {
-    if (!answerPickerOpen) return;
-    const onPointerDown = (event: PointerEvent) => {
-      if (!answerPickerRef.current?.contains(event.target as Node)) {
-        setAnswerPickerOpen(false);
-      }
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [answerPickerOpen]);
-
-  useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -199,7 +121,18 @@ const AdminApplicationsPage = () => {
     const offset = (page - 1) * pageSize;
 
     const request =
-      view === "not_applied"
+      view === "allergies"
+        ? fetchAdminDietarySummary({ approvedOnly: dietaryApprovedOnly }).then((data) => {
+            if (cancelled) return;
+            setDietaryAnswers(data.answers);
+            setDietaryNoneCount(data.none_count);
+            setDietaryConsidered(data.considered);
+            setApplications([]);
+            setSignups([]);
+            setTotal(data.answers.length);
+            setSelectedIds([]);
+          })
+        : view === "not_applied"
         ? fetchAdminUsersWithoutApplication({
             search: search || undefined,
             limit: pageSize,
@@ -210,6 +143,7 @@ const AdminApplicationsPage = () => {
             setSignups(data.users);
             setApplications([]);
             setTotal(data.pagination.total);
+            setSelectedIds([]);
           })
         : fetchAdminApplications({
             status: statusFilter === "all" ? undefined : statusFilter,
@@ -224,6 +158,7 @@ const AdminApplicationsPage = () => {
             setApplications(data.applications);
             setSignups([]);
             setTotal(data.pagination.total);
+            setSelectedIds([]);
           });
 
     request
@@ -238,7 +173,7 @@ const AdminApplicationsPage = () => {
     return () => {
       cancelled = true;
     };
-  }, [view, statusFilter, genderFilter, search, page, pageSize, sortKey, sortDir]);
+  }, [view, statusFilter, genderFilter, search, page, pageSize, sortKey, sortDir, listEpoch, dietaryApprovedOnly]);
 
   useEffect(() => {
     let cancelled = false;
@@ -281,13 +216,57 @@ const AdminApplicationsPage = () => {
     setPage(1);
   }
 
-  function toggleAnswerColumn(key: AnswerColumnKey) {
-    setAnswerColumns((current) =>
-      current.includes(key) ? current.filter((item) => item !== key) : [...current, key],
-    );
-  }
-
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const pageIds = applications.map((row) => row.id);
+  const allOnPageSelected = pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+  const selectedOnPage = applications.filter((row) => selectedIds.includes(row.id));
+  const selectedApproves = selectedOnPage.filter((row) => row.status !== "approved");
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((current) =>
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
+    );
+  };
+
+  const toggleSelectAllOnPage = () => {
+    setSelectedIds((current) => {
+      if (allOnPageSelected) {
+        return current.filter((id) => !pageIds.includes(id));
+      }
+      return [...new Set([...current, ...pageIds])];
+    });
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedApproves.length === 0 || bulkApproving) return;
+    const confirmed = window.confirm(
+      `Approve ${selectedApproves.length} selected application${selectedApproves.length === 1 ? "" : "s"}? They will get the acceptance email.`,
+    );
+    if (!confirmed) return;
+
+    setBulkApproving(true);
+    setError(null);
+    try {
+      const result = await submitBulkApplicationReview(
+        selectedApproves.map((row) => row.id),
+        "approved",
+      );
+      if (result.failed.length > 0) {
+        setError(`Approved ${result.updated}, skipped ${result.skipped}, failed ${result.failed.length}.`);
+      }
+      setSelectedIds([]);
+      setListEpoch((value) => value + 1);
+      setCounts((current) => ({
+        ...current,
+        pending: Math.max(0, (current.pending ?? 0) - result.updated),
+        approved: (current.approved ?? 0) + result.updated,
+      }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to approve selected applications");
+    } finally {
+      setBulkApproving(false);
+    }
+  };
 
   const handleExportCsv = async () => {
     setExporting(true);
@@ -429,6 +408,24 @@ const AdminApplicationsPage = () => {
             })}
             <button
               onClick={() => {
+                setView("allergies");
+                setPage(1);
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full font-sans text-xs font-medium transition-all duration-200 focus-visible:ring-2 whitespace-nowrap"
+              style={view === "allergies" ? {
+                background: "rgba(221,168,83,0.12)",
+                border: "1px solid rgba(221,168,83,0.4)",
+                color: BRAND.gold,
+              } : {
+                background: "rgba(245,238,227,0.04)",
+                border: "1px solid rgba(245,238,227,0.08)",
+                color: BRAND.sand,
+              }}
+            >
+              Allergies
+            </button>
+            <button
+              onClick={() => {
                 setView("not_applied");
                 setPage(1);
                 setSortKey("created_at");
@@ -452,6 +449,22 @@ const AdminApplicationsPage = () => {
             </button>
           </div>
 
+          {view === "allergies" ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="font-sans text-sm" style={{ color: BRAND.sand }}>
+                Distinct allergy / dietary answers from {dietaryConsidered} {dietaryApprovedOnly ? "approved" : "pending + approved"} applications. No names.
+              </p>
+              <label className="flex items-center gap-2 font-sans text-xs" style={{ color: BRAND.cream }}>
+                <input
+                  type="checkbox"
+                  checked={dietaryApprovedOnly}
+                  onChange={(e) => setDietaryApprovedOnly(e.target.checked)}
+                  className="accent-[#DDA853]"
+                />
+                Approved only
+              </label>
+            </div>
+          ) : (
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: BRAND.sand }} />
@@ -485,79 +498,6 @@ const AdminApplicationsPage = () => {
               </select>
             )}
 
-            {view === "applications" && (
-              <div className="relative" ref={answerPickerRef}>
-                <button
-                  type="button"
-                  onClick={() => setAnswerPickerOpen((open) => !open)}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-lg font-sans text-sm transition-all duration-200 hover:opacity-80 focus-visible:ring-2 whitespace-nowrap"
-                  style={{
-                    background: answerColumns.length > 0 ? "rgba(221,168,83,0.12)" : "rgba(245,238,227,0.06)",
-                    border: `1px solid ${answerColumns.length > 0 ? "rgba(221,168,83,0.4)" : "rgba(221,168,83,0.18)"}`,
-                    color: answerColumns.length > 0 ? BRAND.gold : BRAND.cream,
-                    minWidth: "160px",
-                  }}
-                >
-                  <Columns3 size={14} />
-                  {answerColumns.length === 0 ? "Show answers" : `${answerColumns.length} answer${answerColumns.length === 1 ? "" : "s"}`}
-                </button>
-                {answerPickerOpen && (
-                  <div
-                    className="absolute right-0 z-20 mt-2 w-[min(22rem,calc(100vw-3rem))] rounded-xl p-3 flex flex-col gap-2"
-                    style={{
-                      background: BRAND.navy,
-                      border: "1px solid rgba(221,168,83,0.22)",
-                      boxShadow: "0 18px 40px rgba(6,15,32,0.55)",
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-2 px-1">
-                      <p className="font-sans text-xs uppercase tracking-[0.18em]" style={{ color: BRAND.sand }}>
-                        Questions
-                      </p>
-                      <div className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setAnswerColumns(ANSWER_COLUMNS.map((col) => col.key))}
-                          className="font-sans text-xs hover:opacity-80"
-                          style={{ color: BRAND.goldSoft }}
-                        >
-                          All
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setAnswerColumns([])}
-                          className="font-sans text-xs hover:opacity-80"
-                          style={{ color: BRAND.goldSoft }}
-                        >
-                          Clear
-                        </button>
-                      </div>
-                    </div>
-                    {ANSWER_COLUMNS.map((col) => {
-                      const checked = answerColumns.includes(col.key);
-                      return (
-                        <label
-                          key={col.key}
-                          className="flex items-center gap-3 rounded-lg px-3 py-2 cursor-pointer"
-                          style={{ background: checked ? "rgba(221,168,83,0.08)" : "transparent" }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => toggleAnswerColumn(col.key)}
-                            className="accent-[#DDA853]"
-                          />
-                          <span className="font-sans text-sm" style={{ color: BRAND.cream }}>
-                            {col.label}
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
             <select
               value={`${sortKey}:${sortDir}`}
               onChange={(e) => {
@@ -577,6 +517,7 @@ const AdminApplicationsPage = () => {
               <option value="created_at:asc" style={{ background: BRAND.navy }}>Oldest first</option>
             </select>
           </div>
+          )}
         </div>
 
         {error && (
@@ -588,12 +529,115 @@ const AdminApplicationsPage = () => {
           </div>
         )}
 
+        {view === "applications" && (
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={toggleSelectAllOnPage}
+              disabled={loading || applications.length === 0}
+              className="px-3.5 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 disabled:opacity-40 focus-visible:ring-2"
+              style={{ background: "rgba(245,238,227,0.06)", border: "1px solid rgba(221,168,83,0.18)", color: BRAND.cream }}
+            >
+              {allOnPageSelected ? "Clear page" : "Select all on this page"}
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleBulkApprove()}
+              disabled={bulkApproving || selectedApproves.length === 0}
+              className="px-3.5 py-2 rounded-lg font-sans text-xs font-semibold uppercase tracking-[0.14em] transition-all duration-200 hover:brightness-110 disabled:opacity-40 focus-visible:ring-2"
+              style={{
+                background: `linear-gradient(135deg, ${BRAND.goldSoft} 0%, ${BRAND.gold} 100%)`,
+                color: BRAND.navyDeep,
+              }}
+            >
+              {bulkApproving
+                ? "Approving…"
+                : `Approve selected${selectedApproves.length ? ` (${selectedApproves.length})` : ""}`}
+            </button>
+            {selectedIds.length > 0 && (
+              <span className="font-sans text-xs" style={{ color: BRAND.sand }}>
+                {selectedIds.length} selected
+              </span>
+            )}
+          </div>
+        )}
+
         <div
           className="rounded-2xl overflow-hidden"
           style={{ border: "1px solid rgba(221,168,83,0.1)" }}
         >
           <div className="overflow-x-auto">
-            {view === "not_applied" ? (
+            {view === "allergies" ? (
+              <table className="w-full table-fixed min-w-[560px]">
+                <colgroup>
+                  <col style={{ width: "80%" }} />
+                  <col style={{ width: "20%" }} />
+                </colgroup>
+                <thead style={{ background: "rgba(75,46,99,0.2)", borderBottom: "1px solid rgba(221,168,83,0.1)" }}>
+                  <tr>
+                    <th className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium" style={{ color: BRAND.sand }}>
+                      Answer
+                    </th>
+                    <th className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium" style={{ color: BRAND.sand }}>
+                      People
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={2} className="px-6 py-16 text-center">
+                        <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
+                          Loading allergies…
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    <>
+                      <tr style={{ borderBottom: "1px solid rgba(221,168,83,0.07)" }}>
+                        <td className="px-4 py-3.5">
+                          <span className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>
+                            None / blank
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <span className="font-sans text-sm tabular-nums" style={{ color: BRAND.cream }}>
+                            {dietaryNoneCount}
+                          </span>
+                        </td>
+                      </tr>
+                      {dietaryAnswers.length === 0 ? (
+                        <tr>
+                          <td colSpan={2} className="px-6 py-12 text-center">
+                            <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
+                              Nobody listed a dietary restriction.
+                            </p>
+                          </td>
+                        </tr>
+                      ) : dietaryAnswers.map((row, i) => (
+                        <tr
+                          key={row.answer}
+                          style={{
+                            borderBottom: i < dietaryAnswers.length - 1 ? "1px solid rgba(221,168,83,0.07)" : "none",
+                          }}
+                        >
+                          <td className="px-4 py-3.5">
+                            <span className="font-sans text-sm whitespace-pre-wrap" style={{ color: BRAND.cream }}>
+                              {row.answer}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <span className="font-sans text-sm tabular-nums" style={{ color: BRAND.cream }}>
+                              {row.count}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </>
+                  )}
+                </tbody>
+              </table>
+            ) : view === "not_applied" ? (
               <table className="w-full table-fixed min-w-[560px]">
                 <colgroup>
                   <col style={{ width: "55%" }} />
@@ -644,36 +688,32 @@ const AdminApplicationsPage = () => {
                 </tbody>
               </table>
             ) : (
-              <table
-                className="w-full min-w-[880px]"
-                style={visibleAnswerColumns.length === 0 ? undefined : { minWidth: 880 + visibleAnswerColumns.length * 220 }}
-              >
-                {visibleAnswerColumns.length === 0 && (
-                  <colgroup>
-                    <col style={{ width: "18%" }} />
-                    <col style={{ width: "24%" }} />
-                    <col style={{ width: "18%" }} />
+              <table className="w-full table-fixed min-w-[880px]">
+                <colgroup>
+                    <col style={{ width: "44px" }} />
+                    <col style={{ width: "16%" }} />
+                    <col style={{ width: "22%" }} />
+                    <col style={{ width: "16%" }} />
                     <col style={{ width: "10%" }} />
                     <col style={{ width: "12%" }} />
                     <col style={{ width: "13%" }} />
                     <col style={{ width: "5%" }} />
                   </colgroup>
-                )}
                 <thead style={{ background: "rgba(75,46,99,0.2)", borderBottom: "1px solid rgba(221,168,83,0.1)" }}>
                   <tr>
+                    <th className="px-3 py-3">
+                      <input
+                        type="checkbox"
+                        checked={allOnPageSelected}
+                        onChange={toggleSelectAllOnPage}
+                        aria-label="Select all applications on this page"
+                        className="h-4 w-4 rounded"
+                      />
+                    </th>
                     <TH col="full_name">Name</TH>
                     <TH col="email">Email</TH>
                     <th className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium" style={{ color: BRAND.sand }}>Program</th>
                     <TH col="gender">Gender</TH>
-                    {visibleAnswerColumns.map((col) => (
-                      <th
-                        key={col.key}
-                        className="px-4 py-3 text-left font-sans text-xs uppercase tracking-[0.2em] font-medium whitespace-nowrap"
-                        style={{ color: BRAND.gold }}
-                      >
-                        {col.label}
-                      </th>
-                    ))}
                     <TH col="status">Status</TH>
                     <TH col="created_at">Submitted</TH>
                     <th className="px-4 py-3" />
@@ -682,7 +722,7 @@ const AdminApplicationsPage = () => {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={7 + visibleAnswerColumns.length} className="px-6 py-16 text-center">
+                      <td colSpan={8} className="px-6 py-16 text-center">
                         <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
                           Loading applications…
                         </p>
@@ -690,7 +730,7 @@ const AdminApplicationsPage = () => {
                     </tr>
                   ) : applications.length === 0 ? (
                     <tr>
-                      <td colSpan={7 + visibleAnswerColumns.length} className="px-6 py-16 text-center">
+                      <td colSpan={8} className="px-6 py-16 text-center">
                         <p className="font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
                           No applications match your filters.
                         </p>
@@ -702,11 +742,28 @@ const AdminApplicationsPage = () => {
                       className="group transition-colors duration-150"
                       style={{
                         borderBottom: i < applications.length - 1 ? "1px solid rgba(221,168,83,0.07)" : "none",
-                        background: "transparent",
+                        background: selectedIds.includes(row.id) ? "rgba(221,168,83,0.06)" : "transparent",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(245,238,227,0.03)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                      onMouseEnter={(e) => {
+                        if (!selectedIds.includes(row.id)) {
+                          e.currentTarget.style.background = "rgba(245,238,227,0.03)";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = selectedIds.includes(row.id)
+                          ? "rgba(221,168,83,0.06)"
+                          : "transparent";
+                      }}
                     >
+                      <td className="px-3 py-3.5">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(row.id)}
+                          onChange={() => toggleSelected(row.id)}
+                          aria-label={`Select ${row.full_name}`}
+                          className="h-4 w-4 rounded"
+                        />
+                      </td>
                       <td className="px-4 py-3.5 overflow-hidden">
                         <Link
                           to={`/admin/applications/${row.id}`}
@@ -727,27 +784,6 @@ const AdminApplicationsPage = () => {
                           {row.gender || "—"}
                         </span>
                       </td>
-                      {visibleAnswerColumns.map((col) => {
-                        const value = formatAnswer(row, col.key);
-                        return (
-                          <td key={col.key} className="px-4 py-3.5 align-top" style={{ minWidth: 180, maxWidth: 280 }}>
-                            <span
-                              className="font-sans text-sm block"
-                              title={value}
-                              style={{
-                                color: value === "—" ? BRAND.sand : BRAND.cream,
-                                display: "-webkit-box",
-                                WebkitLineClamp: 3,
-                                WebkitBoxOrient: "vertical",
-                                overflow: "hidden",
-                                whiteSpace: "pre-wrap",
-                              }}
-                            >
-                              {value}
-                            </span>
-                          </td>
-                        );
-                      })}
                       <td className="px-4 py-3.5">
                         <StatusBadge status={row.status} />
                       </td>
@@ -772,6 +808,7 @@ const AdminApplicationsPage = () => {
             )}
           </div>
 
+          {view !== "allergies" && (
           <div
             className="px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t"
             style={{ borderColor: "rgba(221,168,83,0.08)", background: "rgba(6,15,32,0.3)" }}
@@ -825,6 +862,7 @@ const AdminApplicationsPage = () => {
               </button>
             </div>
           </div>
+          )}
         </div>
 
       </div>

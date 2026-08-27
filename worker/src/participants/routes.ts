@@ -1,7 +1,7 @@
 import type { Env } from "../env";
 import type { AuthUser } from "../auth/types";
 import { getParticipantByUserId } from "./service";
-import { foodWaveFromRank } from "./food-wave";
+import { foodWaveFromKey } from "./food-wave";
 
 type JsonResponder = (body: unknown, status?: number) => Response;
 
@@ -35,28 +35,19 @@ export async function handleParticipantRoutes(
       return respond({ participant: null });
     }
 
-    const rankRows = await env.DB.prepare(
-      `SELECT id, (ROW_NUMBER() OVER (ORDER BY created_at ASC, id ASC) - 1) AS apply_rank
-       FROM applications
-       WHERE status = 'approved'`,
-    ).all<{ id: string; apply_rank: number }>();
-    const applyRank =
-      rankRows.results?.find((row) => row.id === participant.application_id)?.apply_rank ?? 0;
-    const foodWave = foodWaveFromRank(applyRank);
+    const mealRows = await env.DB.prepare(
+      "SELECT meal_key FROM participant_meals WHERE participant_id = ?",
+    )
+      .bind(participant.id)
+      .all<{ meal_key: string }>();
 
     return respond({
       participant: {
         checkin_code: participant.public_checkin_code,
         checkin_status: participant.checkin_status,
         checked_in_at: participant.checked_in_at,
-        claimed_meals: (
-          await env.DB.prepare(
-            "SELECT meal_key FROM participant_meals WHERE participant_id = ?",
-          )
-            .bind(participant.id)
-            .all<{ meal_key: string }>()
-        ).results?.map((row) => row.meal_key) ?? [],
-        food_wave: foodWave,
+        claimed_meals: mealRows.results?.map((row) => row.meal_key) ?? [],
+        food_wave: foodWaveFromKey(participant.food_wave_key),
       },
     });
   }

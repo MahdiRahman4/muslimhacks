@@ -1,5 +1,3 @@
-export const FOOD_WAVE_SIZE = 40;
-
 export const FOOD_WAVES = [
   { key: "red", label: "Red", hex: "#C45C5C", text_hex: "#F5EED3" },
   { key: "blue", label: "Blue", hex: "#4F7EC8", text_hex: "#F5EED3" },

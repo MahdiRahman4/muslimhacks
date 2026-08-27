@@ -15,7 +15,7 @@ import {
   type ParticipantMealRow,
   type ParticipantRow,
 } from "../participants/service";
-import { foodWaveFromRank, type FoodWave } from "../participants/food-wave";
+import { assignFoodWaveAtCheckin, foodWaveFromKey, type FoodWave } from "../participants/food-wave";
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -127,51 +127,53 @@ async function getClaimedMealsByParticipantIds(
 }
 
 async function getParticipantMealKeys(env: Env, participantId: string): Promise<MealKey[]> {
-  const meals = await getParticipantMeals(env, participantId);
-  return meals.map((meal) => meal.meal_key);
-}
-
-async function getApplicationRankMap(env: Env): Promise<Map<string, number>> {
   const result = await env.DB.prepare(
-    `SELECT id, (ROW_NUMBER() OVER (ORDER BY created_at ASC, id ASC) - 1) AS apply_rank
-     FROM applications
-     WHERE status = 'approved'`,
-  ).all<{ id: string; apply_rank: number }>();
-
-  const ranks = new Map<string, number>();
-  for (const row of result.results ?? []) {
-    ranks.set(row.id, row.apply_rank);
-  }
-  return ranks;
+    "SELECT meal_key FROM participant_meals WHERE participant_id = ?",
+  )
+    .bind(participantId)
+    .all<{ meal_key: MealKey }>();
+  return (result.results ?? []).map((row) => row.meal_key);
 }
 
-function foodWaveForApplication(ranks: Map<string, number>, applicationId: string): FoodWave {
-  return foodWaveFromRank(ranks.get(applicationId) ?? 0);
-}
-
-async function foodWaveFor(env: Env, applicationId: string): Promise<FoodWave> {
-  return foodWaveForApplication(await getApplicationRankMap(env), applicationId);
+async function participantSummaryPayload(env: Env, row: ParticipantRow) {
+  const claimedMeals = await getParticipantMealKeys(env, row.id);
+  return toParticipantSummary(row, claimedMeals, foodWaveFromKey(row.food_wave_key));
 }
 
 async function markParticipantCheckedIn(
   env: Env,
   participant: ParticipantRow,
   admin: AuthUser,
-): Promise<ParticipantRow | null> {
-  if (participant.checkin_status === "checked_in") {
-    return participant;
+): Promise<{ participant: ParticipantRow; alreadyCheckedIn: boolean } | null> {
+  let current = participant;
+  let alreadyCheckedIn = participant.checkin_status === "checked_in";
+
+  if (!alreadyCheckedIn) {
+    const now = Date.now();
+    const result = await env.DB.prepare(
+      `UPDATE participants
+       SET checkin_status = 'checked_in', checked_in_at = ?, checked_in_by = ?, updated_at = ?
+       WHERE id = ? AND checkin_status = 'not_checked_in'`,
+    )
+      .bind(now, admin.id, now, participant.id)
+      .run();
+
+    const updated = await getParticipantById(env, participant.id);
+    if (!updated) {
+      return null;
+    }
+
+    current = updated;
+    alreadyCheckedIn = (result.meta.changes ?? 0) === 0;
   }
 
-  const now = Date.now();
-  await env.DB.prepare(
-    `UPDATE participants
-     SET checkin_status = 'checked_in', checked_in_at = ?, checked_in_by = ?, updated_at = ?
-     WHERE id = ?`,
-  )
-    .bind(now, admin.id, now, participant.id)
-    .run();
+  const foodWave = await assignFoodWaveAtCheckin(env, current.id, current.food_wave_key);
+  current = {
+    ...current,
+    food_wave_key: foodWave?.key ?? current.food_wave_key ?? null,
+  };
 
-  return getParticipantById(env, participant.id);
+  return { participant: current, alreadyCheckedIn };
 }
 
 async function handleListParticipants(
@@ -220,14 +222,13 @@ async function handleListParticipants(
     env,
     participants.map((row) => row.id),
   );
-  const ranks = await getApplicationRankMap(env);
 
   return respond({
     participants: participants.map((row) =>
       toParticipantSummary(
         row,
         claimedById.get(row.id) ?? [],
-        foodWaveForApplication(ranks, row.application_id),
+        foodWaveFromKey(row.food_wave_key),
       ),
     ),
     pagination: {
@@ -263,8 +264,27 @@ async function handleGetParticipant(
     participant: toParticipantDetail(
       participant,
       meals,
-      await foodWaveFor(env, participant.application_id),
+      foodWaveFromKey(participant.food_wave_key),
     ),
+  });
+}
+
+async function respondCheckedIn(
+  env: Env,
+  respond: JsonResponder,
+  admin: AuthUser,
+  participant: ParticipantRow,
+): Promise<Response> {
+  const checkedIn = await markParticipantCheckedIn(env, participant, admin);
+  if (!checkedIn) {
+    return respond({ error: "Failed to check in participant" }, 500);
+  }
+
+  return respond({
+    participant: await participantSummaryPayload(env, checkedIn.participant),
+    ...(checkedIn.alreadyCheckedIn
+      ? { already_checked_in: true, message: "Already checked in" }
+      : {}),
   });
 }
 
@@ -284,31 +304,7 @@ async function handleCheckinParticipant(
     return respond({ error: "Participant not found" }, 404);
   }
 
-  if (participant.checkin_status === "checked_in") {
-    const claimedMeals = await getParticipantMealKeys(env, participant.id);
-    return respond({
-      participant: toParticipantSummary(
-        participant,
-        claimedMeals,
-        await foodWaveFor(env, participant.application_id),
-      ),
-      already_checked_in: true,
-      message: "Already checked in",
-    });
-  }
-
-  const updated = await markParticipantCheckedIn(env, participant, admin);
-  if (!updated) {
-    return respond({ error: "Failed to check in participant" }, 500);
-  }
-
-  return respond({
-    participant: toParticipantSummary(
-      updated,
-      await getParticipantMealKeys(env, updated.id),
-      await foodWaveFor(env, updated.application_id),
-    ),
-  });
+  return respondCheckedIn(env, respond, admin, participant);
 }
 
 async function handleCheckinByCode(
@@ -348,31 +344,7 @@ async function handleCheckinByCode(
     return respondEventOpsError(respond, "invalid_checkin_code");
   }
 
-  if (participant.checkin_status === "checked_in") {
-    const claimedMeals = await getParticipantMealKeys(env, participant.id);
-    return respond({
-      participant: toParticipantSummary(
-        participant,
-        claimedMeals,
-        await foodWaveFor(env, participant.application_id),
-      ),
-      already_checked_in: true,
-      message: "Already checked in",
-    });
-  }
-
-  const updated = await markParticipantCheckedIn(env, participant, admin);
-  if (!updated) {
-    return respond({ error: "Failed to check in participant" }, 500);
-  }
-
-  return respond({
-    participant: toParticipantSummary(
-      updated,
-      await getParticipantMealKeys(env, updated.id),
-      await foodWaveFor(env, updated.application_id),
-    ),
-  });
+  return respondCheckedIn(env, respond, admin, participant);
 }
 
 async function handleClaimMeal(
@@ -400,72 +372,32 @@ async function handleClaimMeal(
 
   if (participant.checkin_status !== "checked_in") {
     return respondEventOpsError(respond, "not_checked_in", {
-      participant: toParticipantSummary(
-        participant,
-        [],
-        await foodWaveFor(env, participant.application_id),
-      ),
-    });
-  }
-
-  const existing = await env.DB.prepare(
-    "SELECT id FROM participant_meals WHERE participant_id = ? AND meal_key = ? LIMIT 1",
-  )
-    .bind(participantId, mealKey)
-    .first();
-
-  if (existing) {
-    return respondEventOpsError(respond, "meal_already_claimed", {
-      meal_key: mealKey,
-      participant: toParticipantSummary(
-        participant,
-        [],
-        await foodWaveFor(env, participant.application_id),
-      ),
-    });
-  }
-
-  const mealCount = await env.DB.prepare(
-    "SELECT COUNT(*) AS total FROM participant_meals WHERE participant_id = ?",
-  )
-    .bind(participantId)
-    .first<{ total: number }>();
-
-  if ((mealCount?.total ?? 0) >= 5) {
-    return respondEventOpsError(respond, "meal_limit_reached", {
-      participant: toParticipantSummary(
-        participant,
-        [],
-        await foodWaveFor(env, participant.application_id),
-      ),
+      participant: await participantSummaryPayload(env, participant),
     });
   }
 
   const now = Date.now();
   const mealId = crypto.randomUUID();
-
-  await env.DB.prepare(
-    `INSERT INTO participant_meals (id, participant_id, meal_key, claimed_by, claimed_at)
+  const insert = await env.DB.prepare(
+    `INSERT OR IGNORE INTO participant_meals (id, participant_id, meal_key, claimed_by, claimed_at)
      VALUES (?, ?, ?, ?, ?)`,
   )
     .bind(mealId, participantId, mealKey, admin.id, now)
     .run();
 
-  const meal = await env.DB.prepare("SELECT * FROM participant_meals WHERE id = ? LIMIT 1")
-    .bind(mealId)
-    .first<ParticipantMealRow>();
+  if ((insert.meta.changes ?? 0) === 0) {
+    return respondEventOpsError(respond, "meal_already_claimed", { meal_key: mealKey });
+  }
 
   return respond(
     {
-      meal: meal
-        ? {
-            id: meal.id,
-            participant_id: meal.participant_id,
-            meal_key: meal.meal_key,
-            claimed_by: meal.claimed_by,
-            claimed_at: meal.claimed_at,
-          }
-        : null,
+      meal: {
+        id: mealId,
+        participant_id: participantId,
+        meal_key: mealKey,
+        claimed_by: admin.id,
+        claimed_at: now,
+      },
     },
     201,
   );

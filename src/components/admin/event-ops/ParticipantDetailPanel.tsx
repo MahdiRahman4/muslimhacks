@@ -6,15 +6,29 @@ import {
   getEventOpsErrorMessage,
   EventOpsApiError,
 } from "@/lib/event-ops-api";
-import type { MealKey, ParticipantDetail } from "@/types/event-ops";
+import type { MealKey, ParticipantDetail, ParticipantSummary } from "@/types/event-ops";
 import { MEAL_KEYS } from "@/types/event-ops";
 import { formatMealLabel } from "@/lib/meals";
 import { FoodWaveBadge } from "@/components/FoodWaveBadge";
 
 interface ParticipantDetailPanelProps {
   participantId: string | null;
+  initialParticipant?: ParticipantSummary;
   onUpdated: () => void;
   prominent?: boolean;
+}
+
+function summaryToDetail(summary: ParticipantSummary): ParticipantDetail {
+  return {
+    ...summary,
+    checked_in_by: null,
+    meals: summary.claimed_meals.map((meal_key) => ({
+      id: meal_key,
+      meal_key,
+      claimed_by: "",
+      claimed_at: 0,
+    })),
+  };
 }
 
 function formatTime(ms: number | null) {
@@ -45,24 +59,31 @@ function CheckinBadge({ status }: { status: ParticipantDetail["checkin_status"] 
 
 export function ParticipantDetailPanel({
   participantId,
+  initialParticipant,
   onUpdated,
   prominent = false,
 }: ParticipantDetailPanelProps) {
-  const [detail, setDetail] = useState<ParticipantDetail | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [detail, setDetail] = useState<ParticipantDetail | null>(
+    initialParticipant ? summaryToDetail(initialParticipant) : null,
+  );
+  const [loading, setLoading] = useState(!initialParticipant);
   const [error, setError] = useState<string | null>(null);
   const [mealError, setMealError] = useState<string | null>(null);
   const [claimingMeal, setClaimingMeal] = useState<MealKey | null>(null);
 
-  const loadDetail = useCallback(async (id: string) => {
-    setLoading(true);
+  const loadDetail = useCallback(async (id: string, silent = false) => {
+    if (!silent) {
+      setLoading(true);
+    }
     setError(null);
     setMealError(null);
     try {
       const data = await fetchParticipantDetail(id);
       setDetail(data.participant);
     } catch (err) {
-      setDetail(null);
+      if (!silent) {
+        setDetail(null);
+      }
       setError(getEventOpsErrorMessage(err));
     } finally {
       setLoading(false);
@@ -76,8 +97,13 @@ export function ParticipantDetailPanel({
       setMealError(null);
       return;
     }
+    if (initialParticipant?.id === participantId) {
+      setDetail(summaryToDetail(initialParticipant));
+      void loadDetail(participantId, true);
+      return;
+    }
     void loadDetail(participantId);
-  }, [participantId, loadDetail]);
+  }, [participantId, initialParticipant, loadDetail]);
 
   if (!participantId) {
     return (
@@ -121,7 +147,7 @@ export function ParticipantDetailPanel({
         {prominent ? "Food counter" : "Participant detail"}
       </h2>
 
-      {loading && (
+      {loading && !detail && (
         <p className="font-sans text-sm" style={{ color: BRAND.sand }}>
           Loading…
         </p>
@@ -136,7 +162,7 @@ export function ParticipantDetailPanel({
         </div>
       )}
 
-      {detail && !loading && (
+      {detail && (
         <>
           <div className="flex flex-col gap-1.5">
             <p className="font-display text-lg font-bold" style={{ color: BRAND.cream }}>{detail.full_name}</p>
@@ -203,13 +229,15 @@ export function ParticipantDetailPanel({
             </div>
           </div>
 
-          {detail.meals.length > 0 && (
+          {detail.meals.some((meal) => meal.claimed_at > 0) && (
             <div>
               <p className="mb-2 font-sans text-xs uppercase tracking-[0.2em]" style={{ color: BRAND.gold, opacity: 0.7 }}>
                 Claimed at
               </p>
               <ul className="flex flex-col gap-1.5">
-                {detail.meals.map((meal) => (
+                {detail.meals
+                  .filter((meal) => meal.claimed_at > 0)
+                  .map((meal) => (
                   <li key={meal.id} className="flex justify-between gap-2 font-sans text-sm">
                     <span style={{ color: BRAND.cream }}>{formatMealLabel(meal.meal_key)}</span>
                     <span style={{ color: BRAND.sand }}>{formatTime(meal.claimed_at)}</span>
