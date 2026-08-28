@@ -5,7 +5,8 @@ import {ExternalLink} from "lucide-react"
 import PPLUSLogo from "../../assets/pplus-logo.png";
 import islamicReliefLogo from "../../assets/islamicReliefCanada-logo.png";
 import replitLogo from "../../assets/replit-logo.svg";
-import BannyaLogo from "../../assets/bannya-logo.png";
+import bannyaLogo from "../../assets/bannya-logo.png";
+import tawafSevenLogo from "../../assets/tawafSeven-logo.png";
 import { useI18n } from "@/i18n/LanguageProvider";
 
 type SponsorTierKey = "leadPartner" | "platinum" | "gold" | "silver" | "bronze";
@@ -73,11 +74,12 @@ const SPONSORS: Record<SponsorTierKey, Sponsor[]> = {
   platinum: [
     { name: "Islamic Relief Canada", logoPath: islamicReliefLogo, subtitleKey: "sponsors.charityPartner" },
     { name: "Replit", logoPath: replitLogo },
+    { name: "Tawaf Seven", logoPath: tawafSevenLogo },
   ],
   gold: [],
   silver: [],
   bronze: [
-    { name: "Bannya Systems Inc.", logoPath: BannyaLogo },
+    { name: "Bannya Systems Inc.", logoPath: bannyaLogo },
   ],
 };
 
