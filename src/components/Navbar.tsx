@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
+  ClerkLoading,
   SignedIn,
   SignedOut,
 } from "@clerk/clerk-react";
@@ -8,6 +9,7 @@ import { cn } from "@/lib/utils";
 import GoldButton from "./ui/goldButton";
 import muslimHacksLogo from "../assets/muslimhacks-logo-white.svg";
 import Profile from "./ui/profile";
+import GoldButtonSkeleton from "./ui/goldButtonSkeleton";
 import { LogIn } from "lucide-react";
 import {
   getApplicationButtonLabel,
@@ -118,6 +120,11 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
             </a>
           ))}
           {displayApplyDialog && (
+            <ClerkLoading>
+              <GoldButtonSkeleton className="h-8 w-28" />
+            </ClerkLoading>
+          )}
+          {displayApplyDialog && (
             <SignedOut>
               <GoldButton
                 as={Link}
@@ -162,6 +169,9 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
 
         <div className="hidden md:flex items-center gap-3 ml-4">
           <LanguageSwitcher />
+          <ClerkLoading>
+            <GoldButtonSkeleton className="h-7 w-7" />
+          </ClerkLoading>
           <SignedOut>
             <Link
               to="/signin"
@@ -176,6 +186,9 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
 
         <div className="md:hidden flex items-center gap-2">
           <LanguageSwitcher compact />
+          <ClerkLoading>
+            <GoldButtonSkeleton className="h-8 w-20" />
+          </ClerkLoading>
           <SignedOut>
             <GoldButton
               as={Link}

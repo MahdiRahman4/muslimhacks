@@ -7,7 +7,8 @@ import CountdownTimer from "@/components/CountdownTimer";
 import GoldButton from "../ui/goldButton";
 import { Link } from "react-router-dom";
 import { BRAND, StarPattern } from "../Shared";
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { ClerkLoading, SignedIn, SignedOut } from "@clerk/clerk-react";
+import GoldButtonSkeleton from "../ui/goldButtonSkeleton";
 import {
   getApplicationButtonLabel,
   useApplicationButtonState,
@@ -152,6 +153,9 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
               }`}
           >
             <CountdownTimer align="center" />
+            <ClerkLoading>
+              <GoldButtonSkeleton className="h-14 w-48" />
+            </ClerkLoading>
             <SignedOut>
               <GoldButton as={Link} to="/signup" className="w-full sm:w-auto">
                 {applicationButtonLabel}

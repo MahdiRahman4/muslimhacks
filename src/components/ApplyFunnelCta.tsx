@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { ClerkLoading, SignedIn, SignedOut } from "@clerk/clerk-react";
 import GoldButton from "@/components/ui/goldButton";
+import GoldButtonSkeleton from "@/components/ui/goldButtonSkeleton";
 import { BRAND } from "@/components/Shared";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -32,6 +33,9 @@ export function ApplyFunnelCta({
 
   return (
     <div className={`flex flex-col gap-3 ${alignClass} ${className}`}>
+      <ClerkLoading>
+        <GoldButtonSkeleton className="h-14 w-full sm:w-48" />
+      </ClerkLoading>
       <SignedOut>
         <GoldButton as={Link} to="/signup" className="w-full sm:w-auto">
           {label}
