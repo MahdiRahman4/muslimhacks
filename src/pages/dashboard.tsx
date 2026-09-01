@@ -29,6 +29,7 @@ import CountdownTimer from "@/components/CountdownTimer";
 import { FoodWaveBadge } from "@/components/FoodWaveBadge";
 import { MEAL_KEYS } from "@/types/event-ops";
 import { formatMealLabel } from "@/lib/meals";
+import { APPLICATIONS_OPEN } from "@/lib/applications-open";
 
 type AppStatus = "not_started" | "draft" | "pending" | "approved" | "rejected";
 
@@ -501,7 +502,7 @@ export default function Dashboard() {
           <StatCard
             label="Deadline"
             value="Aug. 31st 11:59 PM"
-            sub="Applications open"
+            sub={APPLICATIONS_OPEN ? "Applications open" : "Applications closed"}
           />
         </div>
 
@@ -568,6 +569,7 @@ export default function Dashboard() {
           )}
 
           {/* Action */}
+          {APPLICATIONS_OPEN && (
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             {!hasStarted ? (
               <Link
@@ -614,6 +616,7 @@ export default function Dashboard() {
               </Link>
             )}
           </div>
+          )}
         </div>
 
         {status === "approved" && participant && (

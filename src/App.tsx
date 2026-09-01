@@ -11,6 +11,7 @@ import { AuthTokenBridge } from "@/components/auth/AuthTokenBridge";
 import { InAppBrowserNotice } from "@/components/InAppBrowserNotice";
 import { ApplicationButtonProvider } from "@/contexts/ApplicationButtonContext";
 import { LanguageProvider } from "@/i18n/LanguageProvider";
+import { APPLICATIONS_OPEN } from "@/lib/applications-open";
 import Index from "./pages/Index";
 import ApplicationSection from "./components/sections/ApplicationSection";
 import ApplicationSubmittedSection from "./components/sections/ApplicationSubmittedSection";
@@ -55,7 +56,16 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/signin" element={<SignInPage />} />
-                  <Route path="/signup" element={<SignUpPage />} />
+                  <Route
+                    path="/signup"
+                    element={
+                      APPLICATIONS_OPEN ? (
+                        <SignUpPage />
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
+                    }
+                  />
                   <Route path="/login" element={<Navigate to="/signin" replace />} />
                   <Route
                     path="/user-dashboard"
@@ -80,17 +90,25 @@ const App = () => {
                   <Route
                     path="/apply"
                     element={
-                      <RequireAuth>
-                        <ApplicationSection />
-                      </RequireAuth>
+                      APPLICATIONS_OPEN ? (
+                        <RequireAuth>
+                          <ApplicationSection />
+                        </RequireAuth>
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
                     }
                   />
                   <Route
                     path="/apply/submitted"
                     element={
-                      <RequireAuth>
-                        <ApplicationSubmittedSection />
-                      </RequireAuth>
+                      APPLICATIONS_OPEN ? (
+                        <RequireAuth>
+                          <ApplicationSubmittedSection />
+                        </RequireAuth>
+                      ) : (
+                        <Navigate to="/" replace />
+                      )
                     }
                   />
                   <Route

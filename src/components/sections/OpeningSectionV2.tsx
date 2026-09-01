@@ -160,20 +160,20 @@ export default function OpeningSectionV2({
               </div>
             )}
 
-            {/* Apply funnel — visible immediately */}
-            {displayApplyDialog && (
-              <div className="mt-2 flex flex-col gap-8 animate-fade-in-up">
-                <CountdownTimer
-                  variant="hero"
-                  align="center"
-                  className="md:items-start"
-                />
+            {/* Closed: keep the "Applications are closed" line. Open: countdown + apply. */}
+            <div className="mt-2 flex flex-col gap-8 animate-fade-in-up">
+              <CountdownTimer
+                variant="hero"
+                align="center"
+                className="md:items-start"
+              />
+              {displayApplyDialog && (
                 <ApplyFunnelCta
                   variant="hero"
                   helperText={t("hero.helper")}
                 />
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>

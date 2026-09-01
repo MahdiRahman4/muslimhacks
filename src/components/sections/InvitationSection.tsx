@@ -85,7 +85,7 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
             }`}
         >
           <p className="font-sans text-base uppercase tracking-[0.3em] text-amber mb-6">
-            {t("invite.open")}
+            {displayApplyDialog ? t("invite.open") : t("invite.closed")}
           </p>
           <h2 className="font-display text-4xl md:text-5xl lg:text-6xl text-cream leading-tight mb-8">
             {t("invite.headingLine1")}
@@ -143,54 +143,56 @@ const InvitationSection = ({ displayInviteDialog, displayApplyDialog }) => {
           </div>
         )}
 
-        {/* Apply now button */}
-        {displayApplyDialog && (
-          <div
-            ref={applyRef}
-            className={`mb-16 flex flex-col items-center gap-6 transition-all duration-1000 delay-200 ${applyVisible
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-8"
-              }`}
-          >
-            <CountdownTimer align="center" />
-            <ClerkLoading>
-              <GoldButtonSkeleton className="h-14 w-48" />
-            </ClerkLoading>
-            <SignedOut>
-              <GoldButton as={Link} to="/signup" className="w-full sm:w-auto">
-                {applicationButtonLabel}
-              </GoldButton>
-            </SignedOut>
-            <SignedIn>
-              {!isAdmin && !hasApplication && (
-                <GoldButton
-                  as={Link}
-                  to="/apply"
-                  className="w-full sm:w-auto"
-                >
+        {/* Apply / closed */}
+        <div
+          ref={applyRef}
+          className={`mb-16 flex flex-col items-center gap-6 transition-all duration-1000 delay-200 ${applyVisible
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-8"
+            }`}
+        >
+          <CountdownTimer align="center" />
+          {displayApplyDialog && (
+            <>
+              <ClerkLoading>
+                <GoldButtonSkeleton className="h-14 w-48" />
+              </ClerkLoading>
+              <SignedOut>
+                <GoldButton as={Link} to="/signup" className="w-full sm:w-auto">
                   {applicationButtonLabel}
                 </GoldButton>
-              )}
-              {(isAdmin) && (
-                <GoldButton
-                  as={Link}
-                  to="/admin/applications"
-                  className="w-full sm:w-auto"
+              </SignedOut>
+              <SignedIn>
+                {!isAdmin && !hasApplication && (
+                  <GoldButton
+                    as={Link}
+                    to="/apply"
+                    className="w-full sm:w-auto"
+                  >
+                    {applicationButtonLabel}
+                  </GoldButton>
+                )}
+                {isAdmin && (
+                  <GoldButton
+                    as={Link}
+                    to="/admin/applications"
+                    className="w-full sm:w-auto"
+                  >
+                    {t("nav.goToApplications")}
+                  </GoldButton>
+                )}
+              </SignedIn>
+              <SignedOut>
+                <p
+                  className="font-intimate text-xs sm:text-sm whitespace-pre-line"
+                  style={{ fontStyle: "italic", color: BRAND.sand }}
                 >
-                  {t("nav.goToApplications")}
-                </GoldButton>
-              )}
-            </SignedIn>
-            <SignedOut>
-              <p
-                className="font-intimate text-xs sm:text-sm whitespace-pre-line"
-                style={{ fontStyle: "italic", color: BRAND.sand }}
-              >
-                {t("hero.helper")}
-              </p>
-            </SignedOut>
-          </div>
-        )}
+                  {t("hero.helper")}
+                </p>
+              </SignedOut>
+            </>
+          )}
+        </div>
 
         {/* Closing blessing */}
         <div

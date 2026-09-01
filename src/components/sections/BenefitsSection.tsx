@@ -9,6 +9,7 @@ import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { BRAND, Eyebrow, GoldText } from "../Shared";
 import { ApplyFunnelCta } from "@/components/ApplyFunnelCta";
 import { useI18n } from "@/i18n/LanguageProvider";
+import { APPLICATIONS_OPEN } from "@/lib/applications-open";
 
 const BENEFIT_KEYS = [
   {
@@ -150,9 +151,11 @@ export default function BenefitsSection() {
               ))}
             </ul>
             {/* CTA sits after the full list so the ask comes once the value is read */}
-            <div className="pt-8">
-              <ApplyFunnelCta align="start" />
-            </div>
+            {APPLICATIONS_OPEN && (
+              <div className="pt-8">
+                <ApplyFunnelCta align="start" />
+              </div>
+            )}
           </div>
         </div>
       </div>

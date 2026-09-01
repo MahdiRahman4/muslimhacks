@@ -1,5 +1,6 @@
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useI18n } from "@/i18n/LanguageProvider";
+import { APPLICATIONS_OPEN } from "@/lib/applications-open";
 
 const Footer = () => {
   const { t } = useI18n();
@@ -9,7 +10,9 @@ const Footer = () => {
     { label: t("nav.about"), href: "#about" },
     { label: t("nav.sponsors"), href: "#sponsors" },
     { label: t("nav.faq"), href: "#faq" },
-    { label: t("footer.register"), href: "#register" },
+    ...(APPLICATIONS_OPEN
+      ? [{ label: t("footer.register"), href: "#register" }]
+      : []),
   ];
 
   const contactEmails = [

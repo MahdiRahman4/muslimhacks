@@ -3,6 +3,7 @@ import type { Env } from "../env";
 import { resolveAllowOrigin } from "../cors";
 import { sendApplicationConfirmationEmail } from "../email/application-confirmation";
 import type { ApplicationInput, ApplicationResponse, ApplicationRow } from "./types";
+import { APPLICATIONS_OPEN } from "./open";
 import {
   formDataToFieldRecord,
   validateApplicationBody,
@@ -452,6 +453,13 @@ async function handleUpsert(
   respond: JsonResponder,
   user: AuthUser,
 ): Promise<Response> {
+  if (!APPLICATIONS_OPEN) {
+    return respond(
+      { error: "Applications are closed", code: "applications_closed" },
+      403,
+    );
+  }
+
   const contentType = request.headers.get("content-type") || "";
   if (contentType.includes("multipart/form-data")) {
     return handleMultipartUpsert(request, env, user, respond);

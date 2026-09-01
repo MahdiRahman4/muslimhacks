@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { BRAND, GLOBAL_CSS } from "../components/Shared";
 import { useI18n } from "@/i18n/LanguageProvider";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { APPLICATIONS_OPEN } from "@/lib/applications-open";
 
 const SignInPage = () => {
   const { t } = useI18n();
@@ -69,7 +70,10 @@ const SignInPage = () => {
       <div className="flex justify-center">
         <LanguageSwitcher />
       </div>
-      <SignIn forceRedirectUrl={redirectTo} signUpUrl="/signup" />
+      <SignIn
+        forceRedirectUrl={redirectTo}
+        signUpUrl={APPLICATIONS_OPEN ? "/signup" : "/"}
+      />
       <p className="text-center font-sans text-xs" style={{ color: BRAND.sand }}>
         <Link
           to="/"

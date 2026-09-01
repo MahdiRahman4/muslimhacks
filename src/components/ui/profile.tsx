@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { SignedIn, UserButton } from "@clerk/clerk-react";
 import { Lock, LayoutDashboard, FileUser, Cog } from 'lucide-react';
 import { useState } from "react";
+import { APPLICATIONS_OPEN } from "@/lib/applications-open";
 
 export default function Profile() {
   const { isAdmin } = useAuth();
@@ -32,13 +33,13 @@ export default function Profile() {
               labelIcon={<Cog size={imgSize} />}
               href="/admin/event-ops"
             />
-          ) : (
+          ) : APPLICATIONS_OPEN ? (
             <UserButton.Link
               label="Application"
               labelIcon={<FileUser size={imgSize} />}
               href="/apply"
             />
-          )}
+          ) : null}
         </UserButton.MenuItems>
       </UserButton>
     </SignedIn>

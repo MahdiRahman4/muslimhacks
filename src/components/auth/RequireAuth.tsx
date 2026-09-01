@@ -43,7 +43,11 @@ export function RequireAdmin({ children }: RequireAdminProps) {
         <Navigate to="/signin" replace state={{ from: location.pathname }} />
       </SignedOut>
       <SignedIn>
-        {!isAdmin ? <Navigate to="/apply" replace /> : children}
+        {!isAdmin ? (
+          <Navigate to="/dashboard" replace />
+        ) : (
+          children
+        )}
       </SignedIn>
     </>
   );

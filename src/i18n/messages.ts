@@ -129,6 +129,7 @@ export const en = {
   },
   invite: {
     open: "Applications are open",
+    closed: "Applications are closed",
     headingLine1: "Want to build",
     headingLine2: "with us?",
     body: "Come for the weekend. Meet people. Try to ship something useful.",
@@ -396,6 +397,7 @@ export const fr: typeof en = {
   },
   invite: {
     open: "Les candidatures sont ouvertes",
+    closed: "Les candidatures sont fermées",
     headingLine1: "Envie de construire",
     headingLine2: "avec nous ?",
     body: "Venez pour le week-end. Rencontrez du monde. Essayez de livrer quelque chose d'utile.",

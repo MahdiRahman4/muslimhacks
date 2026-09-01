@@ -26,11 +26,11 @@ import SponsorsSectionV2 from "@/components/sections/SponsorsSectionV2";
 import FAQSectionV2 from "@/components/sections/FAQSectionV2";
 import { useState } from "react";
 import { useI18n } from "@/i18n/LanguageProvider";
+import { APPLICATIONS_OPEN } from "@/lib/applications-open";
 
 const Index = () => {
   const { t } = useI18n();
-  const [displayInviteDialog, setDisplayInviteDialog] = useState(false);
-  const [displayApplyDialog, setDisplayApplyDialog] = useState(true);
+  const [displayInviteDialog] = useState(false);
 
   return (
     <main className="relative overflow-x-hidden">
@@ -40,13 +40,13 @@ const Index = () => {
       </h1>
 
       {/* Navigation */}
-      <Navbar displayApplyDialog={displayApplyDialog} />
+      <Navbar displayApplyDialog={APPLICATIONS_OPEN} />
 
       {/* The Emotional Journey Sections */}
 
       {/* <OpeningSection /> */}
       <OpeningSectionV2
-        displayApplyDialog={displayApplyDialog}
+        displayApplyDialog={APPLICATIONS_OPEN}
         displayInviteDialog={displayInviteDialog}
       />
       <VisionFunnelSection />
@@ -65,7 +65,7 @@ const Index = () => {
 
       {/* Final Call to Action */}
       <InvitationSection
-        displayApplyDialog={displayApplyDialog}
+        displayApplyDialog={APPLICATIONS_OPEN}
         displayInviteDialog={displayInviteDialog}
       />
 
