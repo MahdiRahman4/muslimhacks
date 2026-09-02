@@ -8,7 +8,7 @@ import {
 } from "./shared";
 
 const DASHBOARD_URL = "https://muslimhacks.ca/dashboard";
-const DISCORD_RSVP_URL = "https://discord.gg/7dxzMvfDw5";
+const DISCORD_RSVP_URL = "https://discord.gg/EXZv33vmV";
 
 function linkButton(href: string, label: string, background: string): string {
   return `

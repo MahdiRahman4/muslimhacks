@@ -27,6 +27,7 @@ import Profile from "@/components/ui/profile";
 import { CheckinQr } from "@/components/CheckinQr";
 import CountdownTimer from "@/components/CountdownTimer";
 import { FoodWaveBadge } from "@/components/FoodWaveBadge";
+import { DiscordInviteCard } from "@/components/DiscordInviteCard";
 import { MEAL_KEYS } from "@/types/event-ops";
 import { formatMealLabel } from "@/lib/meals";
 import { APPLICATIONS_OPEN } from "@/lib/applications-open";
@@ -75,7 +76,7 @@ const STATUS_CONFIG: Record<
   approved: {
     label: "Approved",
     description:
-      "Alhamdulillah — you've been accepted to MuslimHacks 2026! Use your check-in QR below when you arrive.",
+      "Alhamdulillah — you've been accepted to MuslimHacks 2026! Join Discord below to RSVP, and use your check-in QR when you arrive.",
     icon: <CheckCircle2 size={20} />,
     color: "#5FA877",
     bg: "rgba(95,168,119,0.1)",
@@ -618,6 +619,10 @@ export default function Dashboard() {
           </div>
           )}
         </div>
+
+        {status === "approved" && (
+          <DiscordInviteCard fullName={userSummary?.summary?.full_name ?? null} />
+        )}
 
         {status === "approved" && participant && (
           <ParticipantCheckinCard participant={participant} />
