@@ -1,6 +1,6 @@
 import { BRAND, Eyebrow } from "@/components/Shared";
 
-export const DISCORD_INVITE_URL = "https://discord.gg/EXZv33vmV";
+export const DISCORD_INVITE_URL = "https://discord.gg/7Ud4XubFd";
 
 function DiscordMark({ size = 22 }: { size?: number }) {
   return (
