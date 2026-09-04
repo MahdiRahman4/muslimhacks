@@ -6,6 +6,7 @@ import PPLUSLogo from "../../assets/pplus-logo.png";
 import islamicReliefLogo from "../../assets/islamicReliefCanada-logo.png";
 import replitLogo from "../../assets/replit-logo.svg";
 import bannyaLogo from "../../assets/bannya-logo.png";
+import MAXLogo from "../../assets/MAX-logo.png";
 import tawafSevenLogo from "../../assets/tawafSeven-logo.png";
 import { useI18n } from "@/i18n/LanguageProvider";
 
@@ -77,7 +78,9 @@ const SPONSORS: Record<SponsorTierKey, Sponsor[]> = {
     { name: "Tawaf Seven", logoPath: tawafSevenLogo },
   ],
   gold: [],
-  silver: [],
+  silver: [
+    { name: "MAX", logoPath: MAXLogo },
+  ],
   bronze: [
     { name: "Bannya Systems Inc.", logoPath: bannyaLogo },
   ],
