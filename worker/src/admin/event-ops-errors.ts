@@ -36,6 +36,11 @@ export const EVENT_OPS_ERROR_CODES = {
     error: "That meal was not claimed for this participant",
     code: "meal_not_claimed",
   },
+  delete_confirmation_mismatch: {
+    status: 400,
+    error: "The typed check-in code did not match this participant",
+    code: "delete_confirmation_mismatch",
+  },
 } as const;
 
 export type EventOpsErrorCode = keyof typeof EVENT_OPS_ERROR_CODES;

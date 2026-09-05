@@ -143,6 +143,20 @@ export async function unclaimParticipantMeal(participantId: string, mealKey: Mea
   );
 }
 
+/** The code is echoed back so a stray request cannot delete anyone. */
+export async function deleteParticipant(participantId: string, confirmCode: string) {
+  return eventOpsFetch<{
+    deleted: true;
+    participant_id: string;
+    deleted_meals: number;
+    deleted_at: number;
+    deleted_by: string;
+  }>(`/api/admin/participants/${participantId}`, {
+    method: "DELETE",
+    body: JSON.stringify({ confirm_code: confirmCode.trim().toUpperCase() }),
+  });
+}
+
 export async function downloadCsvExport(path: string) {
   const token = await getAuthTokenAsync();
   const response = await fetch(`${apiBaseUrl}${path}`, {

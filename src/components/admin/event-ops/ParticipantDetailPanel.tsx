@@ -3,6 +3,7 @@ import { BRAND } from "@/components/Shared";
 import {
   claimParticipantMeal,
   unclaimParticipantMeal,
+  deleteParticipant,
   fetchParticipantDetail,
   getEventOpsErrorMessage,
   EventOpsApiError,
@@ -17,6 +18,9 @@ interface ParticipantDetailPanelProps {
   initialParticipant?: ParticipantSummary;
   onUpdated: () => void;
   prominent?: boolean;
+  /** Off by default so the meal-line view cannot delete anyone by mistake. */
+  allowDelete?: boolean;
+  onDeleted?: () => void;
 }
 
 function summaryToDetail(summary: ParticipantSummary): ParticipantDetail {
@@ -58,11 +62,228 @@ function CheckinBadge({ status }: { status: ParticipantDetail["checkin_status"] 
   );
 }
 
+const dangerButtonStyle = {
+  background: "rgba(196,112,112,0.85)",
+  border: "1px solid rgba(196,112,112,0.5)",
+  color: BRAND.cream,
+};
+
+const cancelButtonStyle = {
+  background: "rgba(245,238,227,0.06)",
+  border: "1px solid rgba(221,168,83,0.2)",
+  color: BRAND.cream,
+};
+
+/**
+ * Deleting is unrecoverable, so it takes three deliberate steps: open the
+ * danger zone, confirm the person, then type their check-in code.
+ */
+function DeleteParticipantSection({
+  detail,
+  onDeleted,
+}: {
+  detail: ParticipantDetail;
+  onDeleted?: () => void;
+}) {
+  const [step, setStep] = useState<0 | 1 | 2 | 3>(0);
+  const [typedCode, setTypedCode] = useState("");
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setStep(0);
+    setTypedCode("");
+    setError(null);
+  }, [detail.id]);
+
+  const reset = () => {
+    setStep(0);
+    setTypedCode("");
+    setError(null);
+  };
+
+  const mealCount = detail.meals.length;
+  const codeMatches =
+    typedCode.trim().toUpperCase() === detail.public_checkin_code.toUpperCase();
+
+  const handleDelete = async () => {
+    if (deleting || !codeMatches) return;
+
+    setDeleting(true);
+    setError(null);
+    try {
+      await deleteParticipant(detail.id, typedCode);
+      onDeleted?.();
+    } catch (err) {
+      setError(getEventOpsErrorMessage(err));
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  if (step === 0) {
+    return (
+      <div className="pt-2 border-t" style={{ borderColor: "rgba(221,168,83,0.1)" }}>
+        <button
+          type="button"
+          onClick={() => setStep(1)}
+          className="mt-2 px-3 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80"
+          style={{
+            background: "transparent",
+            border: "1px solid rgba(196,112,112,0.3)",
+            color: "#C47070",
+          }}
+        >
+          Delete participant
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="rounded-lg p-3.5 flex flex-col gap-3"
+      style={{
+        background: "rgba(196,112,112,0.1)",
+        border: "1px solid rgba(196,112,112,0.35)",
+      }}
+    >
+      <p className="font-sans text-xs uppercase tracking-[0.2em]" style={{ color: "#C47070" }}>
+        Step {step} of 3
+      </p>
+
+      {step === 1 && (
+        <>
+          <p className="font-sans text-sm" style={{ color: BRAND.cream }}>
+            This permanently removes <strong>{detail.full_name}</strong> from event ops,
+            along with {mealCount === 1 ? "1 meal claim" : `${mealCount} meal claims`}. It
+            cannot be undone. Their application record stays.
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setStep(2)}
+              className="flex-1 px-3 py-2 rounded-lg font-sans text-xs font-semibold transition-all duration-200 hover:opacity-80"
+              style={dangerButtonStyle}
+            >
+              Continue
+            </button>
+            <button
+              type="button"
+              onClick={reset}
+              className="flex-1 px-3 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80"
+              style={cancelButtonStyle}
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      )}
+
+      {step === 2 && (
+        <>
+          <p className="font-sans text-sm" style={{ color: BRAND.cream }}>
+            Is this the right person?
+          </p>
+          <div className="flex flex-col gap-0.5">
+            <span className="font-display text-base font-bold" style={{ color: BRAND.cream }}>
+              {detail.full_name}
+            </span>
+            <span className="font-sans text-sm break-all" style={{ color: BRAND.creamMuted }}>
+              {detail.email}
+            </span>
+            <span className="font-mono text-sm" style={{ color: BRAND.sand }}>
+              {detail.public_checkin_code}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setStep(3)}
+              className="flex-1 px-3 py-2 rounded-lg font-sans text-xs font-semibold transition-all duration-200 hover:opacity-80"
+              style={dangerButtonStyle}
+            >
+              Yes, that's them
+            </button>
+            <button
+              type="button"
+              onClick={reset}
+              className="flex-1 px-3 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80"
+              style={cancelButtonStyle}
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      )}
+
+      {step === 3 && (
+        <>
+          <label
+            className="font-sans text-sm"
+            style={{ color: BRAND.cream }}
+            htmlFor="delete-confirm-code"
+          >
+            Last check. Type{" "}
+            <span className="font-mono font-bold" style={{ color: BRAND.sand }}>
+              {detail.public_checkin_code}
+            </span>{" "}
+            to delete.
+          </label>
+          <input
+            id="delete-confirm-code"
+            value={typedCode}
+            onChange={(event) => setTypedCode(event.target.value)}
+            autoComplete="off"
+            autoCapitalize="characters"
+            spellCheck={false}
+            placeholder="Check-in code"
+            className="w-full rounded-lg px-3 py-2.5 font-mono text-sm uppercase outline-none focus-visible:ring-2"
+            style={{
+              background: "rgba(6,15,32,0.5)",
+              border: "1px solid rgba(196,112,112,0.35)",
+              color: BRAND.cream,
+            }}
+          />
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={!codeMatches || deleting}
+              onClick={() => void handleDelete()}
+              className="flex-1 px-3 py-2 rounded-lg font-sans text-xs font-semibold transition-all duration-200 hover:opacity-80 disabled:cursor-not-allowed"
+              style={{ ...dangerButtonStyle, opacity: !codeMatches || deleting ? 0.5 : 1 }}
+            >
+              {deleting ? "Deleting…" : "Delete permanently"}
+            </button>
+            <button
+              type="button"
+              disabled={deleting}
+              onClick={reset}
+              className="flex-1 px-3 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 disabled:cursor-not-allowed"
+              style={cancelButtonStyle}
+            >
+              Cancel
+            </button>
+          </div>
+        </>
+      )}
+
+      {error && (
+        <p className="font-sans text-sm" style={{ color: "#C47070" }}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function ParticipantDetailPanel({
   participantId,
   initialParticipant,
   onUpdated,
   prominent = false,
+  allowDelete = false,
+  onDeleted,
 }: ParticipantDetailPanelProps) {
   const [detail, setDetail] = useState<ParticipantDetail | null>(
     initialParticipant ? summaryToDetail(initialParticipant) : null,
@@ -332,6 +553,10 @@ export function ParticipantDetailPanel({
             >
               {mealError}
             </div>
+          )}
+
+          {allowDelete && (
+            <DeleteParticipantSection detail={detail} onDeleted={onDeleted} />
           )}
         </>
       )}

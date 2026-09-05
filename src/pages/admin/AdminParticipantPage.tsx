@@ -45,6 +45,8 @@ export default function AdminParticipantPage() {
           initialParticipant={initialParticipant?.id === id ? initialParticipant : undefined}
           onUpdated={() => undefined}
           prominent
+          allowDelete
+          onDeleted={() => navigate("/admin/event-ops", { replace: true })}
         />
       </main>
     </div>

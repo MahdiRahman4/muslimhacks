@@ -1,4 +1,5 @@
 import type { Env } from "../env";
+import { handleAdminActionLogRoutes } from "./action-log";
 import { handleAdminApplicationRoutes } from "./applications";
 import { handleAdminChallengeRoutes } from "./challenges";
 import { handleAdminEventOpsRoutes } from "./event-ops";
@@ -26,6 +27,11 @@ export async function handleAdminRoutes(
   const reportRoute = await handleAdminReportRoutes(request, env, respond);
   if (reportRoute) {
     return reportRoute;
+  }
+
+  const actionLogRoute = await handleAdminActionLogRoutes(request, env, respond);
+  if (actionLogRoute) {
+    return actionLogRoute;
   }
 
   const participantRoute = await handleAdminParticipantRoutes(request, env, respond);

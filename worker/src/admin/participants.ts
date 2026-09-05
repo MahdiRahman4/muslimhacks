@@ -1,5 +1,6 @@
 import type { Env } from "../env";
 import { readJson, requireAdmin, type JsonResponder } from "./auth";
+import { logAdminAction } from "./action-log";
 import { respondEventOpsError } from "./event-ops-errors";
 import {
   buildListQuery,
@@ -576,6 +577,82 @@ async function handleUnclaimMeal(
   return respond({ meal_key: mealKey, claimed: false });
 }
 
+/**
+ * Removes someone from event ops entirely. Scoped to the participant row and
+ * its meal claims: the user and application rows stay, so nothing that
+ * references them (reviews, challenge picks, other check-in records) breaks.
+ * The caller has to echo back the check-in code, which makes an accidental or
+ * replayed DELETE a no-op rather than a deletion.
+ */
+async function handleDeleteParticipant(
+  request: Request,
+  env: Env,
+  respond: JsonResponder,
+  participantId: string,
+): Promise<Response> {
+  const admin = await requireAdmin(request, env, respond);
+  if (admin instanceof Response) {
+    return admin;
+  }
+
+  const body = await readJson(request);
+  const input = (body ?? {}) as Record<string, unknown>;
+  const confirmCode =
+    typeof input.confirm_code === "string" ? input.confirm_code.trim().toUpperCase() : "";
+
+  const participant = await getParticipantById(env, participantId);
+  if (!participant) {
+    return respond({ error: "Participant not found" }, 404);
+  }
+
+  if (confirmCode !== participant.public_checkin_code.toUpperCase()) {
+    return respondEventOpsError(respond, "delete_confirmation_mismatch");
+  }
+
+  const meals = await getParticipantMeals(env, participantId);
+
+  // Snapshot first: once the rows are gone this is the only record of them.
+  const loggedAt = await logAdminAction(env, admin, {
+    action: "participant_deleted",
+    targetType: "participant",
+    targetId: participant.id,
+    targetLabel: `${participant.full_name} <${participant.email}>`,
+    details: {
+      full_name: participant.full_name,
+      email: participant.email,
+      gender: participant.gender,
+      public_checkin_code: participant.public_checkin_code,
+      checkin_status: participant.checkin_status,
+      checked_in_at: participant.checked_in_at,
+      checked_in_by: participant.checked_in_by,
+      food_wave_key: participant.food_wave_key,
+      user_id: participant.user_id,
+      application_id: participant.application_id,
+      participant_created_at: participant.created_at,
+      deleted_meals: meals.map((meal) => ({
+        meal_key: meal.meal_key,
+        claimed_by: meal.claimed_by,
+        claimed_at: meal.claimed_at,
+      })),
+    },
+  });
+
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM participant_meals WHERE participant_id = ?").bind(
+      participantId,
+    ),
+    env.DB.prepare("DELETE FROM participants WHERE id = ?").bind(participantId),
+  ]);
+
+  return respond({
+    deleted: true,
+    participant_id: participant.id,
+    deleted_meals: meals.length,
+    deleted_at: loggedAt,
+    deleted_by: admin.email,
+  });
+}
+
 export async function handleAdminParticipantRoutes(
   request: Request,
   env: Env,
@@ -613,6 +690,9 @@ export async function handleAdminParticipantRoutes(
   const detailMatch = pathname.match(/^\/api\/admin\/participants\/([^/]+)$/);
   if (detailMatch && method === "GET") {
     return handleGetParticipant(request, env, respond, detailMatch[1]);
+  }
+  if (detailMatch && method === "DELETE") {
+    return handleDeleteParticipant(request, env, respond, detailMatch[1]);
   }
 
   return null;
