@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { BRAND } from "@/components/Shared";
 import {
   claimParticipantMeal,
+  unclaimParticipantMeal,
   fetchParticipantDetail,
   getEventOpsErrorMessage,
   EventOpsApiError,
@@ -70,6 +71,8 @@ export function ParticipantDetailPanel({
   const [error, setError] = useState<string | null>(null);
   const [mealError, setMealError] = useState<string | null>(null);
   const [claimingMeal, setClaimingMeal] = useState<MealKey | null>(null);
+  const [confirmUndo, setConfirmUndo] = useState<MealKey | null>(null);
+  const [undoingMeal, setUndoingMeal] = useState<MealKey | null>(null);
 
   const loadDetail = useCallback(async (id: string, silent = false) => {
     if (!silent) {
@@ -91,6 +94,7 @@ export function ParticipantDetailPanel({
   }, []);
 
   useEffect(() => {
+    setConfirmUndo(null);
     if (!participantId) {
       setDetail(null);
       setError(null);
@@ -138,6 +142,28 @@ export function ParticipantDetailPanel({
       }
     } finally {
       setClaimingMeal(null);
+    }
+  };
+
+  const handleUndo = async (mealKey: MealKey) => {
+    if (!participantId || undoingMeal) return;
+
+    setUndoingMeal(mealKey);
+    setMealError(null);
+
+    try {
+      await unclaimParticipantMeal(participantId, mealKey);
+      setConfirmUndo(null);
+      await loadDetail(participantId);
+      onUpdated();
+    } catch (err) {
+      setMealError(getEventOpsErrorMessage(err));
+      if (err instanceof EventOpsApiError && err.code === "meal_not_claimed") {
+        setConfirmUndo(null);
+        await loadDetail(participantId);
+      }
+    } finally {
+      setUndoingMeal(null);
     }
   };
 
@@ -198,15 +224,67 @@ export function ParticipantDetailPanel({
             <div className={prominent ? "flex flex-col gap-2" : "grid grid-cols-2 gap-2"}>
               {MEAL_KEYS.map((key) => {
                 const claimed = claimedKeys.has(key);
+                const sizing = prominent ? "px-4 py-4 text-sm" : "px-3 py-2 text-xs";
+
+                if (claimed && confirmUndo === key) {
+                  return (
+                    <div
+                      key={key}
+                      className={`rounded-lg flex flex-col gap-2 ${sizing}`}
+                      style={{
+                        background: "rgba(196,112,112,0.1)",
+                        border: "1px solid rgba(196,112,112,0.35)",
+                      }}
+                    >
+                      <span className="font-sans font-medium" style={{ color: BRAND.cream }}>
+                        Undo {formatMealLabel(key)}?
+                      </span>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          disabled={undoingMeal !== null}
+                          onClick={() => void handleUndo(key)}
+                          className="flex-1 px-3 py-2 rounded-lg font-sans text-xs font-semibold transition-all duration-200 hover:opacity-80 disabled:cursor-not-allowed focus-visible:ring-2"
+                          style={{
+                            background: "rgba(196,112,112,0.85)",
+                            border: "1px solid rgba(196,112,112,0.5)",
+                            color: BRAND.cream,
+                            opacity: undoingMeal !== null ? 0.6 : 1,
+                          }}
+                        >
+                          {undoingMeal === key ? "Undoing…" : "Yes, undo"}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={undoingMeal !== null}
+                          onClick={() => setConfirmUndo(null)}
+                          className="flex-1 px-3 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 disabled:cursor-not-allowed focus-visible:ring-2"
+                          style={{
+                            background: "rgba(245,238,227,0.06)",
+                            border: "1px solid rgba(221,168,83,0.2)",
+                            color: BRAND.cream,
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
                   <button
                     key={key}
                     type="button"
-                    disabled={!checkedIn || claimed || claimingMeal !== null}
-                    onClick={() => void handleClaim(key)}
-                    className={`rounded-lg font-sans font-medium transition-all duration-200 hover:opacity-80 disabled:cursor-not-allowed focus-visible:ring-2 ${
-                      prominent ? "px-4 py-4 text-sm" : "px-3 py-2 text-xs"
-                    }`}
+                    disabled={
+                      claimed
+                        ? undoingMeal !== null
+                        : !checkedIn || claimingMeal !== null
+                    }
+                    onClick={() =>
+                      claimed ? setConfirmUndo(key) : void handleClaim(key)
+                    }
+                    className={`rounded-lg font-sans font-medium transition-all duration-200 hover:opacity-80 disabled:cursor-not-allowed focus-visible:ring-2 ${sizing}`}
                     style={
                       claimed
                         ? { background: "rgba(95,168,119,0.12)", border: "1px solid rgba(95,168,119,0.35)", color: "#5FA877" }
@@ -221,7 +299,7 @@ export function ParticipantDetailPanel({
                     {claimingMeal === key
                       ? "Marking…"
                       : claimed
-                        ? `${formatMealLabel(key)} · got it`
+                        ? `${formatMealLabel(key)} · got it · undo`
                         : `${formatMealLabel(key)} · not yet`}
                   </button>
                 );

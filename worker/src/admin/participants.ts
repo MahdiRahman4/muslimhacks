@@ -403,6 +403,43 @@ async function handleClaimMeal(
   );
 }
 
+/** Volunteers hand out food fast, so a mis-tapped meal has to be reversible. */
+async function handleUnclaimMeal(
+  request: Request,
+  env: Env,
+  respond: JsonResponder,
+  participantId: string,
+  mealKey: string,
+): Promise<Response> {
+  const admin = await requireAdmin(request, env, respond);
+  if (admin instanceof Response) {
+    return admin;
+  }
+
+  if (!isMealKey(mealKey)) {
+    return respondEventOpsError(respond, "invalid_meal_key", {
+      allowed: MEAL_KEYS,
+    });
+  }
+
+  const participant = await getParticipantById(env, participantId);
+  if (!participant) {
+    return respond({ error: "Participant not found" }, 404);
+  }
+
+  const result = await env.DB.prepare(
+    "DELETE FROM participant_meals WHERE participant_id = ? AND meal_key = ?",
+  )
+    .bind(participantId, mealKey)
+    .run();
+
+  if ((result.meta.changes ?? 0) === 0) {
+    return respondEventOpsError(respond, "meal_not_claimed", { meal_key: mealKey });
+  }
+
+  return respond({ meal_key: mealKey, claimed: false });
+}
+
 export async function handleAdminParticipantRoutes(
   request: Request,
   env: Env,
@@ -423,6 +460,9 @@ export async function handleAdminParticipantRoutes(
   const mealMatch = pathname.match(/^\/api\/admin\/participants\/([^/]+)\/meals\/([^/]+)\/claim$/);
   if (mealMatch && method === "POST") {
     return handleClaimMeal(request, env, respond, mealMatch[1], mealMatch[2]);
+  }
+  if (mealMatch && method === "DELETE") {
+    return handleUnclaimMeal(request, env, respond, mealMatch[1], mealMatch[2]);
   }
 
   const checkinMatch = pathname.match(/^\/api\/admin\/participants\/([^/]+)\/checkin$/);

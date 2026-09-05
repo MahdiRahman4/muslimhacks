@@ -123,6 +123,13 @@ export async function claimParticipantMeal(participantId: string, mealKey: MealK
   );
 }
 
+export async function unclaimParticipantMeal(participantId: string, mealKey: MealKey) {
+  return eventOpsFetch<{ meal_key: MealKey; claimed: false }>(
+    `/api/admin/participants/${participantId}/meals/${mealKey}/claim`,
+    { method: "DELETE" },
+  );
+}
+
 export async function downloadCsvExport(path: string) {
   const token = await getAuthTokenAsync();
   const response = await fetch(`${apiBaseUrl}${path}`, {

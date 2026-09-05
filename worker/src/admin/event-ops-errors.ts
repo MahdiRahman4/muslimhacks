@@ -31,6 +31,11 @@ export const EVENT_OPS_ERROR_CODES = {
     error: "Invalid mealKey",
     code: "invalid_meal_key",
   },
+  meal_not_claimed: {
+    status: 404,
+    error: "That meal was not claimed for this participant",
+    code: "meal_not_claimed",
+  },
 } as const;
 
 export type EventOpsErrorCode = keyof typeof EVENT_OPS_ERROR_CODES;
