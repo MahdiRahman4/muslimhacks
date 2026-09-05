@@ -2,6 +2,7 @@ import type { Env } from "./env";
 import { handleAdminRoutes } from "./admin/routes";
 import { handleApplicationRoutes } from "./applications/routes";
 import { handleAuthRoutes } from "./auth/routes";
+import { handleChallengeRoutes } from "./challenges/routes";
 import { handleParticipantRoutes } from "./participants/routes";
 import { authenticate } from "./auth/middleware";
 import { corsHeaders } from "./cors";
@@ -74,6 +75,11 @@ async function dispatch(
   if (pathname.startsWith("/api/participants/")) {
     const user = await authenticate(request, env);
     return handleParticipantRoutes(request, env, respond, user);
+  }
+
+  if (pathname.startsWith("/api/challenges")) {
+    const user = await authenticate(request, env);
+    return handleChallengeRoutes(request, env, respond, user);
   }
 
   if (pathname.startsWith("/api/admin/")) {

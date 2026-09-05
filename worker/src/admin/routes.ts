@@ -1,5 +1,6 @@
 import type { Env } from "../env";
 import { handleAdminApplicationRoutes } from "./applications";
+import { handleAdminChallengeRoutes } from "./challenges";
 import { handleAdminEventOpsRoutes } from "./event-ops";
 import { handleAdminReportRoutes } from "./reports";
 import { handleAdminParticipantRoutes } from "./participants";
@@ -12,6 +13,11 @@ export async function handleAdminRoutes(
   env: Env,
   respond: JsonResponder,
 ): Promise<Response> {
+  const challengeRoute = await handleAdminChallengeRoutes(request, env, respond);
+  if (challengeRoute) {
+    return challengeRoute;
+  }
+
   const eventOpsRoute = await handleAdminEventOpsRoutes(request, env, respond);
   if (eventOpsRoute) {
     return eventOpsRoute;

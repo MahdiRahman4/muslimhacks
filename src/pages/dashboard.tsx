@@ -28,6 +28,7 @@ import { CheckinQr } from "@/components/CheckinQr";
 import CountdownTimer from "@/components/CountdownTimer";
 import { FoodWaveBadge } from "@/components/FoodWaveBadge";
 import { DiscordInviteCard } from "@/components/DiscordInviteCard";
+import { ChallengePicker } from "@/components/ChallengePicker";
 import { MEAL_KEYS } from "@/types/event-ops";
 import { formatMealLabel } from "@/lib/meals";
 import { APPLICATIONS_OPEN } from "@/lib/applications-open";
@@ -623,6 +624,8 @@ export default function Dashboard() {
         {status === "approved" && (
           <DiscordInviteCard fullName={userSummary?.summary?.full_name ?? null} />
         )}
+
+        {status === "approved" && <ChallengePicker />}
 
         {status === "approved" && participant && (
           <ParticipantCheckinCard participant={participant} />

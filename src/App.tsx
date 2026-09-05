@@ -18,6 +18,7 @@ import ApplicationSubmittedSection from "./components/sections/ApplicationSubmit
 import AdminApplicationsPage from "./pages/admin/AdminApplicationsPage";
 import AdminApplicationDetailPage from "./pages/admin/AdminApplicationDetailPage";
 import EventOpsDashboardPage from "./pages/admin/EventOpsDashboardPage";
+import AdminChallengesPage from "./pages/admin/AdminChallengesPage";
 import AdminParticipantPage from "./pages/admin/AdminParticipantPage";
 import Dashboard from "./pages/dashboard";
 import SignInPage from "./pages/SignInPage";
@@ -124,6 +125,14 @@ const App = () => {
                     element={
                       <RequireAdmin>
                         <EventOpsDashboardPage />
+                      </RequireAdmin>
+                    }
+                  />
+                  <Route
+                    path="/admin/challenges"
+                    element={
+                      <RequireAdmin>
+                        <AdminChallengesPage />
                       </RequireAdmin>
                     }
                   />

@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { SignedIn, UserButton } from "@clerk/clerk-react";
-import { Lock, LayoutDashboard, FileUser, Cog } from 'lucide-react';
+import { Lock, LayoutDashboard, FileUser, Cog, Trophy } from 'lucide-react';
 import { useState } from "react";
 import { APPLICATIONS_OPEN } from "@/lib/applications-open";
 
@@ -13,25 +13,33 @@ export default function Profile() {
       <UserButton>
         <UserButton.MenuItems>
           {/* Conditional mapping without using wrapper Fragments (<> </>) */}
+          <UserButton.Link
+            label="Dashboard"
+            labelIcon={<LayoutDashboard size={imgSize} />}
+            href="/dashboard"
+          />
+
           {isAdmin ? (
             <UserButton.Link
               label="Student Applications"
               labelIcon={<Lock size={imgSize} />}
               href="/admin/applications"
             />
-          ) : (
-            <UserButton.Link
-              label="Dashboard"
-              labelIcon={<LayoutDashboard size={imgSize} />}
-              href="/dashboard"
-            />
-          )}
+          ) : null}
 
           {isAdmin ? (
             <UserButton.Link
               label="Event Operations"
               labelIcon={<Cog size={imgSize} />}
               href="/admin/event-ops"
+            />
+          ) : null}
+
+          {isAdmin ? (
+            <UserButton.Link
+              label="Challenge picks"
+              labelIcon={<Trophy size={imgSize} />}
+              href="/admin/challenges"
             />
           ) : APPLICATIONS_OPEN ? (
             <UserButton.Link
