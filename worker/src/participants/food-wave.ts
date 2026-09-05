@@ -5,7 +5,15 @@ export const FOOD_WAVES = [
   { key: "blue", label: "Blue", hex: "#4F7EC8", text_hex: "#F5EED3" },
   { key: "gold", label: "Gold", hex: "#DDA853", text_hex: "#060F20" },
   { key: "green", label: "Green", hex: "#3E8F62", text_hex: "#F5EED3" },
+  { key: "white", label: "White", hex: "#FFFFFF", text_hex: "#060F20" },
 ] as const;
+
+/** Walk-ins are counted separately, so white is never handed out by rotation. */
+export const WALK_IN_FOOD_WAVE_KEY = "white";
+
+const ROTATING_FOOD_WAVES = FOOD_WAVES.filter(
+  (wave) => wave.key !== WALK_IN_FOOD_WAVE_KEY,
+);
 
 export type FoodWave = (typeof FOOD_WAVES)[number];
 export type FoodWaveKey = FoodWave["key"];
@@ -25,8 +33,9 @@ export function foodWaveFromKey(key: string | null | undefined): FoodWave | null
 
 /** Alternate red → blue → gold → green for each new check-in. */
 export function foodWaveFromArrivalRank(rank: number): FoodWave {
-  const index = ((rank % FOOD_WAVES.length) + FOOD_WAVES.length) % FOOD_WAVES.length;
-  return FOOD_WAVES[index];
+  const count = ROTATING_FOOD_WAVES.length;
+  const index = ((rank % count) + count) % count;
+  return ROTATING_FOOD_WAVES[index];
 }
 
 async function takeNextArrivalRank(env: Env): Promise<number> {

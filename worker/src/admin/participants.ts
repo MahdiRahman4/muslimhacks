@@ -17,7 +17,12 @@ import {
   type ParticipantMealRow,
   type ParticipantRow,
 } from "../participants/service";
-import { assignFoodWaveAtCheckin, foodWaveFromKey, type FoodWave } from "../participants/food-wave";
+import {
+  assignFoodWaveAtCheckin,
+  foodWaveFromKey,
+  WALK_IN_FOOD_WAVE_KEY,
+  type FoodWave,
+} from "../participants/food-wave";
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -408,6 +413,17 @@ async function handleCreateParticipant(
 
   if (!participant) {
     return respond({ error: "Could not create the participant" }, 500);
+  }
+
+  // Set before checking in so the rotation is not consumed. Someone who was
+  // already registered keeps their normal colour even if added through here.
+  if (!existingParticipant) {
+    await env.DB.prepare(
+      "UPDATE participants SET food_wave_key = ?, updated_at = ? WHERE id = ? AND food_wave_key IS NULL",
+    )
+      .bind(WALK_IN_FOOD_WAVE_KEY, now, participant.id)
+      .run();
+    participant.food_wave_key = WALK_IN_FOOD_WAVE_KEY;
   }
 
   const checkedIn = await markParticipantCheckedIn(env, participant, admin);
