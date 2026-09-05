@@ -116,6 +116,19 @@ export async function checkinByCode(code: string) {
   }
 }
 
+export async function createWalkInParticipant(fullName: string, email: string) {
+  return eventOpsFetch<CheckinResponse & { created?: boolean }>(
+    "/api/admin/participants",
+    {
+      method: "POST",
+      body: JSON.stringify({
+        full_name: fullName.trim(),
+        email: email.trim().toLowerCase(),
+      }),
+    },
+  );
+}
+
 export async function claimParticipantMeal(participantId: string, mealKey: MealKey) {
   return eventOpsFetch<{ meal: ParticipantDetail["meals"][0] }>(
     `/api/admin/participants/${participantId}/meals/${mealKey}/claim`,

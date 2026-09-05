@@ -9,6 +9,8 @@ import {
 } from "./participant-list-query";
 import type { AuthUser } from "../auth/types";
 import {
+  ensureParticipantForApprovedApplication,
+  getParticipantByUserId,
   isMealKey,
   MEAL_KEYS,
   type MealKey,
@@ -307,6 +309,124 @@ async function handleCheckinParticipant(
   return respondCheckedIn(env, respond, admin, participant);
 }
 
+/**
+ * Walk-in registration: an admin accepts someone at the door with nothing but
+ * a name and an email. Existing rows are reused rather than duplicated, so
+ * running this twice on the same person is safe, and the person is checked in
+ * immediately because there is no other way to admit someone without a code.
+ */
+async function handleCreateParticipant(
+  request: Request,
+  env: Env,
+  respond: JsonResponder,
+): Promise<Response> {
+  const admin = await requireAdmin(request, env, respond);
+  if (admin instanceof Response) {
+    return admin;
+  }
+
+  const body = await readJson(request);
+  if (!body || typeof body !== "object") {
+    return respond({ error: "Invalid JSON body" }, 400);
+  }
+
+  const input = body as Record<string, unknown>;
+  const fullName =
+    typeof input.full_name === "string" ? input.full_name.trim() : "";
+  const email =
+    typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
+
+  if (!fullName) {
+    return respond({ error: "full_name is required" }, 400);
+  }
+  if (fullName.length > 200) {
+    return respond({ error: "full_name must be at most 200 characters" }, 400);
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) {
+    return respond({ error: "A valid email is required" }, 400);
+  }
+
+  const now = Date.now();
+
+  let user = await env.DB.prepare(
+    "SELECT id FROM users WHERE email = ? LIMIT 1",
+  )
+    .bind(email)
+    .first<{ id: string }>();
+
+  if (!user) {
+    await env.DB.prepare(
+      `INSERT INTO users (id, clerk_id, email, password_hash, role, created_at)
+       VALUES (?, NULL, ?, '', 'applicant', ?)
+       ON CONFLICT(email) DO NOTHING`,
+    )
+      .bind(crypto.randomUUID(), email, now)
+      .run();
+
+    user = await env.DB.prepare("SELECT id FROM users WHERE email = ? LIMIT 1")
+      .bind(email)
+      .first<{ id: string }>();
+  }
+
+  if (!user) {
+    return respond({ error: "Could not create the participant" }, 500);
+  }
+
+  const application = await env.DB.prepare(
+    "SELECT id, status FROM applications WHERE user_id = ? LIMIT 1",
+  )
+    .bind(user.id)
+    .first<{ id: string; status: string }>();
+
+  let applicationId: string;
+
+  if (!application) {
+    applicationId = crypto.randomUUID();
+    await env.DB.prepare(
+      `INSERT INTO applications (id, user_id, full_name, status, created_at, updated_at)
+       VALUES (?, ?, ?, 'approved', ?, ?)`,
+    )
+      .bind(applicationId, user.id, fullName, now, now)
+      .run();
+  } else {
+    applicationId = application.id;
+    // Approving at the door is the point, but their own answers stay untouched.
+    if (application.status !== "approved") {
+      await env.DB.prepare(
+        "UPDATE applications SET status = 'approved', updated_at = ? WHERE id = ?",
+      )
+        .bind(now, applicationId)
+        .run();
+    }
+  }
+
+  const existingParticipant = await getParticipantByUserId(env, user.id);
+  const participant = await ensureParticipantForApprovedApplication(
+    env,
+    applicationId,
+  );
+
+  if (!participant) {
+    return respond({ error: "Could not create the participant" }, 500);
+  }
+
+  const checkedIn = await markParticipantCheckedIn(env, participant, admin);
+  if (!checkedIn) {
+    return respond({ error: "Failed to check in participant" }, 500);
+  }
+
+  return respond(
+    {
+      participant: await participantSummaryPayload(env, checkedIn.participant),
+      created: !existingParticipant,
+      ...(checkedIn.alreadyCheckedIn
+        ? { already_checked_in: true, message: "Already checked in" }
+        : {}),
+    },
+    existingParticipant ? 200 : 201,
+  );
+}
+
 async function handleCheckinByCode(
   request: Request,
   env: Env,
@@ -451,6 +571,10 @@ export async function handleAdminParticipantRoutes(
 
   if (pathname === "/api/admin/participants" && method === "GET") {
     return handleListParticipants(request, env, respond);
+  }
+
+  if (pathname === "/api/admin/participants" && method === "POST") {
+    return handleCreateParticipant(request, env, respond);
   }
 
   if (pathname === "/api/admin/participants/checkin/by-code" && method === "POST") {
