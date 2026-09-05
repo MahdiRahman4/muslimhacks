@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Search, Download, ChevronLeft, ChevronRight,
   ChevronUp, ChevronDown, ChevronsUpDown, SlidersHorizontal,
+  Copy, Check,
 } from "lucide-react";
 import { BRAND, GoldText, Eyebrow, GLOBAL_CSS } from "@/components/Shared";
 import muslimHacksLogo from "@/assets/muslimhacks-logo-white.svg";
@@ -21,6 +22,19 @@ import type {
 import Profile from "@/components/ui/profile";
 
 type ListView = "applications" | "not_applied" | "allergies";
+
+interface DietaryPerson {
+  application_id: string;
+  full_name: string;
+  email: string;
+  status: string;
+}
+
+interface DietaryAnswer {
+  answer: string;
+  count: number;
+  people: DietaryPerson[];
+}
 type SortKey = "full_name" | "email" | "gender" | "status" | "created_at";
 type SortDir = "asc" | "desc";
 
@@ -93,10 +107,12 @@ const AdminApplicationsPage = () => {
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  const [dietaryAnswers, setDietaryAnswers] = useState<{ answer: string; count: number }[]>([]);
+  const [dietaryAnswers, setDietaryAnswers] = useState<DietaryAnswer[]>([]);
   const [dietaryNoneCount, setDietaryNoneCount] = useState(0);
   const [dietaryConsidered, setDietaryConsidered] = useState(0);
   const [dietaryApprovedOnly, setDietaryApprovedOnly] = useState(false);
+  const [expandedAnswers, setExpandedAnswers] = useState<string[]>([]);
+  const [copiedAnswer, setCopiedAnswer] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -127,6 +143,8 @@ const AdminApplicationsPage = () => {
             setDietaryAnswers(data.answers);
             setDietaryNoneCount(data.none_count);
             setDietaryConsidered(data.considered);
+            setExpandedAnswers([]);
+            setCopiedAnswer(null);
             setApplications([]);
             setSignups([]);
             setTotal(data.answers.length);
@@ -281,6 +299,30 @@ const AdminApplicationsPage = () => {
       setError(err instanceof Error ? err.message : "Failed to export CSV");
     } finally {
       setExporting(false);
+    }
+  };
+
+  const toggleAnswer = (key: string) => {
+    setExpandedAnswers((current) =>
+      current.includes(key) ? current.filter((item) => item !== key) : [...current, key],
+    );
+  };
+
+  const allAnswersExpanded =
+    dietaryAnswers.length > 0 && expandedAnswers.length === dietaryAnswers.length;
+
+  const toggleAllAnswers = () => {
+    setExpandedAnswers(allAnswersExpanded ? [] : dietaryAnswers.map((row) => row.answer));
+  };
+
+  const copyEmails = async (row: DietaryAnswer) => {
+    const emails = row.people.map((person) => person.email).join(", ");
+    try {
+      await navigator.clipboard.writeText(emails);
+      setCopiedAnswer(row.answer);
+      setTimeout(() => setCopiedAnswer((current) => (current === row.answer ? null : current)), 2000);
+    } catch {
+      setError("Could not copy to the clipboard");
     }
   };
 
@@ -452,7 +494,7 @@ const AdminApplicationsPage = () => {
           {view === "allergies" ? (
             <div className="flex flex-wrap items-center gap-3">
               <p className="font-sans text-sm" style={{ color: BRAND.sand }}>
-                Distinct allergy / dietary answers from {dietaryConsidered} {dietaryApprovedOnly ? "approved" : "pending + approved"} applications. No names.
+                Distinct allergy / dietary answers from {dietaryConsidered} {dietaryApprovedOnly ? "approved" : "pending + approved"} applications, with who said each one.
               </p>
               <label className="flex items-center gap-2 font-sans text-xs" style={{ color: BRAND.cream }}>
                 <input
@@ -463,6 +505,19 @@ const AdminApplicationsPage = () => {
                 />
                 Approved only
               </label>
+              {dietaryAnswers.length > 0 && (
+                <button
+                  onClick={toggleAllAnswers}
+                  className="px-3 py-1.5 rounded-full font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 focus-visible:ring-2"
+                  style={{
+                    background: "rgba(245,238,227,0.04)",
+                    border: "1px solid rgba(245,238,227,0.08)",
+                    color: BRAND.sand,
+                  }}
+                >
+                  {allAnswersExpanded ? "Collapse all" : "Show all contacts"}
+                </button>
+              )}
             </div>
           ) : (
           <div className="flex flex-col sm:flex-row gap-3">
@@ -614,25 +669,107 @@ const AdminApplicationsPage = () => {
                             </p>
                           </td>
                         </tr>
-                      ) : dietaryAnswers.map((row, i) => (
-                        <tr
-                          key={row.answer}
-                          style={{
-                            borderBottom: i < dietaryAnswers.length - 1 ? "1px solid rgba(221,168,83,0.07)" : "none",
-                          }}
-                        >
-                          <td className="px-4 py-3.5">
-                            <span className="font-sans text-sm whitespace-pre-wrap" style={{ color: BRAND.cream }}>
-                              {row.answer}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3.5">
-                            <span className="font-sans text-sm tabular-nums" style={{ color: BRAND.cream }}>
-                              {row.count}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
+                      ) : dietaryAnswers.map((row, i) => {
+                        const expanded = expandedAnswers.includes(row.answer);
+                        const divider =
+                          i < dietaryAnswers.length - 1
+                            ? "1px solid rgba(221,168,83,0.07)"
+                            : "none";
+
+                        return (
+                          <Fragment key={row.answer}>
+                            <tr style={{ borderBottom: expanded ? "none" : divider }}>
+                              <td className="px-4 py-3.5 align-top">
+                                <button
+                                  onClick={() => toggleAnswer(row.answer)}
+                                  className="flex items-start gap-2 text-left w-full hover:opacity-80 transition-opacity focus-visible:ring-2 rounded"
+                                >
+                                  {expanded ? (
+                                    <ChevronUp size={14} className="mt-1 shrink-0" style={{ color: BRAND.sand }} />
+                                  ) : (
+                                    <ChevronDown size={14} className="mt-1 shrink-0" style={{ color: BRAND.sand }} />
+                                  )}
+                                  <span className="flex flex-col gap-1 min-w-0">
+                                    <span className="font-sans text-sm whitespace-pre-wrap" style={{ color: BRAND.cream }}>
+                                      {row.answer}
+                                    </span>
+                                    <span className="font-sans text-xs" style={{ color: BRAND.sand }}>
+                                      {row.people.map((person) => person.full_name).join(", ")}
+                                    </span>
+                                  </span>
+                                </button>
+                              </td>
+                              <td className="px-4 py-3.5 align-top">
+                                <span className="font-sans text-sm tabular-nums" style={{ color: BRAND.cream }}>
+                                  {row.count}
+                                </span>
+                              </td>
+                            </tr>
+
+                            {expanded && (
+                              <tr style={{ borderBottom: divider }}>
+                                <td colSpan={2} className="px-4 pb-4">
+                                  <div
+                                    className="rounded-xl p-3 flex flex-col gap-2"
+                                    style={{
+                                      background: "rgba(6,15,32,0.35)",
+                                      border: "1px solid rgba(221,168,83,0.08)",
+                                    }}
+                                  >
+                                    {row.people.map((person) => (
+                                      <div
+                                        key={person.application_id}
+                                        className="flex flex-wrap items-center justify-between gap-2"
+                                      >
+                                        <div className="flex flex-col min-w-0">
+                                          <Link
+                                            to={`/admin/applications/${person.application_id}`}
+                                            className="font-sans text-sm font-medium hover:underline truncate"
+                                            style={{ color: BRAND.cream }}
+                                          >
+                                            {person.full_name}
+                                          </Link>
+                                          <a
+                                            href={`mailto:${person.email}?subject=${encodeURIComponent("MuslimHacks - about your dietary note")}`}
+                                            className="font-sans text-xs hover:underline break-all"
+                                            style={{ color: BRAND.purpleLight }}
+                                          >
+                                            {person.email}
+                                          </a>
+                                        </div>
+                                        {STATUS_STYLES[person.status as ApplicationStatus] && (
+                                          <StatusBadge status={person.status as ApplicationStatus} />
+                                        )}
+                                      </div>
+                                    ))}
+
+                                    <button
+                                      onClick={() => void copyEmails(row)}
+                                      className="self-start mt-1 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 focus-visible:ring-2"
+                                      style={{
+                                        background: "rgba(245,238,227,0.06)",
+                                        border: "1px solid rgba(221,168,83,0.2)",
+                                        color: BRAND.cream,
+                                      }}
+                                    >
+                                      {copiedAnswer === row.answer ? (
+                                        <>
+                                          <Check size={13} /> Copied
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Copy size={13} />
+                                          {row.count === 1 ? "Copy email" : `Copy all ${row.count} emails`}
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </Fragment>
+                        );
+                      })}
                     </>
                   )}
                 </tbody>

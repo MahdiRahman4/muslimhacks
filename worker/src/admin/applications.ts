@@ -316,12 +316,28 @@ async function handleDietarySummary(
     : "status IN ('pending', 'approved')";
 
   const rows = await env.DB.prepare(
-    `SELECT TRIM(dietary_restrictions) AS answer
-     FROM applications
-     WHERE ${statusClause}`,
-  ).all<{ answer: string | null }>();
+    `SELECT a.id, a.full_name, a.status, u.email,
+            TRIM(a.dietary_restrictions) AS answer
+     FROM applications a
+     JOIN users u ON u.id = a.user_id
+     WHERE ${statusClause}
+     ORDER BY a.full_name COLLATE NOCASE`,
+  ).all<{
+    id: string;
+    full_name: string | null;
+    status: string;
+    email: string;
+    answer: string | null;
+  }>();
 
-  const counts = new Map<string, { answer: string; count: number }>();
+  interface DietaryPerson {
+    application_id: string;
+    full_name: string;
+    email: string;
+    status: string;
+  }
+
+  const grouped = new Map<string, { answer: string; people: DietaryPerson[] }>();
   let noneCount = 0;
 
   for (const row of rows.results ?? []) {
@@ -331,18 +347,32 @@ async function handleDietarySummary(
       continue;
     }
     const key = answer.toLowerCase();
-    const existing = counts.get(key);
-    if (existing) {
-      existing.count += 1;
-    } else {
-      counts.set(key, { answer, count: 1 });
+    const entry = grouped.get(key) ?? { answer, people: [] };
+    // "Fish" and "fish" are one group; show the capitalised spelling.
+    if (answer[0] === answer[0].toUpperCase() && entry.answer[0] !== entry.answer[0].toUpperCase()) {
+      entry.answer = answer;
     }
+    entry.people.push({
+      application_id: row.id,
+      full_name: row.full_name?.trim() || "(no name)",
+      email: row.email,
+      status: row.status,
+    });
+    grouped.set(key, entry);
   }
 
-  const answers = [...counts.values()].sort((a, b) => {
-    if (b.count !== a.count) return b.count - a.count;
-    return a.answer.localeCompare(b.answer);
-  });
+  // Named people are the point here: an allergy is only actionable if you know
+  // who to contact, so each answer carries its own roster.
+  const answers = [...grouped.values()]
+    .map((entry) => ({
+      answer: entry.answer,
+      count: entry.people.length,
+      people: entry.people,
+    }))
+    .sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count;
+      return a.answer.localeCompare(b.answer);
+    });
 
   return respond({
     answers,

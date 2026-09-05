@@ -310,7 +310,16 @@ export async function fetchAdminDietarySummary(params: { approvedOnly?: boolean 
   if (params.approvedOnly) query.set("approved_only", "true");
   const suffix = query.toString() ? `?${query.toString()}` : "";
   return apiFetch<{
-    answers: { answer: string; count: number }[];
+    answers: {
+      answer: string;
+      count: number;
+      people: {
+        application_id: string;
+        full_name: string;
+        email: string;
+        status: string;
+      }[];
+    }[];
     none_count: number;
     listed_count: number;
     considered: number;
