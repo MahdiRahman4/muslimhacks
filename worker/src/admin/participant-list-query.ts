@@ -73,8 +73,10 @@ export function buildListQuery(
   }
 
   if (filters.gender) {
-    clauses.push(`${tableAlias}.gender = ?`);
-    binds.push(filters.gender);
+    // Applications store gender lowercase, so compare case-insensitively
+    // rather than trusting whatever casing the caller sent.
+    clauses.push(`LOWER(${tableAlias}.gender) = ?`);
+    binds.push(filters.gender.toLowerCase());
   }
 
   if (filters.search) {

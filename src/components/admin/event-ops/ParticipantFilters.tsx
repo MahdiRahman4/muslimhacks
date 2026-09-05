@@ -4,7 +4,7 @@ import { BRAND } from "@/components/Shared";
 export interface ParticipantFilterValues {
   search: string;
   checkedIn: "all" | "true" | "false";
-  gender: "all" | "Male" | "Female" | "Other";
+  gender: "all" | "male" | "female";
   sortBy: "created_at" | "checked_in_at";
   sortOrder: "asc" | "desc";
 }
@@ -64,9 +64,8 @@ export function ParticipantFilters({ values, onChange }: ParticipantFiltersProps
           style={{ ...selectStyle, color: BRAND.cream }}
         >
           <option value="all" style={{ background: BRAND.navy }}>All genders</option>
-          <option value="Male" style={{ background: BRAND.navy }}>Male</option>
-          <option value="Female" style={{ background: BRAND.navy }}>Female</option>
-          <option value="Other" style={{ background: BRAND.navy }}>Other</option>
+          <option value="male" style={{ background: BRAND.navy }}>Male</option>
+          <option value="female" style={{ background: BRAND.navy }}>Female</option>
         </select>
 
         <select
