@@ -30,7 +30,7 @@ export function ParticipantFilters({ values, onChange }: ParticipantFiltersProps
 
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col gap-3"
+      className="rounded-2xl p-4 sm:p-5 flex flex-col gap-3"
       style={{ background: "rgba(245,238,227,0.03)", border: "1px solid rgba(221,168,83,0.1)" }}
     >
       <div className="relative">

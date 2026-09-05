@@ -17,8 +17,8 @@ export default function AdminParticipantPage() {
       <style>{GLOBAL_CSS}</style>
       <EventOpsHeader />
 
-      <main className="max-w-xl mx-auto px-6 py-8 flex flex-col gap-6">
-        <div className="flex items-center justify-between gap-3">
+      <main className="max-w-xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <Link
             to="/admin/event-ops"
             className="inline-flex items-center gap-2 font-sans text-sm hover:opacity-80"

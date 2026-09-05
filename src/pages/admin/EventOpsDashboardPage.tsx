@@ -138,12 +138,12 @@ const EventOpsDashboardPage = () => {
 
       <EventOpsHeader />
 
-      <main className="max-w-7xl mx-auto px-6 py-10 flex flex-col gap-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-10 flex flex-col gap-6 sm:gap-8">
         <div className="flex flex-col gap-1">
           <Eyebrow>Admin</Eyebrow>
           <h1
             className="font-display font-black leading-tight"
-            style={{ fontSize: "clamp(1.75rem, 3vw, 2.5rem)", letterSpacing: "-0.02em" }}
+            style={{ fontSize: "clamp(1.6rem, 6vw, 2.5rem)", letterSpacing: "-0.02em" }}
           >
             Event <GoldText>Operations</GoldText>
           </h1>
@@ -184,8 +184,12 @@ const EventOpsDashboardPage = () => {
           <>
             <SummaryStrip summary={summary} loading={summaryLoading} error={summaryError} />
 
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="flex flex-col gap-4 lg:col-span-2">
+            <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3">
+              <div className="order-1 lg:order-2 flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
+                <CheckinCard onSuccess={openParticipantPage} />
+              </div>
+
+              <div className="order-2 lg:order-1 flex flex-col gap-4 lg:col-span-2">
                 <ParticipantFilters values={filters} onChange={handleFiltersChange} />
                 <ParticipantsTable
                   participants={participants}
@@ -197,10 +201,6 @@ const EventOpsDashboardPage = () => {
                   onSelect={openParticipantPage}
                   onPageChange={setOffset}
                 />
-              </div>
-
-              <div className="flex flex-col gap-4 lg:sticky lg:top-24 lg:self-start">
-                <CheckinCard onSuccess={openParticipantPage} />
               </div>
             </div>
           </>

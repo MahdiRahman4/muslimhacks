@@ -37,10 +37,10 @@ function CheckinBadge({ status }: { status: ParticipantSummary["checkin_status"]
   );
 }
 
-function MealDot({ claimed, label }: { claimed: boolean; label: string }) {
+function MealDot({ claimed, label, compact }: { claimed: boolean; label: string; compact?: boolean }) {
   return (
     <span
-      className="inline-flex items-center justify-center w-7 h-7 rounded-full"
+      className={`inline-flex items-center justify-center rounded-full ${compact ? "w-6 h-6" : "w-7 h-7"}`}
       title={`${label}: ${claimed ? "got it" : "not yet"}`}
       aria-label={`${label}: ${claimed ? "got it" : "not yet"}`}
       style={
@@ -86,12 +86,52 @@ export function ParticipantsTable({
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        {!loading && participants.length === 0 ? (
-          <p className="px-6 py-16 text-center font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
-            No participants match these filters.
-          </p>
-        ) : (
+      {!loading && participants.length === 0 ? (
+        <p className="px-6 py-16 text-center font-intimate text-lg" style={{ fontStyle: "italic", color: BRAND.sand }}>
+          No participants match these filters.
+        </p>
+      ) : (
+        <>
+      <div className="lg:hidden divide-y" style={{ borderColor: "rgba(221,168,83,0.08)" }}>
+        {participants.map((p) => {
+          const claimed = new Set(p.claimed_meals ?? []);
+          return (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => onSelect(p)}
+              className="w-full text-left px-4 py-3.5 flex flex-col gap-2"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-sans text-sm font-semibold truncate" style={{ color: BRAND.cream }}>
+                    {p.full_name}
+                  </p>
+                  <p className="font-sans text-xs truncate" style={{ color: BRAND.creamMuted }}>
+                    {p.email}
+                  </p>
+                </div>
+                <CheckinBadge status={p.checkin_status} />
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <FoodWaveBadge wave={p.food_wave} />
+                  <span className="font-mono text-[11px]" style={{ color: BRAND.sand }}>
+                    {p.public_checkin_code}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  {MEAL_KEYS.map((key) => (
+                    <MealDot key={key} claimed={claimed.has(key)} label={formatMealLabel(key)} compact />
+                  ))}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="hidden lg:block overflow-x-auto">
           <table className="w-full min-w-[980px]">
             <thead style={{ background: "rgba(75,46,99,0.2)", borderBottom: "1px solid rgba(221,168,83,0.1)" }}>
               <tr>
@@ -181,14 +221,15 @@ export function ParticipantsTable({
               })}
             </tbody>
           </table>
-        )}
       </div>
+        </>
+      )}
 
       <div
         className="px-5 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t"
         style={{ borderColor: "rgba(221,168,83,0.08)", background: "rgba(6,15,32,0.3)" }}
       >
-        <p className="font-sans text-xs whitespace-nowrap" style={{ color: BRAND.sand }}>
+        <p className="font-sans text-xs" style={{ color: BRAND.sand }}>
           {total === 0
             ? "Showing 0"
             : `Showing ${offset + 1}–${Math.min(offset + participants.length, total)} of ${total}`}

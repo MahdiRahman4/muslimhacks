@@ -72,10 +72,9 @@ export async function ensureUserForClerk(
 
   const byEmail = await selectUser(env, "email", identity.email);
   if (byEmail) {
-    // Skips the row if a concurrent request already linked it.
-    await env.DB.prepare(
-      "UPDATE users SET clerk_id = ? WHERE id = ? AND clerk_id IS NULL",
-    )
+    // Relink if this email was first created against a different Clerk
+    // instance (test vs live) or if clerk_id was never set.
+    await env.DB.prepare("UPDATE users SET clerk_id = ? WHERE id = ?")
       .bind(identity.clerkId, byEmail.id)
       .run();
     return { ...byEmail, full_name: identity.fullName };

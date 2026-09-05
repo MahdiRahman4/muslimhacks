@@ -12,13 +12,13 @@ interface SummaryStripProps {
 function StatTile({ label, value, color }: { label: string; value: string | number; color?: string }) {
   return (
     <div
-      className="flex flex-col gap-0.5 px-5 py-4 rounded-xl"
+      className="flex flex-col gap-0.5 px-3 sm:px-5 py-3 sm:py-4 rounded-xl min-w-0"
       style={{ background: "rgba(245,238,227,0.04)", border: "1px solid rgba(221,168,83,0.1)" }}
     >
-      <span className="font-sans text-xs uppercase tracking-[0.22em]" style={{ color: BRAND.sand }}>
+      <span className="font-sans text-[10px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.22em]" style={{ color: BRAND.sand }}>
         {label}
       </span>
-      <span className="font-display text-3xl font-bold" style={{ color: color ?? BRAND.cream }}>
+      <span className="font-display text-2xl sm:text-3xl font-bold" style={{ color: color ?? BRAND.cream }}>
         {value}
       </span>
     </div>
@@ -55,14 +55,14 @@ export function SummaryStrip({ summary, loading, error }: SummaryStripProps) {
         <StatTile label="Not checked in" value={summary.participants.not_checked_in} color={BRAND.gold} />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
         {MEAL_KEYS.map((key) => (
           <div
             key={key}
-            className="flex flex-col gap-0.5 px-4 py-3 rounded-xl"
+            className="flex flex-col gap-0.5 px-3 sm:px-4 py-3 rounded-xl min-w-0"
             style={{ background: "rgba(245,238,227,0.03)", border: "1px solid rgba(221,168,83,0.08)" }}
           >
-            <span className="font-sans text-xs uppercase tracking-[0.18em]" style={{ color: BRAND.sand }}>
+            <span className="font-sans text-[10px] sm:text-xs uppercase tracking-[0.1em] sm:tracking-[0.18em]" style={{ color: BRAND.sand }}>
               {formatMealLabel(key)}
             </span>
             <span className="font-display text-xl font-bold" style={{ color: BRAND.cream }}>

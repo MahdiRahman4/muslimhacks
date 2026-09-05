@@ -65,12 +65,12 @@ export function CheckinCard({ onSuccess }: CheckinCardProps) {
   };
 
   return (
-    <div className="rounded-2xl p-6 flex flex-col gap-4" style={cardStyle}>
-      <div className="flex items-center justify-between gap-3">
+    <div className="rounded-2xl p-4 sm:p-6 flex flex-col gap-4" style={cardStyle}>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <h2 className="font-display font-bold text-lg" style={{ letterSpacing: "-0.01em" }}>
           Check-in
         </h2>
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 shrink-0">
           <button
             type="button"
             onClick={() => setMode("scan")}
