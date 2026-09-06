@@ -108,7 +108,7 @@ const Navbar = ({ displayApplyDialog }: { displayApplyDialog?: boolean }) => {
               {item.label}
             </a>
           ))}
-          {false &&EXTERNAL_NAV_LINKS.map((item) => (
+          {EXTERNAL_NAV_LINKS.map((item) => (
             <a
               key={item.href}
               href={item.href}
