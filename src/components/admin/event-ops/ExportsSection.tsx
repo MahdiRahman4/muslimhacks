@@ -74,7 +74,7 @@ export function ExportsSection({ currentFilters }: ExportsSectionProps) {
         }}
       >
         <Download size={13} style={{ color: BRAND.gold }} />
-        {loading === "resumes" ? "Zipping resumes…" : "Download all resumes"}
+        {loading === "resumes" ? "Zipping resumes…" : "Download checked-in resumes"}
       </button>
 
       {error && (

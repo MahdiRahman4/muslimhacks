@@ -819,8 +819,9 @@ function safeResumeFileName(fullName: string, email: string, applicationId: stri
 }
 
 /**
- * The applications CSV only lists a resume path. This is the actual PDFs, so
- * someone who needs every CV can get a zip instead of opening each application.
+ * The applications CSV only lists a resume path. This is the actual PDFs for
+ * people who checked in, so walk-ins without a resume show up in _missing.csv
+ * instead of filling the zip with no-shows.
  */
 async function handleExportResumes(
   request: Request,
@@ -837,10 +838,16 @@ async function handleExportResumes(
   }
 
   const rows = await env.DB.prepare(
-    `SELECT a.id, a.full_name, a.status, a.resume_key, u.email
-     FROM applications a
-     JOIN users u ON u.id = a.user_id
-     ORDER BY a.full_name COLLATE NOCASE`,
+    `SELECT a.id,
+            COALESCE(p.full_name, a.full_name) AS full_name,
+            a.status,
+            a.resume_key,
+            u.email
+     FROM participants p
+     JOIN applications a ON a.id = p.application_id
+     JOIN users u ON u.id = p.user_id
+     WHERE p.checkin_status = 'checked_in'
+     ORDER BY full_name COLLATE NOCASE`,
   ).all<{
     id: string;
     full_name: string | null;
@@ -887,7 +894,7 @@ async function handleExportResumes(
   });
 
   return zipDownloadResponse(
-    exportFilename("resumes", "zip"),
+    exportFilename("checked-in-resumes", "zip"),
     zipBinaryFiles(files),
     env.CORS_ORIGIN || "*",
     request.headers.get("Origin"),

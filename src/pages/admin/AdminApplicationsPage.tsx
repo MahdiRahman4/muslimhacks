@@ -386,7 +386,7 @@ const AdminApplicationsPage = () => {
               disabled={exportingResumes}
             >
               <Download size={13} />
-              {exportingResumes ? "Zipping resumes…" : "Download all resumes"}
+              {exportingResumes ? "Zipping resumes…" : "Download checked-in resumes"}
             </button>
             {view === "applications" && (
               <button
