@@ -36,15 +36,15 @@ export function buildCsv(headers: string[], rows: unknown[][]): string {
   return `${lines.join("\n")}\n`;
 }
 
-export function csvDownloadResponse(
+function downloadHeaders(
   filename: string,
-  content: string,
+  contentType: string,
   corsOrigin: string,
   requestOrigin: string | null,
-): Response {
+): Record<string, string> {
   const allowOrigin = resolveAllowOrigin(corsOrigin, requestOrigin);
   const headers: Record<string, string> = {
-    "Content-Type": "text/csv; charset=utf-8",
+    "Content-Type": contentType,
     "Content-Disposition": `attachment; filename="${filename}"`,
     "Access-Control-Expose-Headers": "Content-Disposition",
     Vary: "Origin",
@@ -52,14 +52,44 @@ export function csvDownloadResponse(
   if (allowOrigin) {
     headers["Access-Control-Allow-Origin"] = allowOrigin;
   }
+  return headers;
+}
 
+export function csvDownloadResponse(
+  filename: string,
+  content: string,
+  corsOrigin: string,
+  requestOrigin: string | null,
+): Response {
   return new Response(content, {
     status: 200,
-    headers,
+    headers: downloadHeaders(
+      filename,
+      "text/csv; charset=utf-8",
+      corsOrigin,
+      requestOrigin,
+    ),
   });
 }
 
-export function exportFilename(prefix: string): string {
+export function zipDownloadResponse(
+  filename: string,
+  content: Uint8Array,
+  corsOrigin: string,
+  requestOrigin: string | null,
+): Response {
+  return new Response(content, {
+    status: 200,
+    headers: downloadHeaders(
+      filename,
+      "application/zip",
+      corsOrigin,
+      requestOrigin,
+    ),
+  });
+}
+
+export function exportFilename(prefix: string, extension = "csv"): string {
   const date = new Date().toISOString().slice(0, 10);
-  return `${prefix}-${date}.csv`;
+  return `${prefix}-${date}.${extension}`;
 }

@@ -759,6 +759,27 @@ function applicationToCsvRow(row: ApplicationWithEmail): unknown[] {
   ];
 }
 
+export async function buildApplicationsCsv(
+  env: Env,
+  where = "",
+  binds: (string | number)[] = [],
+): Promise<string> {
+  const rows = await env.DB.prepare(
+    `SELECT a.*, u.email
+     FROM applications a
+     JOIN users u ON u.id = a.user_id
+     ${where}
+     ORDER BY a.created_at DESC`,
+  )
+    .bind(...binds)
+    .all<ApplicationWithEmail>();
+
+  return buildCsv(
+    APPLICATION_EXPORT_HEADERS,
+    (rows.results ?? []).map(applicationToCsvRow),
+  );
+}
+
 async function handleExportApplications(
   request: Request,
   env: Env,
@@ -776,20 +797,7 @@ async function handleExportApplications(
   }
 
   const { where, binds } = buildListQuery(filters);
-  const rows = await env.DB.prepare(
-    `SELECT a.*, u.email
-     FROM applications a
-     JOIN users u ON u.id = a.user_id
-     ${where}
-     ORDER BY a.created_at DESC`,
-  )
-    .bind(...binds)
-    .all<ApplicationWithEmail>();
-
-  const csv = buildCsv(
-    APPLICATION_EXPORT_HEADERS,
-    (rows.results ?? []).map(applicationToCsvRow),
-  );
+  const csv = await buildApplicationsCsv(env, where, binds);
 
   return csvDownloadResponse(
     exportFilename("applications-export"),

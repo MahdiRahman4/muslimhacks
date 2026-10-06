@@ -85,13 +85,9 @@ async function listAdminChallenges(env: Env, respond: JsonResponder) {
   });
 }
 
-async function exportAdminChallenges(
-  request: Request,
-  env: Env,
-  corsOrigin: string,
-) {
+export async function buildChallengePicksCsv(env: Env): Promise<string> {
   const picks = (await fetchPicks(env)).map(toPick);
-  const csv = buildCsv(
+  return buildCsv(
     [
       "full_name",
       "email",
@@ -113,10 +109,16 @@ async function exportAdminChallenges(
       pick.ip_owner,
     ]),
   );
+}
 
+async function exportAdminChallenges(
+  request: Request,
+  env: Env,
+  corsOrigin: string,
+) {
   return csvDownloadResponse(
     exportFilename("challenge-picks"),
-    csv,
+    await buildChallengePicksCsv(env),
     corsOrigin,
     request.headers.get("Origin"),
   );

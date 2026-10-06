@@ -1,12 +1,16 @@
 import type { Env } from "../env";
 import { requireAdmin, type JsonResponder } from "./auth";
+import { buildApplicationsCsv } from "./applications";
+import { buildChallengePicksCsv } from "./challenges";
 import {
   buildCsv,
   csvDownloadResponse,
   exportFilename,
   formatCsvBoolean,
   formatCsvTimestamp,
+  zipDownloadResponse,
 } from "./csv";
+import { zipTextFiles } from "./zip";
 import {
   buildListQuery,
   buildOrderBy,
@@ -126,6 +130,10 @@ async function fetchParticipantsForExport(
   return result.results ?? [];
 }
 
+function participantsCsv(rows: ParticipantExportRow[]): string {
+  return buildCsv(PARTICIPANT_EXPORT_HEADERS, rows.map(participantToCsvRow));
+}
+
 async function handleParticipantsExport(
   request: Request,
   env: Env,
@@ -142,14 +150,9 @@ async function handleParticipantsExport(
     return respond({ error: rows.error }, rows.status);
   }
 
-  const csv = buildCsv(
-    PARTICIPANT_EXPORT_HEADERS,
-    rows.map(participantToCsvRow),
-  );
-
   return csvDownloadResponse(
     exportFilename("participants-export"),
-    csv,
+    participantsCsv(rows),
     env.CORS_ORIGIN || "*",
     request.headers.get("Origin"),
   );
@@ -165,6 +168,15 @@ async function handleCheckinsExport(
     return auth;
   }
 
+  return csvDownloadResponse(
+    exportFilename("checkins-export"),
+    await buildCheckinsCsv(env),
+    env.CORS_ORIGIN || "*",
+    request.headers.get("Origin"),
+  );
+}
+
+async function buildCheckinsCsv(env: Env): Promise<string> {
   const result = await env.DB.prepare(
     `SELECT id, full_name, email, public_checkin_code, checked_in_at, checked_in_by
      FROM participants
@@ -179,17 +191,15 @@ async function handleCheckinsExport(
     checked_in_by: string | null;
   }>();
 
-  const headers = [
-    "participant_id",
-    "full_name",
-    "email",
-    "public_checkin_code",
-    "checked_in_at",
-    "checked_in_by",
-  ];
-
-  const csv = buildCsv(
-    headers,
+  return buildCsv(
+    [
+      "participant_id",
+      "full_name",
+      "email",
+      "public_checkin_code",
+      "checked_in_at",
+      "checked_in_by",
+    ],
     (result.results ?? []).map((row) => [
       row.id,
       row.full_name,
@@ -198,13 +208,6 @@ async function handleCheckinsExport(
       formatCsvTimestamp(row.checked_in_at),
       row.checked_in_by,
     ]),
-  );
-
-  return csvDownloadResponse(
-    exportFilename("checkins-export"),
-    csv,
-    env.CORS_ORIGIN || "*",
-    request.headers.get("Origin"),
   );
 }
 
@@ -218,6 +221,15 @@ async function handleMealsExport(
     return auth;
   }
 
+  return csvDownloadResponse(
+    exportFilename("meal-claims-export"),
+    await buildMealsCsv(env),
+    env.CORS_ORIGIN || "*",
+    request.headers.get("Origin"),
+  );
+}
+
+async function buildMealsCsv(env: Env): Promise<string> {
   const result = await env.DB.prepare(
     `SELECT
       pm.id AS meal_claim_id,
@@ -240,18 +252,16 @@ async function handleMealsExport(
     claimed_by: string;
   }>();
 
-  const headers = [
-    "meal_claim_id",
-    "participant_id",
-    "full_name",
-    "email",
-    "meal_key",
-    "claimed_at",
-    "claimed_by",
-  ];
-
-  const csv = buildCsv(
-    headers,
+  return buildCsv(
+    [
+      "meal_claim_id",
+      "participant_id",
+      "full_name",
+      "email",
+      "meal_key",
+      "claimed_at",
+      "claimed_by",
+    ],
     (result.results ?? []).map((row) => [
       row.meal_claim_id,
       row.participant_id,
@@ -262,10 +272,45 @@ async function handleMealsExport(
       row.claimed_by,
     ]),
   );
+}
 
-  return csvDownloadResponse(
-    exportFilename("meal-claims-export"),
-    csv,
+/** One zip with every admin CSV, so you can hand someone the files without an admin login. */
+async function handleAllReportsExport(
+  request: Request,
+  env: Env,
+  respond: JsonResponder,
+): Promise<Response> {
+  const auth = await requireAdmin(request, env, respond);
+  if (auth instanceof Response) {
+    return auth;
+  }
+
+  const participantRows = await fetchParticipantsForExport(
+    env,
+    new URL("https://muslimhacks.ca/api/admin/participants/export"),
+  );
+  if (!Array.isArray(participantRows)) {
+    return respond({ error: participantRows.error }, participantRows.status);
+  }
+
+  const [applications, checkins, meals, challenges] = await Promise.all([
+    buildApplicationsCsv(env),
+    buildCheckinsCsv(env),
+    buildMealsCsv(env),
+    buildChallengePicksCsv(env),
+  ]);
+
+  const zip = zipTextFiles([
+    { name: "applications.csv", content: applications },
+    { name: "participants.csv", content: participantsCsv(participantRows) },
+    { name: "checkins.csv", content: checkins },
+    { name: "meal-claims.csv", content: meals },
+    { name: "challenge-picks.csv", content: challenges },
+  ]);
+
+  return zipDownloadResponse(
+    exportFilename("muslimhacks-reports", "zip"),
+    zip,
     env.CORS_ORIGIN || "*",
     request.headers.get("Origin"),
   );
@@ -290,6 +335,10 @@ export async function handleAdminReportRoutes(
 
   if (pathname === "/api/admin/reports/meals/export" && method === "GET") {
     return handleMealsExport(request, env, respond);
+  }
+
+  if (pathname === "/api/admin/reports/all/export" && method === "GET") {
+    return handleAllReportsExport(request, env, respond);
   }
 
   return null;

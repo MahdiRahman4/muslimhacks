@@ -46,8 +46,22 @@ export function ExportsSection({ currentFilters }: ExportsSectionProps) {
         CSV exports
       </h2>
       <p className="font-sans text-sm" style={{ color: BRAND.creamMuted }}>
-        Downloads open directly from the Worker export endpoints.
+        Download one report, or grab every CSV in a single zip you can send to someone who is not an admin.
       </p>
+
+      <button
+        type="button"
+        disabled={loading !== null}
+        onClick={() => void runExport("bundle", "/api/admin/reports/all/export")}
+        className="self-start flex items-center gap-2 px-4 py-2.5 rounded-lg font-sans text-xs font-semibold uppercase tracking-[0.14em] transition-all duration-200 hover:opacity-80 focus-visible:ring-2 disabled:opacity-50"
+        style={{
+          background: `linear-gradient(135deg, ${BRAND.goldSoft} 0%, ${BRAND.gold} 100%)`,
+          color: BRAND.navyDeep,
+        }}
+      >
+        <Download size={13} />
+        {loading === "bundle" ? "Building zip…" : "Download all CSVs"}
+      </button>
 
       {error && (
         <div
