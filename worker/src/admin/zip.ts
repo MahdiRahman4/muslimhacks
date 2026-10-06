@@ -31,15 +31,19 @@ export interface ZipEntry {
   content: string;
 }
 
+export interface ZipBinaryEntry {
+  name: string;
+  data: Uint8Array;
+}
+
 /**
- * Uncompressed ZIP. Fine for CSVs, and it keeps the worker dependency-free.
+ * Uncompressed ZIP. Fine for CSVs and PDFs, and it keeps the worker dependency-free.
  */
-export function zipTextFiles(files: ZipEntry[]): Uint8Array {
+export function zipBinaryFiles(files: ZipBinaryEntry[]): Uint8Array {
   const encoder = new TextEncoder();
   const entries = files.map((file) => {
-    const nameBytes = encoder.encode(file.name);
-    const data = encoder.encode(file.content);
-    return { nameBytes, data, crc: crc32(data) };
+    const nameBytes = encoder.encode(file.name.replace(/[/\\]/g, "-"));
+    return { nameBytes, data: file.data, crc: crc32(file.data) };
   });
 
   const localSize = entries.reduce(
@@ -109,4 +113,14 @@ export function zipTextFiles(files: ZipEntry[]): Uint8Array {
   writeU16(view, centralOffset + 20, 0);
 
   return bytes;
+}
+
+export function zipTextFiles(files: ZipEntry[]): Uint8Array {
+  const encoder = new TextEncoder();
+  return zipBinaryFiles(
+    files.map((file) => ({
+      name: file.name,
+      data: encoder.encode(file.content),
+    })),
+  );
 }

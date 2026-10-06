@@ -9,6 +9,7 @@ import { BRAND, GoldText, Eyebrow, GLOBAL_CSS } from "@/components/Shared";
 import muslimHacksLogo from "@/assets/muslimhacks-logo-white.svg";
 import {
   downloadApplicationsCsv,
+  downloadResumesZip,
   fetchAdminApplications,
   fetchAdminDietarySummary,
   fetchAdminUsersWithoutApplication,
@@ -116,6 +117,7 @@ const AdminApplicationsPage = () => {
 
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+  const [exportingResumes, setExportingResumes] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkApproving, setBulkApproving] = useState(false);
@@ -286,6 +288,18 @@ const AdminApplicationsPage = () => {
     }
   };
 
+  const handleExportResumes = async () => {
+    setExportingResumes(true);
+    setError(null);
+    try {
+      await downloadResumesZip();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to export resumes");
+    } finally {
+      setExportingResumes(false);
+    }
+  };
+
   const handleExportCsv = async () => {
     setExporting(true);
     setError(null);
@@ -362,6 +376,18 @@ const AdminApplicationsPage = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 focus-visible:ring-2 disabled:opacity-50"
+              style={{
+                background: `linear-gradient(135deg, ${BRAND.goldSoft} 0%, ${BRAND.gold} 100%)`,
+                color: BRAND.navyDeep,
+              }}
+              onClick={() => void handleExportResumes()}
+              disabled={exportingResumes}
+            >
+              <Download size={13} />
+              {exportingResumes ? "Zipping resumes…" : "Download all resumes"}
+            </button>
             {view === "applications" && (
               <button
                 className="flex items-center gap-2 px-3.5 py-2 rounded-lg font-sans text-xs font-medium transition-all duration-200 hover:opacity-80 focus-visible:ring-2 disabled:opacity-50"

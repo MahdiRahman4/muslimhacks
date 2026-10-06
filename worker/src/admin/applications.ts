@@ -18,7 +18,9 @@ import {
   exportFilename,
   formatCsvBoolean,
   formatCsvTimestamp,
+  zipDownloadResponse,
 } from "./csv";
+import { zipBinaryFiles } from "./zip";
 
 type ReviewStatus = "pending" | "approved" | "rejected";
 
@@ -807,6 +809,91 @@ async function handleExportApplications(
   );
 }
 
+function safeResumeFileName(fullName: string, email: string, applicationId: string): string {
+  const label = `${fullName.trim() || "unknown"} - ${email}`
+    .replace(/[/\\?%*:|"<>]/g, "-")
+    .replace(/\s+/g, " ")
+    .slice(0, 120)
+    .trim();
+  return `${label} (${applicationId.slice(0, 8)}).pdf`;
+}
+
+/**
+ * The applications CSV only lists a resume path. This is the actual PDFs, so
+ * someone who needs every CV can get a zip instead of opening each application.
+ */
+async function handleExportResumes(
+  request: Request,
+  env: Env,
+  respond: JsonResponder,
+): Promise<Response> {
+  const auth = await requireAdmin(request, env, respond);
+  if (auth instanceof Response) {
+    return auth;
+  }
+
+  if (!env.RESUMES) {
+    return respond({ error: "Resume storage is not configured" }, 500);
+  }
+
+  const rows = await env.DB.prepare(
+    `SELECT a.id, a.full_name, a.status, a.resume_key, u.email
+     FROM applications a
+     JOIN users u ON u.id = a.user_id
+     ORDER BY a.full_name COLLATE NOCASE`,
+  ).all<{
+    id: string;
+    full_name: string | null;
+    status: string;
+    resume_key: string | null;
+    email: string;
+  }>();
+
+  const encoder = new TextEncoder();
+  const files: { name: string; data: Uint8Array }[] = [];
+  const included: unknown[][] = [];
+  const missing: unknown[][] = [];
+
+  for (const row of rows.results ?? []) {
+    const name = row.full_name?.trim() || "(no name)";
+    if (!row.resume_key) {
+      missing.push([name, row.email, row.status, "not uploaded"]);
+      continue;
+    }
+
+    const object = await env.RESUMES.get(row.resume_key);
+    if (!object) {
+      missing.push([name, row.email, row.status, "file missing from storage"]);
+      continue;
+    }
+
+    const data = new Uint8Array(await object.arrayBuffer());
+    const filename = safeResumeFileName(name, row.email, row.id);
+    files.push({ name: filename, data });
+    included.push([name, row.email, row.status, filename]);
+  }
+
+  files.unshift({
+    name: "_missing.csv",
+    data: encoder.encode(
+      buildCsv(["full_name", "email", "status", "reason"], missing),
+    ),
+  });
+  files.unshift({
+    name: "_included.csv",
+    data: encoder.encode(
+      buildCsv(["full_name", "email", "status", "filename"], included),
+    ),
+  });
+
+  return zipDownloadResponse(
+    exportFilename("resumes", "zip"),
+    zipBinaryFiles(files),
+    env.CORS_ORIGIN || "*",
+    request.headers.get("Origin"),
+  );
+}
+
 async function handleAdminGetResume(
   request: Request,
   env: Env,
@@ -861,6 +948,10 @@ export async function handleAdminApplicationRoutes(
   // Must be before the /:id detail route so "export" is not treated as an id
   if (pathname === "/api/admin/applications/export" && method === "GET") {
     return handleExportApplications(request, env, respond);
+  }
+
+  if (pathname === "/api/admin/applications/resumes/export" && method === "GET") {
+    return handleExportResumes(request, env, respond);
   }
 
   if (pathname === "/api/admin/applications/dietary-summary" && method === "GET") {

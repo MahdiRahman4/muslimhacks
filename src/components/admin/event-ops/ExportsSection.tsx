@@ -62,6 +62,20 @@ export function ExportsSection({ currentFilters }: ExportsSectionProps) {
         <Download size={13} />
         {loading === "bundle" ? "Building zip…" : "Download all CSVs"}
       </button>
+      <button
+        type="button"
+        disabled={loading !== null}
+        onClick={() => void runExport("resumes", "/api/admin/applications/resumes/export")}
+        className="self-start flex items-center gap-2 px-4 py-2.5 rounded-lg font-sans text-xs font-semibold uppercase tracking-[0.14em] transition-all duration-200 hover:opacity-80 focus-visible:ring-2 disabled:opacity-50"
+        style={{
+          background: "rgba(245,238,227,0.06)",
+          border: "1px solid rgba(221,168,83,0.18)",
+          color: BRAND.cream,
+        }}
+      >
+        <Download size={13} style={{ color: BRAND.gold }} />
+        {loading === "resumes" ? "Zipping resumes…" : "Download all resumes"}
+      </button>
 
       {error && (
         <div
